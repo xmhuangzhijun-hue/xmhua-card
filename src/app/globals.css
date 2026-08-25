@@ -128,3 +128,17 @@
     @apply font-sans;
   }
 }
+
+.content-state {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  gap: 8px;
+  color: var(--muted, #68707d);
+  text-align: center;
+}
+
+.content-state h1,
+.content-state p {
+  margin: 0;
+}
