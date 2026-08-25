@@ -29,6 +29,8 @@ Management endpoints:
 
 Writes fail closed: without `ADMIN_API_KEY` or `DATABASE_URL`, no management write is accepted. A full-content save replaces only the selected tenant's articles, products, directory links and social links inside one PostgreSQL transaction.
 
+For a loopback-only owner workstation, `LOCAL_OWNER_ACCESS=true` allows `/admin` requests whose URL hostname is `127.0.0.1`, `localhost`, or `::1` to connect without typing the remote management key. Never enable this setting on a public deployment or proxy.
+
 ## Self-service sites
 
 Set `SELF_SERVICE_SIGNUP_ENABLED=true` only after PostgreSQL is migrated. Visitors can then use `/start` to create an isolated site and `/studio?tenant=<slug>` to edit it without source-code access.

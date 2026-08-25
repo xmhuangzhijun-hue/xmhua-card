@@ -2,6 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
 export function requireAdmin(request: Request): NextResponse | null {
+  if (hasLocalOwnerAccess(request)) return null;
   const expected = process.env.ADMIN_API_KEY;
   if (!expected) return NextResponse.json({ error: "ADMIN_NOT_CONFIGURED" }, { status: 503 });
   const authorization = request.headers.get("authorization") ?? "";
@@ -12,6 +13,11 @@ export function requireAdmin(request: Request): NextResponse | null {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   return null;
+}
+
+export function hasLocalOwnerAccess(request: Request) {
+  const hostname = new URL(request.url).hostname;
+  return process.env.LOCAL_OWNER_ACCESS === "true" && (hostname === "127.0.0.1" || hostname === "localhost" || hostname === "::1");
 }
 
 export function hashTenantToken(token: string) {

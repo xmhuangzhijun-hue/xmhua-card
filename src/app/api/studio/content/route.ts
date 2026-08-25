@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { tenantSlugValueSchema } from "@/lib/admin-schema";
 import { homepageContentSchema } from "@/lib/content-schema";
+import { hasLocalOwnerAccess } from "@/server/admin-auth";
 import { DatabaseRequiredError, readTenantContent, requireTenantOwner, TenantNotFoundError, writeTenantContent } from "@/server/admin-repository";
 
 function credentials(request: Request) {
@@ -12,7 +13,7 @@ function credentials(request: Request) {
 export async function GET(request: Request) {
   try {
     const { slug, token } = credentials(request);
-    await requireTenantOwner(slug, token);
+    if (!hasLocalOwnerAccess(request)) await requireTenantOwner(slug, token);
     const result = await readTenantContent(slug);
     return NextResponse.json({ data: result.data, meta: { tenant: slug } });
   } catch (error) { return studioError(error); }
@@ -21,7 +22,7 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   try {
     const { slug, token } = credentials(request);
-    await requireTenantOwner(slug, token);
+    if (!hasLocalOwnerAccess(request)) await requireTenantOwner(slug, token);
     const content = homepageContentSchema.parse(await request.json());
     const result = await writeTenantContent(slug, content);
     return NextResponse.json({ data: result.data, meta: { tenant: slug, saved: true } });

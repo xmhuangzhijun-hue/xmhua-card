@@ -4,14 +4,14 @@ import postgres from "postgres";
 import { articles, directoryLinks, products, siteSettings, socialLinks, tenants } from "../src/db/schema";
 import { seedHomepageContent } from "../src/server/seed-content";
 
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) throw new Error("DATABASE_URL is required");
+async function main() {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) throw new Error("DATABASE_URL is required");
+  const client = postgres(connectionString, { prepare: false, max: 1 });
+  const db = drizzle(client);
+  const { articles: articleData, products: productData, directory, socials, ...settings } = seedHomepageContent;
 
-const client = postgres(connectionString, { prepare: false, max: 1 });
-const db = drizzle(client);
-const { articles: articleData, products: productData, directory, socials, ...settings } = seedHomepageContent;
-
-await db.transaction(async tx => {
+  await db.transaction(async tx => {
   const slug = process.env.DEFAULT_TENANT_SLUG ?? "xmhua";
   const [tenant] = await tx.insert(tenants).values({ slug, name: "XMHUA" })
     .onConflictDoUpdate({ target: tenants.slug, set: { name: "XMHUA", active: true, updatedAt: new Date() } }).returning();
@@ -35,7 +35,10 @@ await db.transaction(async tx => {
   for (const [index, social] of socials.entries()) {
     await tx.insert(socialLinks).values({ tenantId, icon: social.icon, label: social.label, handle: social.handle, href: social.href, sortOrder: index + 1 });
   }
-});
+  });
 
-await client.end();
-console.log(JSON.stringify({ status: "seeded", articles: articleData.length, products: productData.length, directoryLinks: directory.links.length, socialLinks: socials.length }));
+  await client.end();
+  console.log(JSON.stringify({ status: "seeded", articles: articleData.length, products: productData.length, directoryLinks: directory.links.length, socialLinks: socials.length }));
+}
+
+main().catch(error => { console.error(error instanceof Error ? error.message : "SEED_FAILED"); process.exitCode = 1; });

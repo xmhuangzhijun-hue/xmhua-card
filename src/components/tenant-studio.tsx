@@ -8,7 +8,7 @@ import { homepageContentSchema, type HomepageContent } from "@/lib/content-schem
 type State = "idle" | "loading" | "saving" | "success" | "error";
 
 async function studioApi<T>(slug: string, token: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`/api/studio/content?tenant=${encodeURIComponent(slug)}`, { ...init, headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, ...init?.headers } });
+  const response = await fetch(`/api/studio/content?tenant=${encodeURIComponent(slug)}`, { ...init, headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers } });
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.error ?? "REQUEST_FAILED");
   return payload as T;
@@ -19,19 +19,25 @@ export function TenantStudio() {
   const [content, setContent] = useState<HomepageContent | null>(null);
   const [state, setState] = useState<State>("idle"); const [message, setMessage] = useState("输入站点标识和管理密钥后连接。");
   useEffect(() => {
-    const timeout = window.setTimeout(() => {
+    const timeout = window.setTimeout(async () => {
       const value = new URLSearchParams(location.search).get("tenant") ?? "";
-      setSlug(value); setToken(sessionStorage.getItem(`xmhua-site-key:${value}`) ?? "");
+      const stored = sessionStorage.getItem(`xmhua-site-key:${value}`) ?? "";
+      setSlug(value); setToken(stored);
+      if (value) {
+        setState("loading");
+        try { const payload = await studioApi<{ data: HomepageContent }>(value, stored); setContent(payload.data); setState("success"); setMessage("内容已载入。修改后点击保存即可发布。"); }
+        catch (error) { setState("error"); setMessage(error instanceof Error ? error.message : "连接失败"); }
+      }
     }, 0);
     return () => window.clearTimeout(timeout);
   }, []);
-  async function connect() { setState("loading"); try { const payload = await studioApi<{ data: HomepageContent }>(slug, token); setContent(payload.data); sessionStorage.setItem(`xmhua-site-key:${slug}`, token); setState("success"); setMessage("内容已载入。修改后点击保存即可发布。"); } catch (error) { setState("error"); setMessage(error instanceof Error ? error.message : "连接失败"); } }
+  async function connect(selectedSlug = slug, suppliedToken = token) { setState("loading"); try { const payload = await studioApi<{ data: HomepageContent }>(selectedSlug, suppliedToken); setContent(payload.data); if (suppliedToken) sessionStorage.setItem(`xmhua-site-key:${selectedSlug}`, suppliedToken); setState("success"); setMessage("内容已载入。修改后点击保存即可发布。"); } catch (error) { setState("error"); setMessage(error instanceof Error ? error.message : "连接失败"); } }
   async function save() { if (!content) return; const parsed = homepageContentSchema.safeParse(content); if (!parsed.success) { setState("error"); setMessage("内容不完整，请检查必填字段。"); return; } setState("saving"); try { const payload = await studioApi<{ data: HomepageContent }>(slug, token, { method: "PUT", body: JSON.stringify(parsed.data) }); setContent(payload.data); setState("success"); setMessage("已保存并发布到公开站点。"); } catch (error) { setState("error"); setMessage(error instanceof Error ? error.message : "保存失败"); } }
   function patch(section: "site" | "hero" | "author" | "footer", field: string, value: string | string[]) { if (!content) return; setContent({ ...content, [section]: { ...content[section], [field]: value } }); }
 
   return <main className="saas-shell studio-shell">
     <header className="saas-header"><Link href="/">XMHUA / STUDIO</Link><div><Link href="/start">创建新站</Link>{slug && <Link href={`/?tenant=${slug}`} target="_blank">查看站点 <ArrowUpRight /></Link>}</div></header>
-    <section className="studio-login"><label>站点标识<input value={slug} onChange={event => setSlug(event.target.value)} placeholder="your-site" /></label><label>管理密钥<input type="password" value={token} onChange={event => setToken(event.target.value)} placeholder="site_…" /></label><button className="saas-primary" disabled={!slug || !token || state === "loading"} onClick={connect}>{state === "loading" ? <LoaderCircle className="spin" /> : "连接站点"}</button></section>
+    <section className="studio-login"><label>站点标识<input value={slug} onChange={event => setSlug(event.target.value)} placeholder="your-site" /></label><label>远程管理密钥（本机可留空）<input type="password" value={token} onChange={event => setToken(event.target.value)} placeholder="本机自动授权" /></label><button className="saas-primary" disabled={!slug || state === "loading"} onClick={() => connect()}>{state === "loading" ? <LoaderCircle className="spin" /> : "连接站点"}</button></section>
     {content && <div className="studio-layout">
       <section className="studio-form">
         <EditorSection title="站点导航与公告">
