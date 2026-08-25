@@ -34,13 +34,30 @@ export function TenantStudio() {
     <section className="studio-login"><label>站点标识<input value={slug} onChange={event => setSlug(event.target.value)} placeholder="your-site" /></label><label>管理密钥<input type="password" value={token} onChange={event => setToken(event.target.value)} placeholder="site_…" /></label><button className="saas-primary" disabled={!slug || !token || state === "loading"} onClick={connect}>{state === "loading" ? <LoaderCircle className="spin" /> : "连接站点"}</button></section>
     {content && <div className="studio-layout">
       <section className="studio-form">
+        <EditorSection title="站点导航与公告">
+          <Field label="公告正文" value={content.site.announcement} onChange={value => patch("site", "announcement", value)} />
+          <Field label="公告链接文字" value={content.site.announcementLink.label} onChange={value => setContent({ ...content, site: { ...content.site, announcementLink: { ...content.site.announcementLink, label: value } } })} />
+          <Field label="公告链接地址" value={content.site.announcementLink.href} onChange={value => setContent({ ...content, site: { ...content.site, announcementLink: { ...content.site.announcementLink, href: value } } })} />
+          <Field label="公告代码 / 短标签" value={content.site.announcementCode} onChange={value => patch("site", "announcementCode", value)} />
+          <Field label="公告尾部文字" value={content.site.announcementSuffix} onChange={value => patch("site", "announcementSuffix", value)} />
+          {content.site.navigation.map((link, index) => <div className="repeat-card" key={`${link.label}-${index}`}><button className="remove" aria-label="删除导航" onClick={() => setContent({ ...content, site: { ...content.site, navigation: content.site.navigation.filter((_, itemIndex) => itemIndex !== index) } })}><Trash2 /></button><Field label="导航名称" value={link.label} onChange={value => setContent({ ...content, site: { ...content.site, navigation: content.site.navigation.map((item, itemIndex) => itemIndex === index ? { ...item, label: value } : item) } })} /><Field label="导航地址" value={link.href} onChange={value => setContent({ ...content, site: { ...content.site, navigation: content.site.navigation.map((item, itemIndex) => itemIndex === index ? { ...item, href: value } : item) } })} /></div>)}
+          <button className="add-row" onClick={() => setContent({ ...content, site: { ...content.site, navigation: [...content.site.navigation, { label: "新导航", href: "#" }] } })}><Plus />添加导航</button>
+        </EditorSection>
         <EditorSection title="品牌与首页">
           <Field label="站点名称" value={content.site.brandName} onChange={value => patch("site", "brandName", value)} />
           <Field label="头像 / Logo 图片地址" value={content.site.brandImage} onChange={value => patch("site", "brandImage", value)} />
+          <Field label="浏览器页面标题" value={content.ui.pageTitle} onChange={value => setContent({ ...content, ui: { ...content.ui, pageTitle: value } })} />
           <Field label="首页大标题" value={content.hero.title} onChange={value => patch("hero", "title", value)} />
           <Field label="一句话定位" value={content.hero.kicker} onChange={value => patch("hero", "kicker", value)} />
           <Field area label="首页介绍" value={content.hero.description} onChange={value => patch("hero", "description", value)} />
           <Field label="标签（用逗号分隔）" value={content.hero.tags.join(", ")} onChange={value => patch("hero", "tags", value.split(",").map(item => item.trim()).filter(Boolean))} />
+          <Field label="主按钮文字" value={content.hero.primaryAction.label} onChange={value => setContent({ ...content, hero: { ...content.hero, primaryAction: { ...content.hero.primaryAction, label: value } } })} />
+          <Field label="主按钮地址" value={content.hero.primaryAction.href} onChange={value => setContent({ ...content, hero: { ...content.hero, primaryAction: { ...content.hero.primaryAction, href: value } } })} />
+          <Field label="次按钮文字" value={content.hero.secondaryAction.label} onChange={value => setContent({ ...content, hero: { ...content.hero, secondaryAction: { ...content.hero.secondaryAction, label: value } } })} />
+          <Field label="次按钮地址" value={content.hero.secondaryAction.href} onChange={value => setContent({ ...content, hero: { ...content.hero, secondaryAction: { ...content.hero.secondaryAction, href: value } } })} />
+        </EditorSection>
+        <EditorSection title="区块标题">
+          {(["articles", "products", "directory"] as const).map(section => <div className="repeat-card" key={section}><Field label="区块眉题" value={content.sections[section].eyebrow} onChange={value => setContent({ ...content, sections: { ...content.sections, [section]: { ...content.sections[section], eyebrow: value } } })} /><Field label="区块标题" value={content.sections[section].title} onChange={value => setContent({ ...content, sections: { ...content.sections, [section]: { ...content.sections[section], title: value } } })} /><Field area label="区块说明" value={content.sections[section].description} onChange={value => setContent({ ...content, sections: { ...content.sections, [section]: { ...content.sections[section], description: value } } })} /></div>)}
         </EditorSection>
         <EditorSection title="关于我">
           <Field label="关于标题" value={content.author.title} onChange={value => patch("author", "title", value)} />
@@ -56,7 +73,26 @@ export function TenantStudio() {
         </EditorSection>
         <EditorSection title="社交链接">
           {content.socials.map((social, index) => <div className="repeat-card" key={social.id}><button className="remove" aria-label="删除社交链接" onClick={() => setContent({ ...content, socials: content.socials.filter((_, itemIndex) => itemIndex !== index) })}><Trash2 /></button><Field label="平台" value={social.label} onChange={value => setContent({ ...content, socials: content.socials.map((item, itemIndex) => itemIndex === index ? { ...item, label: value } : item) })} /><Field label="账号" value={social.handle} onChange={value => setContent({ ...content, socials: content.socials.map((item, itemIndex) => itemIndex === index ? { ...item, handle: value } : item) })} /><Field label="链接" value={social.href} onChange={value => setContent({ ...content, socials: content.socials.map((item, itemIndex) => itemIndex === index ? { ...item, href: value } : item) })} /><Field label="图标地址" value={social.icon} onChange={value => setContent({ ...content, socials: content.socials.map((item, itemIndex) => itemIndex === index ? { ...item, icon: value } : item) })} /></div>)}
-          <button className="add-row" onClick={() => setContent({ ...content, socials: [...content.socials, { id: Date.now(), icon: "/sites/hooosberg-com-db2980a2/root-8a5edab2/icons/github.svg", label: "GitHub", handle: "your-name", href: "#" }] })}><Plus />添加社交链接</button>
+          <button className="add-row" onClick={() => setContent({ ...content, socials: [...content.socials, { id: Date.now(), icon: "/xmhua-mark.svg", label: "GitHub", handle: "your-name", href: "#" }] })}><Plus />添加社交链接</button>
+        </EditorSection>
+        <EditorSection title="能力与资源">
+          <Field label="小标题" value={content.directory.kicker} onChange={value => setContent({ ...content, directory: { ...content.directory, kicker: value } })} />
+          <Field label="标题" value={content.directory.title} onChange={value => setContent({ ...content, directory: { ...content.directory, title: value } })} />
+          <Field area label="说明" value={content.directory.description} onChange={value => setContent({ ...content, directory: { ...content.directory, description: value } })} />
+          {content.directory.links.map((link, index) => <div className="repeat-card" key={link.id}><button className="remove" aria-label="删除资源" onClick={() => setContent({ ...content, directory: { ...content.directory, links: content.directory.links.filter((_, itemIndex) => itemIndex !== index) } })}><Trash2 /></button><Field label="名称" value={link.title} onChange={value => setContent({ ...content, directory: { ...content.directory, links: content.directory.links.map((item, itemIndex) => itemIndex === index ? { ...item, title: value } : item) } })} /><Field area label="说明" value={link.description} onChange={value => setContent({ ...content, directory: { ...content.directory, links: content.directory.links.map((item, itemIndex) => itemIndex === index ? { ...item, description: value } : item) } })} /><Field label="链接" value={link.href} onChange={value => setContent({ ...content, directory: { ...content.directory, links: content.directory.links.map((item, itemIndex) => itemIndex === index ? { ...item, href: value } : item) } })} /></div>)}
+          <button className="add-row" onClick={() => setContent({ ...content, directory: { ...content.directory, links: [...content.directory.links, { id: Date.now(), icon: "search", title: "新资源", description: "资源说明", href: "#" }] } })}><Plus />添加资源</button>
+        </EditorSection>
+        <EditorSection title="页脚与界面文字">
+          <Field label="页脚介绍" value={content.footer.description} onChange={value => patch("footer", "description", value)} />
+          <Field label="页脚说明" value={content.footer.note} onChange={value => patch("footer", "note", value)} />
+          <Field label="版权信息" value={content.footer.copyright} onChange={value => patch("footer", "copyright", value)} />
+          <Field label="产品主按钮" value={content.ui.productStoreLabel} onChange={value => setContent({ ...content, ui: { ...content.ui, productStoreLabel: value } })} />
+          <Field label="产品次按钮" value={content.ui.productNotesLabel} onChange={value => setContent({ ...content, ui: { ...content.ui, productNotesLabel: value } })} />
+          <Field label="Email 名称" value={content.ui.emailLink.label} onChange={value => setContent({ ...content, ui: { ...content.ui, emailLink: { ...content.ui.emailLink, label: value } } })} />
+          <Field label="Email 地址" value={content.ui.emailLink.href} onChange={value => setContent({ ...content, ui: { ...content.ui, emailLink: { ...content.ui.emailLink, href: value } } })} />
+          <label className="studio-check"><input type="checkbox" checked={content.ui.analytics.enabled} onChange={event => setContent({ ...content, ui: { ...content.ui, analytics: { ...content.ui.analytics, enabled: event.target.checked } } })} />启用统计授权弹层</label>
+          <Field label="统计弹层标题" value={content.ui.analytics.title} onChange={value => setContent({ ...content, ui: { ...content.ui, analytics: { ...content.ui.analytics, title: value } } })} />
+          <Field area label="统计弹层说明" value={content.ui.analytics.description} onChange={value => setContent({ ...content, ui: { ...content.ui, analytics: { ...content.ui.analytics, description: value } } })} />
         </EditorSection>
       </section>
       <aside className="publish-panel"><p>当前站点</p><strong>{content.site.brandName}</strong><span>/{slug}</span><button className="saas-primary" onClick={save} disabled={state === "saving"}>{state === "saving" ? <LoaderCircle className="spin" /> : <Save />}保存并发布</button><div className={`saas-notice ${state}`} role="status">{message}</div></aside>

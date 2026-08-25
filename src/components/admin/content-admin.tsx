@@ -18,7 +18,7 @@ async function api<T>(path: string, key: string, init?: RequestInit): Promise<T>
 export function ContentAdmin() {
   const [key, setKey] = useState("");
   const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [tenant, setTenant] = useState("hooosberg");
+  const [tenant, setTenant] = useState("xmhua");
   const [document, setDocument] = useState("");
   const [state, setState] = useState<State>("idle");
   const [message, setMessage] = useState("输入管理密钥，连接内容数据库。");

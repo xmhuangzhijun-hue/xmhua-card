@@ -2,6 +2,8 @@
 
 The homepage is served through `GET /api/content`. Use `GET /api/content?tenant=<slug>` for another tenant. The default is controlled by `DEFAULT_TENANT_SLUG`.
 
+The public React page is a presentation shell. All visible identity, copy, navigation, lists, links, image URLs, button labels, footer content, and analytics-consent text come from this API. The backend-owned fallback seed contains the XMHUA site and is used only for public reads when PostgreSQL is not configured.
+
 ## Stack
 
 - Next.js 16 Route Handlers
@@ -15,6 +17,8 @@ The homepage is served through `GET /api/content`. Use `GET /api/content?tenant=
 Every content row belongs to a record in `tenants`; tenant deletion cascades only to that tenant's content. The public API, management reads, and management writes always resolve a tenant before querying content.
 
 Set `ADMIN_API_KEY` to a long random value, then open `/admin`. The key is sent as an `Authorization: Bearer` header and kept in browser `sessionStorage`, so closing the tab session clears it. It is never stored in the content database.
+
+`/studio` provides a form-based editor for routine tenant updates. `/admin` provides the complete validated content document editor for every API-driven field.
 
 Management endpoints:
 

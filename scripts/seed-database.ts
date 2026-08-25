@@ -12,8 +12,9 @@ const db = drizzle(client);
 const { articles: articleData, products: productData, directory, socials, ...settings } = seedHomepageContent;
 
 await db.transaction(async tx => {
-  const [tenant] = await tx.insert(tenants).values({ slug: "hooosberg", name: "湖森堡 AI" })
-    .onConflictDoUpdate({ target: tenants.slug, set: { name: "湖森堡 AI", active: true, updatedAt: new Date() } }).returning();
+  const slug = process.env.DEFAULT_TENANT_SLUG ?? "xmhua";
+  const [tenant] = await tx.insert(tenants).values({ slug, name: "XMHUA" })
+    .onConflictDoUpdate({ target: tenants.slug, set: { name: "XMHUA", active: true, updatedAt: new Date() } }).returning();
   const tenantId = tenant.id;
   await tx.insert(siteSettings).values({ tenantId, key: "homepage", value: { ...settings, directory: { ...directory, links: undefined } } })
     .onConflictDoUpdate({ target: [siteSettings.tenantId, siteSettings.key], set: { value: { ...settings, directory: { ...directory, links: undefined } }, updatedAt: new Date() } });

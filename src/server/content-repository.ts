@@ -6,7 +6,7 @@ import { seedHomepageContent } from "./seed-content";
 
 export type ContentSource = "postgresql" | "seed";
 
-export const defaultTenantSlug = process.env.DEFAULT_TENANT_SLUG ?? "hooosberg";
+export const defaultTenantSlug = process.env.DEFAULT_TENANT_SLUG ?? "xmhua";
 
 export async function getHomepageContent(tenantSlug = defaultTenantSlug): Promise<{ data: HomepageContent; source: ContentSource }> {
   const db = getDatabase();

@@ -3,8 +3,8 @@ import "./globals.css";
 import "./hooosberg-source.css";
 
 export const metadata: Metadata = {
-  title: "湖森堡AI_hooosberg | 哲学 艺术 AI",
-  description: "Hooosberg homepage frontend emulation",
+  title: "",
+  description: "",
 };
 
 export default function RootLayout({

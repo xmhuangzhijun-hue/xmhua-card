@@ -28,6 +28,7 @@ function settingsFrom(content: HomepageContent) {
     },
     author: content.author,
     footer: content.footer,
+    ui: content.ui,
   };
 }
 
