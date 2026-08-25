@@ -45,8 +45,15 @@ export const seedHomepageContent: HomepageContent = {
   },
   author: { kicker: "关于 XMHUA", title: "一个持续把 AI 能力做成真实产品的人。", paragraphs: ["我关注 AI 产品、Agent 工程、数据工具和个人数字系统，习惯从真实用户路径出发，把想法做成可以运行、可以验证的产品。", "这个网站用于公开记录项目、方法和阶段性成果。所有展示内容都由后端内容系统管理，并会随着实践持续更新。"] },
   socials: [
-    { id: 1, icon: mark, label: "GitHub", handle: "XMHUA", href: "#" }, { id: 2, icon: mark, label: "Email", handle: "联系合作", href: "#" },
-    { id: 3, icon: mark, label: "Blog", handle: "开发记录", href: "#articles" }, { id: 4, icon: mark, label: "Products", handle: "代表项目", href: "#products" },
+    { id: 1, icon: mark, label: "GitHub", handle: "XMHUA", href: "#" },
+    { id: 2, icon: mark, label: "X", handle: "XMHUA", href: "#" },
+    { id: 3, icon: mark, label: "YouTube", handle: "XMHUA", href: "#" },
+    { id: 4, icon: mark, label: "TikTok", handle: "XMHUA", href: "#" },
+    { id: 5, icon: mark, label: "Telegram", handle: "XMHUA", href: "#" },
+    { id: 6, icon: mark, label: "抖音", handle: "XMHUA", href: "#" },
+    { id: 7, icon: mark, label: "快手", handle: "XMHUA", href: "#" },
+    { id: 8, icon: mark, label: "小红书", handle: "XMHUA", href: "#" },
+    { id: 9, icon: mark, label: "B站", handle: "XMHUA", href: "#" },
   ],
   footer: { description: "AI 产品、Agent、数据工具与长期构建记录。", legalLinks: [{ label: "隐私政策", href: "#" }, { label: "服务条款", href: "#" }], note: "公开内容以当前页面为准。", copyright: "© 2026 XMHUA." },
   ui: {
