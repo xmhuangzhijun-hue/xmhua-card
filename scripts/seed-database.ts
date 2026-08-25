@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
+import { eq } from "drizzle-orm";
 import postgres from "postgres";
-import { articles, directoryLinks, products, siteSettings, socialLinks } from "../src/db/schema";
+import { articles, directoryLinks, products, siteSettings, socialLinks, tenants } from "../src/db/schema";
 import { seedHomepageContent } from "../src/server/seed-content";
 
 const connectionString = process.env.DATABASE_URL;
@@ -11,24 +12,27 @@ const db = drizzle(client);
 const { articles: articleData, products: productData, directory, socials, ...settings } = seedHomepageContent;
 
 await db.transaction(async tx => {
-  await tx.insert(siteSettings).values({ id: 1, key: "homepage", value: { ...settings, directory: { ...directory, links: undefined } } })
-    .onConflictDoUpdate({ target: siteSettings.key, set: { value: { ...settings, directory: { ...directory, links: undefined } } } });
+  const [tenant] = await tx.insert(tenants).values({ slug: "hooosberg", name: "湖森堡 AI" })
+    .onConflictDoUpdate({ target: tenants.slug, set: { name: "湖森堡 AI", active: true, updatedAt: new Date() } }).returning();
+  const tenantId = tenant.id;
+  await tx.insert(siteSettings).values({ tenantId, key: "homepage", value: { ...settings, directory: { ...directory, links: undefined } } })
+    .onConflictDoUpdate({ target: [siteSettings.tenantId, siteSettings.key], set: { value: { ...settings, directory: { ...directory, links: undefined } }, updatedAt: new Date() } });
+  await tx.delete(articles).where(eq(articles.tenantId, tenantId));
+  await tx.delete(products).where(eq(products.tenantId, tenantId));
+  await tx.delete(directoryLinks).where(eq(directoryLinks.tenantId, tenantId));
+  await tx.delete(socialLinks).where(eq(socialLinks.tenantId, tenantId));
 
   for (const [index, article] of articleData.entries()) {
-    await tx.insert(articles).values({ ...article, sortOrder: index + 1, published: true })
-      .onConflictDoUpdate({ target: articles.id, set: { ...article, sortOrder: index + 1, published: true } });
+    await tx.insert(articles).values({ tenantId, category: article.category, title: article.title, excerpt: article.excerpt, publishedAt: article.publishedAt, href: article.href, sortOrder: index + 1, published: true });
   }
   for (const [index, product] of productData.entries()) {
-    await tx.insert(products).values({ ...product, sortOrder: index + 1, published: true })
-      .onConflictDoUpdate({ target: products.id, set: { ...product, sortOrder: index + 1, published: true } });
+    await tx.insert(products).values({ tenantId, image: product.image, name: product.name, subtitle: product.subtitle, summary: product.summary, platform: product.platform, href: product.href, sortOrder: index + 1, published: true });
   }
   for (const [index, link] of directory.links.entries()) {
-    await tx.insert(directoryLinks).values({ ...link, sortOrder: index + 1 })
-      .onConflictDoUpdate({ target: directoryLinks.id, set: { ...link, sortOrder: index + 1 } });
+    await tx.insert(directoryLinks).values({ tenantId, icon: link.icon, title: link.title, description: link.description, href: link.href, sortOrder: index + 1 });
   }
   for (const [index, social] of socials.entries()) {
-    await tx.insert(socialLinks).values({ ...social, sortOrder: index + 1 })
-      .onConflictDoUpdate({ target: socialLinks.id, set: { ...social, sortOrder: index + 1 } });
+    await tx.insert(socialLinks).values({ tenantId, icon: social.icon, label: social.label, handle: social.handle, href: social.href, sortOrder: index + 1 });
   }
 });
 

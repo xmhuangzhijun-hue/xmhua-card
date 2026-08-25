@@ -1,0 +1,27 @@
+import { NextResponse } from "next/server";
+import { createTenantSchema } from "@/lib/admin-schema";
+import { requireAdmin } from "@/server/admin-auth";
+import { createTenant, DatabaseRequiredError, listTenants } from "@/server/admin-repository";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(request: Request) {
+  const denied = requireAdmin(request); if (denied) return denied;
+  try { return NextResponse.json({ data: await listTenants() }); }
+  catch (error) { return adminError(error); }
+}
+
+export async function POST(request: Request) {
+  const denied = requireAdmin(request); if (denied) return denied;
+  try {
+    const input = createTenantSchema.parse(await request.json());
+    return NextResponse.json({ data: await createTenant(input) }, { status: 201 });
+  } catch (error) { return adminError(error); }
+}
+
+function adminError(error: unknown) {
+  if (error instanceof DatabaseRequiredError) return NextResponse.json({ error: "DATABASE_REQUIRED" }, { status: 503 });
+  if (error instanceof Error && error.message === "TENANT_EXISTS") return NextResponse.json({ error: "TENANT_EXISTS" }, { status: 409 });
+  console.error("Tenant administration failed", error);
+  return NextResponse.json({ error: "ADMIN_REQUEST_FAILED" }, { status: 400 });
+}

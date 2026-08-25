@@ -16,7 +16,8 @@ export function HooosbergClone() {
   useEffect(()=>{ document.documentElement.dataset.theme=dark ? "dark" : "light"; },[dark]);
   useEffect(()=>{
     const controller=new AbortController();
-    fetch("/api/content",{signal:controller.signal})
+    const tenant=new URLSearchParams(window.location.search).get("tenant");
+    fetch(`/api/content${tenant ? `?tenant=${encodeURIComponent(tenant)}` : ""}`,{signal:controller.signal})
       .then(async response=>{ if(!response.ok) throw new Error("content request failed"); return response.json(); })
       .then(payload=>{
         setContent(homepageContentSchema.parse(payload.data));

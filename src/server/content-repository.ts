@@ -1,25 +1,34 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { getDatabase } from "@/db/client";
-import { articles, directoryLinks, products, siteSettings, socialLinks } from "@/db/schema";
+import { articles, directoryLinks, products, siteSettings, socialLinks, tenants } from "@/db/schema";
 import { homepageContentSchema, type HomepageContent } from "@/lib/content-schema";
 import { seedHomepageContent } from "./seed-content";
 
 export type ContentSource = "postgresql" | "seed";
 
-export async function getHomepageContent(): Promise<{ data: HomepageContent; source: ContentSource }> {
+export const defaultTenantSlug = process.env.DEFAULT_TENANT_SLUG ?? "hooosberg";
+
+export async function getHomepageContent(tenantSlug = defaultTenantSlug): Promise<{ data: HomepageContent; source: ContentSource }> {
   const db = getDatabase();
-  if (!db) return { data: seedHomepageContent, source: "seed" };
+  if (!db) {
+    if (tenantSlug !== defaultTenantSlug) throw new Error("Tenant is unavailable without PostgreSQL");
+    return { data: seedHomepageContent, source: "seed" };
+  }
+
+  const tenantRows = await db.select().from(tenants).where(and(eq(tenants.slug, tenantSlug), eq(tenants.active, true))).limit(1);
+  const tenant = tenantRows[0];
+  if (!tenant) throw new Error("Tenant not found");
 
   const [settingsRows, articleRows, productRows, directoryRows, socialRows] = await Promise.all([
-    db.select().from(siteSettings).where(eq(siteSettings.key, "homepage")).limit(1),
-    db.select().from(articles).where(eq(articles.published, true)).orderBy(asc(articles.sortOrder)),
-    db.select().from(products).where(eq(products.published, true)).orderBy(asc(products.sortOrder)),
-    db.select().from(directoryLinks).orderBy(asc(directoryLinks.sortOrder)),
-    db.select().from(socialLinks).orderBy(asc(socialLinks.sortOrder)),
+    db.select().from(siteSettings).where(and(eq(siteSettings.tenantId, tenant.id), eq(siteSettings.key, "homepage"))).limit(1),
+    db.select().from(articles).where(and(eq(articles.tenantId, tenant.id), eq(articles.published, true))).orderBy(asc(articles.sortOrder)),
+    db.select().from(products).where(and(eq(products.tenantId, tenant.id), eq(products.published, true))).orderBy(asc(products.sortOrder)),
+    db.select().from(directoryLinks).where(eq(directoryLinks.tenantId, tenant.id)).orderBy(asc(directoryLinks.sortOrder)),
+    db.select().from(socialLinks).where(eq(socialLinks.tenantId, tenant.id)).orderBy(asc(socialLinks.sortOrder)),
   ]);
 
   const settings = settingsRows[0]?.value;
-  if (!settings || articleRows.length === 0 || productRows.length === 0) {
+  if (!settings) {
     throw new Error("PostgreSQL content is not seeded");
   }
 
