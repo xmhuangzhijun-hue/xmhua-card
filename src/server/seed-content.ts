@@ -12,7 +12,7 @@ export const seedHomepageContent: HomepageContent = {
     navigation: [
       { label: "笔记", href: "#articles" }, { label: "产品", href: "#products" },
       { label: "AI导航", href: "#ai-navigation" }, { label: "联系", href: "#about" },
-      { label: "定制服务", href: "#" },
+      { label: "定制服务", href: "/start" },
     ],
   },
   hero: {

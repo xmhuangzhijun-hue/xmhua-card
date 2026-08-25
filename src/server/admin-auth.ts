@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
 export function requireAdmin(request: Request): NextResponse | null {
@@ -12,4 +12,15 @@ export function requireAdmin(request: Request): NextResponse | null {
     return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
   return null;
+}
+
+export function hashTenantToken(token: string) {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+export function tokenMatches(token: string, expectedHash: string | null) {
+  if (!expectedHash) return false;
+  const supplied = Buffer.from(hashTenantToken(token), "hex");
+  const expected = Buffer.from(expectedHash, "hex");
+  return supplied.length === expected.length && timingSafeEqual(supplied, expected);
 }

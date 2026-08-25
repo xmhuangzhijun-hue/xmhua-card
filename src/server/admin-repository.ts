@@ -4,6 +4,9 @@ import { articles, directoryLinks, products, siteSettings, socialLinks, tenants 
 import type { HomepageContent } from "@/lib/content-schema";
 import { getHomepageContent } from "./content-repository";
 import { seedHomepageContent } from "./seed-content";
+import { createStarterContent } from "./starter-content";
+import { hashTenantToken, tokenMatches } from "./admin-auth";
+import { randomBytes } from "node:crypto";
 
 export class DatabaseRequiredError extends Error {}
 export class TenantNotFoundError extends Error {}
@@ -28,8 +31,10 @@ function settingsFrom(content: HomepageContent) {
   };
 }
 
-async function replaceTenantContent(db: ReturnType<typeof databaseOrThrow>, tenantId: number, content: HomepageContent) {
-  await db.transaction(async tx => {
+type Database = ReturnType<typeof databaseOrThrow>;
+type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+
+async function insertTenantContent(tx: Transaction, tenantId: number, content: HomepageContent) {
     await tx.insert(siteSettings).values({ tenantId, key: "homepage", value: settingsFrom(content), updatedAt: new Date() })
       .onConflictDoUpdate({ target: [siteSettings.tenantId, siteSettings.key], set: { value: settingsFrom(content), updatedAt: new Date() } });
     await tx.delete(articles).where(eq(articles.tenantId, tenantId));
@@ -41,7 +46,35 @@ async function replaceTenantContent(db: ReturnType<typeof databaseOrThrow>, tena
     if (content.directory.links.length) await tx.insert(directoryLinks).values(content.directory.links.map((item, index) => ({ tenantId, icon: item.icon, title: item.title, description: item.description, href: item.href, sortOrder: index + 1 })));
     if (content.socials.length) await tx.insert(socialLinks).values(content.socials.map((item, index) => ({ tenantId, icon: item.icon, label: item.label, handle: item.handle, href: item.href, sortOrder: index + 1 })));
     await tx.update(tenants).set({ updatedAt: new Date() }).where(eq(tenants.id, tenantId));
+}
+
+async function replaceTenantContent(db: Database, tenantId: number, content: HomepageContent) {
+  await db.transaction(async tx => {
+    await insertTenantContent(tx, tenantId, content);
   });
+}
+
+export async function createSelfServiceTenant(input: { slug: string; name: string }) {
+  if (process.env.SELF_SERVICE_SIGNUP_ENABLED !== "true") throw new Error("SIGNUP_DISABLED");
+  const db = databaseOrThrow();
+  const token = `site_${randomBytes(24).toString("base64url")}`;
+  const existing = await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.slug, input.slug)).limit(1);
+  if (existing.length) throw new Error("TENANT_EXISTS");
+  const tenant = await db.transaction(async tx => {
+    const [created] = await tx.insert(tenants).values({ slug: input.slug, name: input.name, ownerTokenHash: hashTenantToken(token) }).returning();
+    await insertTenantContent(tx, created.id, createStarterContent(input.name));
+    return created;
+  });
+  return { tenant: { slug: tenant.slug, name: tenant.name }, token };
+}
+
+export async function requireTenantOwner(slug: string, token: string) {
+  const db = databaseOrThrow();
+  const [tenant] = await db.select({ id: tenants.id, ownerTokenHash: tenants.ownerTokenHash }).from(tenants)
+    .where(and(eq(tenants.slug, slug), eq(tenants.active, true))).limit(1);
+  if (!tenant) throw new TenantNotFoundError("Tenant not found");
+  if (!tokenMatches(token, tenant.ownerTokenHash)) throw new Error("TENANT_UNAUTHORIZED");
+  return tenant;
 }
 
 export async function listTenants() {

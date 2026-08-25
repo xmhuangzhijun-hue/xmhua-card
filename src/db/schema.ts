@@ -2,6 +2,7 @@ import { boolean, index, integer, jsonb, pgTable, serial, text, timestamp, uniqu
 
 export const tenants = pgTable("tenants", {
   id: serial("id").primaryKey(), slug: text("slug").notNull().unique(), name: text("name").notNull(),
+  ownerTokenHash: text("owner_token_hash"),
   active: boolean("active").default(true).notNull(), createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
