@@ -1,6 +1,6 @@
 {
   "name": "xmhua-card",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "XMHUA public profile with an API-driven content backend",
   "author": "XMHUA contributors",
@@ -36,7 +36,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx scripts/seed-database.ts"
+    "db:seed": "tsx scripts/seed-database.ts",
+    "security:check": "tsx scripts/security-regression.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
@@ -53,12 +54,18 @@
     "tw-animate-css": "^1.4.0",
     "zod": "^4.4.3"
   },
+  "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": "$esbuild"
+    }
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.10",
+    "esbuild": "^0.25.12",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "tailwindcss": "^4",

@@ -42,12 +42,15 @@ npm run dev
 | `DATABASE_URL` | PostgreSQL 连接地址；管理写入必需 |
 | `DEFAULT_TENANT_SLUG` | 未指定租户时使用的默认 slug |
 | `ADMIN_API_KEY` | 平台管理接口的 Bearer 密钥；写入必需 |
-| `SELF_SERVICE_SIGNUP_ENABLED` | 是否开放访客自助创建站点 |
-| `LOCAL_OWNER_ACCESS` | 仅限本机开发，允许 loopback 地址免输管理密钥 |
+| `SELF_SERVICE_SIGNUP_ENABLED` | 是否开放访客自助创建站点，默认关闭 |
+| `SIGNUP_INVITE_CODE` | 自助创建所需的私密邀请码 |
+| `SIGNUP_RATE_LIMIT` / `SIGNUP_RATE_WINDOW_SECONDS` | 单个限流键在时间窗口内可尝试的次数 |
+| `MAX_TENANTS` | 数据库允许的租户总量上限 |
+| `TRUST_PROXY_HEADERS` | 仅在可信反向代理会覆盖转发头时设为 `true` |
 | `NEXT_PUBLIC_API_BASE_URL` | 前端调用的独立后端根地址；同源部署留空 |
 | `CORS_ALLOWED_ORIGIN` | 后端允许访问的独立前端 origin；同源部署留空 |
 
-`LOCAL_OWNER_ACCESS=true` 只能用于可信的本机环境，不要在公网部署或反向代理环境开启。
+平台管理和租户工作台始终要求 Bearer 凭据，本机访问也不例外。Docker Compose 默认只绑定 `127.0.0.1`；若要公开部署，应由受控反向代理提供 TLS 和外层限流。
 
 ## 内容与权限数据流
 
@@ -57,7 +60,7 @@ npm run dev
 
 平台管理员 -> /admin -> /api/admin/* -> 管理密钥校验 -> PostgreSQL 事务
 租户拥有者 -> /studio -> /api/studio/* -> 租户令牌校验 -> PostgreSQL 事务
-新租户     -> /start -> /api/signup -> 创建租户、内容和一次性管理令牌
+新租户     -> /start -> 邀请码与限流 -> /api/signup -> 创建租户、内容和一次性管理令牌
 ```
 
 前端组件只负责渲染接口返回的数据。完整 HTTP 契约见 [docs/API.md](docs/API.md)，数据库说明见 [docs/BACKEND.md](docs/BACKEND.md)。
@@ -80,7 +83,7 @@ npm run db:migrate
 
 ## 部署
 
-部署到支持 Next.js 的平台，并提供 PostgreSQL 数据库与环境变量。生产环境至少应配置 `DATABASE_URL`、`DEFAULT_TENANT_SLUG` 和 `ADMIN_API_KEY`；开放自助建站前先完成数据库迁移。管理密钥和租户令牌都不应写入源码、构建日志或客户端默认配置。
+部署到支持 Next.js 的平台，并提供 PostgreSQL 数据库与环境变量。生产环境至少应配置 `DATABASE_URL`、`DEFAULT_TENANT_SLUG` 和 `ADMIN_API_KEY`；开放自助建站前还必须配置 `SIGNUP_INVITE_CODE`、合理限额并完成数据库迁移。应用内限流是单进程防线，多实例公网部署仍应在网关层增加共享限流。管理密钥、邀请码和租户令牌都不应写入源码、构建日志或客户端默认配置。
 
 ## 开源与来源
 

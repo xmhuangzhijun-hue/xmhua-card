@@ -1,7 +1,11 @@
 import { z } from "zod";
 
-const linkSchema = z.object({ label: z.string(), href: z.string() });
-const sectionHeadingSchema = z.object({ eyebrow: z.string(), title: z.string(), description: z.string(), action: linkSchema.optional() });
+const shortText = z.string().max(200);
+const longText = z.string().max(10_000);
+const href = z.string().max(2_048);
+const itemId = z.number().int().nonnegative();
+const linkSchema = z.object({ label: shortText, href });
+const sectionHeadingSchema = z.object({ eyebrow: shortText, title: shortText, description: longText, action: linkSchema.optional() });
 
 export const defaultHomepageUi = {
   pageTitle: "XMHUA",
@@ -24,39 +28,39 @@ export const defaultHomepageUi = {
 
 export const homepageContentSchema = z.object({
   site: z.object({
-    brandName: z.string(),
-    brandImage: z.string(),
-    announcement: z.string(),
+    brandName: shortText,
+    brandImage: href,
+    announcement: longText,
     announcementLink: linkSchema,
-    announcementCode: z.string(),
-    announcementSuffix: z.string().default(""),
-    navigation: z.array(linkSchema),
+    announcementCode: shortText,
+    announcementSuffix: longText.default(""),
+    navigation: z.array(linkSchema).max(30),
   }),
   hero: z.object({
-    kicker: z.string(),
-    title: z.string(),
-    description: z.string(),
+    kicker: shortText,
+    title: shortText,
+    description: longText,
     primaryAction: linkSchema,
     secondaryAction: linkSchema,
-    tags: z.array(z.string()),
+    tags: z.array(shortText).max(30),
   }),
   sections: z.object({
     articles: sectionHeadingSchema,
     products: sectionHeadingSchema,
     directory: sectionHeadingSchema,
   }),
-  articles: z.array(z.object({ id: z.number(), category: z.string(), title: z.string(), excerpt: z.string(), publishedAt: z.string(), href: z.string() })),
-  products: z.array(z.object({ id: z.number(), image: z.string(), name: z.string(), subtitle: z.string(), summary: z.string(), platform: z.string(), href: z.string() })),
-  directory: z.object({ kicker: z.string(), title: z.string(), description: z.string(), primaryAction: linkSchema, secondaryAction: linkSchema, links: z.array(z.object({ id: z.number(), icon: z.enum(["search", "code", "layers", "shield"]), title: z.string(), description: z.string(), href: z.string() })) }),
-  author: z.object({ kicker: z.string(), title: z.string(), paragraphs: z.array(z.string()) }),
-  socials: z.array(z.object({ id: z.number(), icon: z.string(), label: z.string(), handle: z.string(), href: z.string() })),
-  footer: z.object({ description: z.string(), legalLinks: z.array(linkSchema), note: z.string(), copyright: z.string() }),
+  articles: z.array(z.object({ id: itemId, category: shortText, title: shortText, excerpt: longText, publishedAt: shortText, href })).max(100),
+  products: z.array(z.object({ id: itemId, image: href, name: shortText, subtitle: shortText, summary: longText, platform: shortText, href })).max(50),
+  directory: z.object({ kicker: shortText, title: shortText, description: longText, primaryAction: linkSchema, secondaryAction: linkSchema, links: z.array(z.object({ id: itemId, icon: z.enum(["search", "code", "layers", "shield"]), title: shortText, description: longText, href })).max(50) }),
+  author: z.object({ kicker: shortText, title: shortText, paragraphs: z.array(longText).max(20) }),
+  socials: z.array(z.object({ id: itemId, icon: href, label: shortText, handle: shortText, href })).max(50),
+  footer: z.object({ description: longText, legalLinks: z.array(linkSchema).max(30), note: longText, copyright: shortText }),
   ui: z.object({
-    pageTitle: z.string(), languageLabel: z.string(), moreLabel: z.string(), moreLinks: z.array(linkSchema),
-    productStoreLabel: z.string(), productNotesLabel: z.string(), emailLink: linkSchema,
+    pageTitle: shortText, languageLabel: shortText, moreLabel: shortText, moreLinks: z.array(linkSchema).max(30),
+    productStoreLabel: shortText, productNotesLabel: shortText, emailLink: linkSchema,
     analytics: z.object({
-      enabled: z.boolean(), title: z.string(), description: z.string(), privacyLink: linkSchema,
-      cookieLink: linkSchema, rejectLabel: z.string(), acceptLabel: z.string(),
+      enabled: z.boolean(), title: shortText, description: longText, privacyLink: linkSchema,
+      cookieLink: linkSchema, rejectLabel: shortText, acceptLabel: shortText,
     }),
   }).default(defaultHomepageUi),
 });

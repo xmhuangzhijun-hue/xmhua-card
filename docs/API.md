@@ -2,7 +2,7 @@
 
 API 根地址由部署决定，例如 `https://api.example.com`。本文中的路径都相对于根地址。请求与响应使用 UTF-8 JSON；写请求必须发送 `Content-Type: application/json`。
 
-后端响应头 `X-API-Version: 1.0.0`。同一主版本内只做向后兼容扩展；删除字段、改变字段类型或语义需要发布新的 API 主版本。
+后端响应头 `X-API-Version: 1.1.0`。同一主版本内只做向后兼容扩展；删除字段、改变字段类型或语义需要发布新的 API 主版本。
 
 ## 通用约定
 
@@ -34,12 +34,12 @@ API 根地址由部署决定，例如 `https://api.example.com`。本文中的�
 
 ### `POST /api/signup`
 
-仅当 `SELF_SERVICE_SIGNUP_ENABLED=true` 时可用。
+仅当 `SELF_SERVICE_SIGNUP_ENABLED=true` 且服务端配置了 `SIGNUP_INVITE_CODE` 时可用。接口同时应用请求体上限、窗口限流和租户总量上限。
 
 请求：
 
 ```json
-{ "slug": "my-blog", "name": "我的博客" }
+{ "slug": "my-blog", "name": "我的博客", "inviteCode": "private-invite" }
 ```
 
 成功 `201`：
@@ -53,11 +53,11 @@ API 根地址由部署决定，例如 `https://api.example.com`。本文中的�
 }
 ```
 
-令牌只返回一次，数据库仅保存 SHA-256 摘要。错误：`400 INVALID_SIGNUP`、`409 TENANT_EXISTS`、`503 DATABASE_REQUIRED`、`503 SIGNUP_DISABLED`。
+令牌只返回一次，数据库仅保存 SHA-256 摘要。错误包括：`400 INVALID_SIGNUP`、`403 INVALID_INVITE_CODE`、`409 TENANT_EXISTS`、`413 REQUEST_TOO_LARGE`、`429 SIGNUP_RATE_LIMITED`、`429 TENANT_QUOTA_EXCEEDED`、`503 DATABASE_REQUIRED`、`503 SIGNUP_DISABLED`、`503 SIGNUP_INVITE_NOT_CONFIGURED`。
 
 ## 租户工作台
 
-以下接口需要租户 Bearer 令牌。本机开发可用 `LOCAL_OWNER_ACCESS=true` 在 loopback 地址免令牌；公网禁止开启。
+以下接口需要租户 Bearer 令牌；平台管理员密钥也可用于维护租户。本机请求同样必须鉴权。
 
 ### `GET /api/studio/content?tenant=<slug>`
 
@@ -99,11 +99,11 @@ API 根地址由部署决定，例如 `https://api.example.com`。本文中的�
 
 请求体是完整 `ContentDocument`。成功 `200`：`{ "data": <ContentDocument>, "meta": { "tenant": "my-blog", "saved": true } }`。
 
-管理错误包括：`401 ADMIN_KEY_NOT_CONFIGURED`、`401 UNAUTHORIZED`、`404 TENANT_NOT_FOUND`、`409 TENANT_EXISTS`、`503 DATABASE_REQUIRED`、`400 ADMIN_REQUEST_FAILED`、`400 INVALID_ADMIN_CONTENT`。
+管理错误包括：`401 UNAUTHORIZED`、`404 TENANT_NOT_FOUND`、`409 TENANT_EXISTS`、`413 REQUEST_TOO_LARGE`、`503 ADMIN_NOT_CONFIGURED`、`503 DATABASE_REQUIRED`、`400 ADMIN_REQUEST_FAILED`、`400 INVALID_ADMIN_CONTENT`。
 
 ## 内容文档
 
-`ContentDocument` 的稳定 JSON 结构如下。除标有可选的字段外，所有字段都必填；字符串可为空，数组可为空。
+`ContentDocument` 的稳定 JSON 结构如下。除标有可选的字段外，所有字段都必填；字符串可为空，数组可为空。写入体最多 512 KiB；短文本最多 200 字符、长文本最多 10,000 字符、链接最多 2,048 字符。文章最多 100 条、产品/目录链接/社交链接各最多 50 条，其余数组上限以运行时 schema 为准。
 
 ```ts
 type Link = { label: string; href: string };

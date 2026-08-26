@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const apiVersion = "1.0.0";
+const apiVersion = "1.1.0";
 
 function applyApiHeaders(response: NextResponse, request: NextRequest) {
   response.headers.set("X-API-Version", apiVersion);

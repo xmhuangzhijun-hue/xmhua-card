@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { tenantSlugValueSchema } from "@/lib/admin-schema";
 import { homepageContentSchema } from "@/lib/content-schema";
 import { requireAdmin } from "@/server/admin-auth";
+import { readJsonBody, RequestBodyTooLargeError } from "@/server/request-body";
 import { DatabaseRequiredError, readTenantContent, TenantNotFoundError, writeTenantContent } from "@/server/admin-repository";
 
 export const dynamic = "force-dynamic";
@@ -18,13 +19,14 @@ export async function PUT(request: Request) {
   const denied = requireAdmin(request); if (denied) return denied;
   try {
     const tenant = tenantFrom(request);
-    const content = homepageContentSchema.parse(await request.json());
+    const content = homepageContentSchema.parse(await readJsonBody(request, 524_288));
     const result = await writeTenantContent(tenant, content);
     return NextResponse.json({ data: result.data, meta: { tenant, saved: true } });
   } catch (error) { return adminError(error); }
 }
 
 function adminError(error: unknown) {
+  if (error instanceof RequestBodyTooLargeError) return NextResponse.json({ error: "REQUEST_TOO_LARGE" }, { status: 413 });
   if (error instanceof DatabaseRequiredError) return NextResponse.json({ error: "DATABASE_REQUIRED" }, { status: 503 });
   if (error instanceof TenantNotFoundError) return NextResponse.json({ error: "TENANT_NOT_FOUND" }, { status: 404 });
   console.error("Content administration failed", error);

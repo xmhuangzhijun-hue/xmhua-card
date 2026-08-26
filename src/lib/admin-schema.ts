@@ -10,4 +10,5 @@ export const createTenantSchema = z.object({
 export const selfServiceTenantSchema = z.object({
   slug: tenantSlugValueSchema,
   name: z.string().trim().min(2).max(80),
+  inviteCode: z.string().min(8).max(256),
 });

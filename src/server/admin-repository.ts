@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, count, eq } from "drizzle-orm";
 import { getDatabase } from "@/db/client";
 import { articles, directoryLinks, products, siteSettings, socialLinks, tenants } from "@/db/schema";
 import type { HomepageContent } from "@/lib/content-schema";
@@ -58,6 +58,9 @@ async function replaceTenantContent(db: Database, tenantId: number, content: Hom
 export async function createSelfServiceTenant(input: { slug: string; name: string }) {
   if (process.env.SELF_SERVICE_SIGNUP_ENABLED !== "true") throw new Error("SIGNUP_DISABLED");
   const db = databaseOrThrow();
+  const maxTenants = Math.max(1, Math.min(Number.parseInt(process.env.MAX_TENANTS ?? "100", 10) || 100, 10000));
+  const [{ value: tenantCount }] = await db.select({ value: count() }).from(tenants);
+  if (tenantCount >= maxTenants) throw new Error("TENANT_QUOTA_EXCEEDED");
   const token = `site_${randomBytes(24).toString("base64url")}`;
   const existing = await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.slug, input.slug)).limit(1);
   if (existing.length) throw new Error("TENANT_EXISTS");

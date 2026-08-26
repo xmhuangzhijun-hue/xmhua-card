@@ -10,6 +10,7 @@ type CreatedSite = { tenant: { slug: string; name: string }; token: string };
 export function SiteStarter() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "error" | "success">("idle");
   const [message, setMessage] = useState("填写两项信息即可生成站点。");
   const [created, setCreated] = useState<CreatedSite | null>(null);
@@ -22,7 +23,7 @@ export function SiteStarter() {
   async function createSite() {
     setState("loading"); setMessage("正在创建独立站点和初始内容…");
     try {
-      const response = await fetch(apiUrl("/api/signup"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, slug }) });
+      const response = await fetch(apiUrl("/api/signup"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, slug, inviteCode }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "CREATE_FAILED");
       const data = payload.data as CreatedSite;
@@ -39,7 +40,8 @@ export function SiteStarter() {
         <div className="step-mark">01 / CREATE</div>
         <label>站点名称<input value={name} onChange={event => updateName(event.target.value)} placeholder="例如：小明的独立博客" /></label>
         <label>专属地址<div className="slug-field"><span>?tenant=</span><input value={slug} onChange={event => setSlug(event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="xiaoming" /></div></label>
-        <button className="saas-primary" disabled={name.trim().length < 2 || slug.length < 2 || state === "loading"} onClick={createSite}>{state === "loading" ? <LoaderCircle className="spin" /> : <ArrowRight />}创建我的站点</button>
+        <label>邀请码<input type="password" autoComplete="one-time-code" value={inviteCode} onChange={event => setInviteCode(event.target.value)} placeholder="向站点维护者获取" /></label>
+        <button className="saas-primary" disabled={name.trim().length < 2 || slug.length < 2 || inviteCode.length < 8 || state === "loading"} onClick={createSite}>{state === "loading" ? <LoaderCircle className="spin" /> : <ArrowRight />}创建我的站点</button>
       </> : <>
         <div className="success-title"><Check /><div><strong>{created.tenant.name} 已上线</strong><span>管理密钥只在本次创建结果中显示。</span></div></div>
         <label>管理密钥<div className="token-field"><code>{created.token}</code><button aria-label="复制管理密钥" onClick={() => navigator.clipboard.writeText(created.token)}><Copy /></button></div></label>

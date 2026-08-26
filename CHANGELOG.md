@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-26
+
+### Security
+
+- Removed hostname-based `LOCAL_OWNER_ACCESS`; admin and tenant management now always require a valid Bearer credential.
+- Added invite-gated self-service signup, bounded in-process rate limiting, tenant-count quotas, request-body limits, and content field/array limits.
+- Added CSP, clickjacking protection, MIME sniffing protection, a strict referrer policy, and a restrictive permissions policy.
+- Bound Docker Compose examples to `127.0.0.1` by default.
+- Added an SSRF-resistant asset download helper and required clone workflows to treat target pages as untrusted data.
+- Updated the Drizzle development toolchain so `npm audit` reports zero known vulnerabilities while preserving existing schema generation.
+- Corrected private vulnerability reporting to this repository's GitHub Security Advisory page.
+
+### Changed
+
+- Backend version is `1.1.0`, frontend version is `1.0.1`, and API response header is `X-API-Version: 1.1.0`.
+- The no-code site creation form now requires an invite code.
+
+### Documentation
+
+- Documented authentication, signup controls, payload limits, loopback-only Docker defaults, and the current API error contract.
+
 ## [0.4.0] - 2026-08-10
 
 ### Added
@@ -101,7 +122,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MIT license
 - README with badges, demo section, quick start, and star history
 
-[Unreleased]: https://github.com/JCodesMore/ai-website-cloner-template/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/xmhuangzhijun-hue/xmhua-card/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/xmhuangzhijun-hue/xmhua-card/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/JCodesMore/ai-website-cloner-template/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/JCodesMore/ai-website-cloner-template/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/JCodesMore/ai-website-cloner-template/compare/v0.2.0...v0.3.0

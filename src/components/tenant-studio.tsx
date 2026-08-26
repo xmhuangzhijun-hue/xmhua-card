@@ -38,7 +38,7 @@ export function TenantStudio() {
 
   return <main className="saas-shell studio-shell">
     <header className="saas-header"><Link href="/">XMHUA / STUDIO</Link><div><Link href="/start">创建新站</Link>{slug && <Link href={`/?tenant=${slug}`} target="_blank">查看站点 <ArrowUpRight /></Link>}</div></header>
-    <section className="studio-login"><label>站点标识<input value={slug} onChange={event => setSlug(event.target.value)} placeholder="your-site" /></label><label>远程管理密钥（本机可留空）<input type="password" value={token} onChange={event => setToken(event.target.value)} placeholder="本机自动授权" /></label><button className="saas-primary" disabled={!slug || state === "loading"} onClick={() => connect()}>{state === "loading" ? <LoaderCircle className="spin" /> : "连接站点"}</button></section>
+    <section className="studio-login"><label>站点标识<input value={slug} onChange={event => setSlug(event.target.value)} placeholder="your-site" /></label><label>站点管理密钥<input type="password" value={token} onChange={event => setToken(event.target.value)} placeholder="输入创建站点时获得的密钥" /></label><button className="saas-primary" disabled={!slug || state === "loading"} onClick={() => connect()}>{state === "loading" ? <LoaderCircle className="spin" /> : "连接站点"}</button></section>
     {content && <div className="studio-layout">
       <section className="studio-form">
         <EditorSection title="站点导航与公告">
