@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Confined cloned-asset downloads to `public/sites/`, prevented overwrite and symlink escapes, and required MIME, extension, and binary signatures to agree.
+- Serialized self-service tenant quota checks with tenant creation so concurrent requests cannot exceed `MAX_TENANTS`.
+
+### Security
+
+- Added an independent invalid-invitation limiter with bounded in-process state, without consuming the valid creation quota.
+- Rejected remote SVG and CSS as active download formats and documented inert-only SVG reconstruction.
+
 ## [0.5.1] - 2026-08-26
 
 ### Added
