@@ -23,7 +23,10 @@ This file is the durable engineering trail for each iteration. User-facing relea
 - `git diff --check` passed and a governance term scan confirmed the founder, role, priority, status, milestone, CODEOWNER, and rollback rules are present in the intended files.
 - `npm run governance:test` passed.
 - `npm run check` passed lint (four pre-existing image optimization warnings, zero errors), type checking, and the production build.
-- Protected-branch configuration, collaborator invitation, lifecycle labels/milestone creation, push, and GitHub API read-back remain pending.
+- Commit `a4eeceb` is present on `origin/master`; GitHub CI run `32959988937` completed successfully.
+- GitHub API confirmed `xmhuangzhijun-hue` remains the repository owner and sole accepted administrator; the pending `qiran6919-oss` invitation grants `write`, not `maintain` or `admin`.
+- `master` now requires strict `quality` and `development-log` checks, one CODEOWNER approval, stale-review dismissal, last-push approval, resolved conversations, and linear history; force pushes and deletion are disabled. Repository administrators retain an explicit bootstrap/recovery bypass so the founder cannot be locked out.
+- Nine lifecycle/priority/security labels and milestone `v0.5.1 - Security follow-up` were created. Issue #2 is open, P1, security-scoped, planned into that milestone, and has a public collaboration reply.
 
 ### Deferred
 
