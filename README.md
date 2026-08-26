@@ -44,7 +44,8 @@ npm run dev
 | `ADMIN_API_KEY` | 平台管理接口的 Bearer 密钥；写入必需 |
 | `SELF_SERVICE_SIGNUP_ENABLED` | 是否开放访客自助创建站点，默认关闭 |
 | `SIGNUP_INVITE_CODE` | 自助创建所需的私密邀请码 |
-| `SIGNUP_RATE_LIMIT` / `SIGNUP_RATE_WINDOW_SECONDS` | 单个限流键在时间窗口内可尝试的次数 |
+| `SIGNUP_RATE_LIMIT` / `SIGNUP_RATE_WINDOW_SECONDS` | 单个限流键在时间窗口内可提交的有效创建次数 |
+| `SIGNUP_INVALID_INVITE_RATE_LIMIT` | 单个限流键在同一窗口内可提交的无效邀请码次数 |
 | `MAX_TENANTS` | 数据库允许的租户总量上限 |
 | `TRUST_PROXY_HEADERS` | 仅在可信反向代理会覆盖转发头时设为 `true` |
 | `NEXT_PUBLIC_API_BASE_URL` | 前端调用的独立后端根地址；同源部署留空 |

@@ -53,7 +53,7 @@ API 根地址由部署决定，例如 `https://api.example.com`。本文中的�
 }
 ```
 
-令牌只返回一次，数据库仅保存 SHA-256 摘要。邀请码会在消耗站点创建限流额度前完成常量时间校验，因此无效邀请码不会耗尽有效创建尝试的额度。错误包括：`400 INVALID_SIGNUP`、`403 INVALID_INVITE_CODE`、`409 TENANT_EXISTS`、`413 REQUEST_TOO_LARGE`、`429 SIGNUP_RATE_LIMITED`、`429 TENANT_QUOTA_EXCEEDED`、`503 DATABASE_REQUIRED`、`503 SIGNUP_DISABLED`、`503 SIGNUP_INVITE_NOT_CONFIGURED`。
+令牌只返回一次，数据库仅保存 SHA-256 摘要。邀请码会在消耗站点创建限流额度前完成常量时间校验；无效邀请码使用独立限流桶，因此不会耗尽有效创建额度，并会在单个应用实例内受到尝试次数限制。`MAX_TENANTS` 的检查与自助租户插入由同一个 PostgreSQL 事务锁串行保护。错误包括：`400 INVALID_SIGNUP`、`403 INVALID_INVITE_CODE`、`409 TENANT_EXISTS`、`413 REQUEST_TOO_LARGE`、`429 SIGNUP_RATE_LIMITED`、`429 TENANT_QUOTA_EXCEEDED`、`503 DATABASE_REQUIRED`、`503 SIGNUP_DISABLED`、`503 SIGNUP_INVITE_NOT_CONFIGURED`。
 
 ## 租户工作台
 

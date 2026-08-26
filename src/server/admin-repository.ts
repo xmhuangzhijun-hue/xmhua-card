@@ -1,4 +1,4 @@
-import { and, asc, count, eq } from "drizzle-orm";
+import { and, asc, count, eq, sql } from "drizzle-orm";
 import { getDatabase } from "@/db/client";
 import { articles, directoryLinks, products, siteSettings, socialLinks, tenants } from "@/db/schema";
 import type { HomepageContent } from "@/lib/content-schema";
@@ -10,6 +10,7 @@ import { randomBytes } from "node:crypto";
 
 export class DatabaseRequiredError extends Error {}
 export class TenantNotFoundError extends Error {}
+const SELF_SERVICE_TENANT_LOCK = 1_481_460_273;
 
 function databaseOrThrow() {
   const db = getDatabase();
@@ -59,12 +60,13 @@ export async function createSelfServiceTenant(input: { slug: string; name: strin
   if (process.env.SELF_SERVICE_SIGNUP_ENABLED !== "true") throw new Error("SIGNUP_DISABLED");
   const db = databaseOrThrow();
   const maxTenants = Math.max(1, Math.min(Number.parseInt(process.env.MAX_TENANTS ?? "100", 10) || 100, 10000));
-  const [{ value: tenantCount }] = await db.select({ value: count() }).from(tenants);
-  if (tenantCount >= maxTenants) throw new Error("TENANT_QUOTA_EXCEEDED");
   const token = `site_${randomBytes(24).toString("base64url")}`;
-  const existing = await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.slug, input.slug)).limit(1);
-  if (existing.length) throw new Error("TENANT_EXISTS");
   const tenant = await db.transaction(async tx => {
+    await tx.execute(sql`select pg_advisory_xact_lock(${SELF_SERVICE_TENANT_LOCK})`);
+    const [{ value: tenantCount }] = await tx.select({ value: count() }).from(tenants);
+    if (tenantCount >= maxTenants) throw new Error("TENANT_QUOTA_EXCEEDED");
+    const existing = await tx.select({ id: tenants.id }).from(tenants).where(eq(tenants.slug, input.slug)).limit(1);
+    if (existing.length) throw new Error("TENANT_EXISTS");
     const [created] = await tx.insert(tenants).values({ slug: input.slug, name: input.name, ownerTokenHash: hashTenantToken(token) }).returning();
     await insertTenantContent(tx, created.id, createStarterContent(input.name));
     return created;

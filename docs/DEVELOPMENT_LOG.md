@@ -2,6 +2,33 @@
 
 This file is the durable engineering trail for each iteration. User-facing release summaries belong in [`CHANGELOG.md`](../CHANGELOG.md).
 
+## 2026-08-26 — Download and signup boundary follow-up
+
+### Feedback and evidence before changes
+
+- A post-release review of `v0.5.1` found that `safeDownload` trusted the response `Content-Type`, accepted active SVG/CSS formats, and wrote to any caller-supplied path with overwrite semantics.
+- A temporary-directory proof showed that a response declaring `image/png` could overwrite an existing `.html` destination with script content.
+- `MAX_TENANTS` was counted before the creation transaction, so concurrent self-service requests could both pass the quota check.
+- Moving invite validation ahead of the valid-creation limiter protected that bucket, but left invalid invite guesses without an application-level bound; the limiter map also lacked a hard eviction ceiling.
+- GitHub Actions used floating major-version tags, including workflows with write permission.
+
+### Changes
+
+- Confined asset writes to `public/sites/`, rejected overwrite and symlink-parent escapes, and required an allowlisted MIME type, matching extension, and matching binary signature.
+- Rejected remote SVG and CSS as active formats and updated every generated clone skill to permit only inert SVG geometry reconstruction.
+- Added an independent invalid-invitation rate-limit bucket and hard-capped the in-process key map without consuming valid creation attempts.
+- Moved self-service tenant counting, duplicate detection, and insertion into one transaction protected by a PostgreSQL transaction-scoped advisory lock.
+- Pinned all third-party GitHub Actions to the reviewed commit behind their documented major release.
+
+### Verification
+
+- `npm run security:check` passed destination confinement, no-overwrite, MIME/extension/signature mismatch, active SVG rejection, DNS pinning, private-target, authorization, schema, and split signup-limiter checks.
+- `npm run typecheck` and `npm run governance:test` passed.
+- `npm run check` passed lint with four pre-existing image-optimization warnings and zero errors, type checking, and the Next.js production build.
+- `npm audit --audit-level=moderate` reported zero vulnerabilities, and `git diff --check` passed.
+- The clone skill synchronization regenerated all 13 supported platform files from the canonical source.
+- A live PostgreSQL concurrency test is not available in this checkout because neither `DATABASE_URL` nor a local PostgreSQL runtime is present; CI and maintainer staging should repeat simultaneous unique-slug signups at `MAX_TENANTS - 1` before release.
+
 ## 2026-08-26 — Issue #2 security follow-up
 
 ### Feedback and evidence before changes
