@@ -37,4 +37,7 @@ The change must not modify tenant data, credentials, homepage content, or homepa
 - The running homepage at `http://127.0.0.1:3001/?tenant=xmhua` retained the XMHUA hero, navigation, article, project, resource, about, social, and footer sections.
 - The running `GET /api/content?tenant=xmhua` returned HTTP 200, `X-API-Version: 1.1.1`, tenant `xmhua`, and `meta.source: postgresql`.
 
-Pending PR CI, release, and Issue reply receipts.
+- Pull request #4 passed required `development-log` and `quality` checks and was squash-merged as `01409fa` using the documented founder recovery bypass because the founder cannot self-approve the required CODEOWNER review.
+- Master CI run `32961620282` passed generated-file sync, lint, type checking, security regression, dependency audit, and production build.
+- Tags `v0.5.1` and `backend-v1.1.1` point to the merge; the public non-draft v0.5.1 GitHub Release was published successfully.
+- Issue #2 was closed by the merge, updated to `status: released`, and received a public response linking the fix, automated guards, verification receipts, and Release. Milestone `v0.5.1 - Security follow-up` was closed.
