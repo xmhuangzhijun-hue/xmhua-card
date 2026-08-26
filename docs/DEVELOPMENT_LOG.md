@@ -151,6 +151,9 @@ This file is the durable engineering trail for each iteration. User-facing relea
 - Browser verification against `http://127.0.0.1:3001/?tenant=xmhua` confirmed the existing XMHUA hero, navigation, articles, projects, resources, about, social, and footer sections remain visible.
 - The running public content API returned HTTP 200, `X-API-Version: 1.1.1`, tenant `xmhua`, and `meta.source: postgresql`.
 
-### Pending remote receipts
+### Remote release receipts
 
-- Pull request CI, the v0.5.1 Release, and the final Issue #2 reply will be recorded after the remote workflow completes.
+- Pull request #4 passed required `development-log` and `quality` checks and was squash-merged as `01409fa` using the documented founder recovery bypass because the founder cannot self-approve the required CODEOWNER review.
+- Master CI run `32961620282` passed generated-file sync, lint, type checking, security regression, dependency audit, and production build.
+- Tags `v0.5.1` and `backend-v1.1.1` point to the merge; the public non-draft v0.5.1 GitHub Release was published successfully.
+- Issue #2 was closed by the merge, updated to `status: released`, and received a public response linking the fix, automated guards, verification receipts, and Release. Milestone `v0.5.1 - Security follow-up` was closed.
