@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-08-26
+
 ### Added
 
 - GitHub Issue triage status automation, pull-request development-log governance, and generated Release notes for overall `v*` tags.
@@ -17,6 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Contribution and pull-request guidance now documents the feedback, private security-reporting, development-log, and release workflow.
 - Collaborator roles now follow least privilege; the founder remains the sole administrator and required reviewer.
+- Backend version is `1.1.1`; frontend remains `1.0.1`; API response header is `X-API-Version: 1.1.1`.
+
+### Fixed
+
+- Made the safe-download CLI execute and report failures consistently on Windows, macOS, and Linux.
+- Bound each HTTP/HTTPS asset request to the DNS address that passed public-address validation, including every redirect hop, and blocked IPv4-mapped private IPv6 targets.
+- Validated signup invitations before consuming the valid site-creation rate-limit quota.
+
+### Security
+
+- Added the security regression suite and moderate dependency audit to required CI.
 
 ## [0.5.0] - 2026-08-26
 
@@ -133,7 +146,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MIT license
 - README with badges, demo section, quick start, and star history
 
-[Unreleased]: https://github.com/xmhuangzhijun-hue/xmhua-card/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/xmhuangzhijun-hue/xmhua-card/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/xmhuangzhijun-hue/xmhua-card/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/xmhuangzhijun-hue/xmhua-card/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/JCodesMore/ai-website-cloner-template/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/JCodesMore/ai-website-cloner-template/compare/v0.3.0...v0.3.1

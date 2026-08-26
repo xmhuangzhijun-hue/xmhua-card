@@ -2,7 +2,7 @@
 
 API 根地址由部署决定，例如 `https://api.example.com`。本文中的路径都相对于根地址。请求与响应使用 UTF-8 JSON；写请求必须发送 `Content-Type: application/json`。
 
-后端响应头 `X-API-Version: 1.1.0`。同一主版本内只做向后兼容扩展；删除字段、改变字段类型或语义需要发布新的 API 主版本。
+后端响应头 `X-API-Version: 1.1.1`。同一主版本内只做向后兼容扩展；删除字段、改变字段类型或语义需要发布新的 API 主版本。
 
 ## 通用约定
 
@@ -53,7 +53,7 @@ API 根地址由部署决定，例如 `https://api.example.com`。本文中的�
 }
 ```
 
-令牌只返回一次，数据库仅保存 SHA-256 摘要。错误包括：`400 INVALID_SIGNUP`、`403 INVALID_INVITE_CODE`、`409 TENANT_EXISTS`、`413 REQUEST_TOO_LARGE`、`429 SIGNUP_RATE_LIMITED`、`429 TENANT_QUOTA_EXCEEDED`、`503 DATABASE_REQUIRED`、`503 SIGNUP_DISABLED`、`503 SIGNUP_INVITE_NOT_CONFIGURED`。
+令牌只返回一次，数据库仅保存 SHA-256 摘要。邀请码会在消耗站点创建限流额度前完成常量时间校验，因此无效邀请码不会耗尽有效创建尝试的额度。错误包括：`400 INVALID_SIGNUP`、`403 INVALID_INVITE_CODE`、`409 TENANT_EXISTS`、`413 REQUEST_TOO_LARGE`、`429 SIGNUP_RATE_LIMITED`、`429 TENANT_QUOTA_EXCEEDED`、`503 DATABASE_REQUIRED`、`503 SIGNUP_DISABLED`、`503 SIGNUP_INVITE_NOT_CONFIGURED`。
 
 ## 租户工作台
 
