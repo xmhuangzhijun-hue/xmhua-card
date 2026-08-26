@@ -11,10 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - GitHub Issue triage status automation, pull-request development-log governance, and generated Release notes for overall `v*` tags.
 - Regression checks for the repository governance rules.
+- Founder-controlled repository governance, CODEOWNERS enforcement, and a documented Issue-to-Release PLM lifecycle.
 
 ### Changed
 
 - Contribution and pull-request guidance now documents the feedback, private security-reporting, development-log, and release workflow.
+- Collaborator roles now follow least privilege; the founder remains the sole administrator and required reviewer.
 
 ## [0.5.0] - 2026-08-26
 

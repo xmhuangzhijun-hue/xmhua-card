@@ -2,6 +2,33 @@
 
 This file is the durable engineering trail for each iteration. User-facing release summaries belong in [`CHANGELOG.md`](../CHANGELOG.md).
 
+## 2026-08-26 — Founder-controlled PLM governance
+
+### State before changes
+
+- The repository was owned and administered only by `xmhuangzhijun-hue`, but `master` had no branch protection or ruleset.
+- No external collaborators existed. Feedback contributor `qiran6919-oss` had opened two substantive security Issues.
+- Issue, PR, CI, and Release automation existed, but there was no explicit decision-rights document, CODEOWNERS rule, milestone contract, or end-to-end product lifecycle.
+- The active GitHub credential lacked Projects scope, so creating a GitHub Project would require an explicit account-permission change.
+
+### Changes
+
+- Added founder-only administration and decision-rights rules, least-privilege collaborator roles, access review, and continuity boundaries.
+- Added CODEOWNERS coverage requiring `xmhuangzhijun-hue` review for every change and explicitly listing sensitive control-plane paths.
+- Added an Issue-to-Release PLM lifecycle with priority, status, milestone, verification, release, and observation gates.
+- Expanded contributor and Pull Request contracts with accepted-Issue, milestone, impact, evidence, security, and rollback requirements.
+
+### Verification
+
+- `git diff --check` passed and a governance term scan confirmed the founder, role, priority, status, milestone, CODEOWNER, and rollback rules are present in the intended files.
+- `npm run governance:test` passed.
+- `npm run check` passed lint (four pre-existing image optimization warnings, zero errors), type checking, and the production build.
+- Protected-branch configuration, collaborator invitation, lifecycle labels/milestone creation, push, and GitHub API read-back remain pending.
+
+### Deferred
+
+- GitHub Projects board creation remains blocked on explicit `read:project`/`project` authorization; no account permission will be expanded implicitly.
+
 ## 2026-08-26 — Open-source feedback workflow
 
 ### State before changes

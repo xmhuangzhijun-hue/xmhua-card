@@ -13,6 +13,8 @@ Thanks for your interest in improving **xmhua-card**. This repository combines a
 
 Browse the [open issues](https://github.com/xmhuangzhijun-hue/xmhua-card/issues) for something to pick up. New Issues are automatically marked `status: needs triage`; a maintainer then confirms scope and priority. For substantial or potentially breaking changes, open an Issue before significant work begins.
 
+Repository roles follow least privilege. Most contributors use forks and Pull Requests. Trusted feedback collaborators may receive `triage`; implementation access is granted separately only when needed. The founder remains the sole administrator and final merge authority. See [`GOVERNANCE.md`](GOVERNANCE.md) and the [product lifecycle](docs/PLM.md).
+
 ## Development setup
 
 **Prerequisites:** [Node.js](https://nodejs.org/) 24+.
@@ -43,12 +45,12 @@ After editing a source file, run the matching sync command and commit the regene
 
 ## Submitting a pull request
 
-1. **Fork** the repo and create a branch off `master` (e.g. `fix/skill-hover-extraction` or `docs/clarify-setup`).
+1. Start from an accepted Issue with a priority and target milestone, then **fork** the repo and create a branch off `master` (e.g. `fix/skill-hover-extraction` or `docs/clarify-setup`).
 2. Make your change. If you touched a source-of-truth file, **run the relevant sync script** (see above).
 3. Add an entry to `docs/DEVELOPMENT_LOG.md` describing the evidence before the change, what changed, and its verification. Update `CHANGELOG.md` whenever version metadata changes.
 4. Run `npm run check` and `npm run governance:test`.
 5. Write a clear commit message that describes the change. Prefixes such as `fix:`, `feat:`, or `docs:` are welcome but not required.
-6. Open a PR against `master`, fill out the PR template, and link a relevant issue when one exists (for example, `Closes #123`).
+6. Open a PR against `master`, fill out the PR template, link the accepted Issue (for example, `Closes #123`), and name the target milestone.
 7. Keep PRs focused — one logical change per PR is much easier to review and merge.
 
 GitHub Actions enforce the development-log rule on pull requests. Pushing an overall version tag such as `v0.6.0` creates a GitHub Release with generated notes grouped by Issue and PR labels. Component tags such as `backend-v1.2.0` remain independent and do not publish an overall Release.

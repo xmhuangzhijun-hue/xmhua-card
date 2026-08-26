@@ -1,0 +1,12 @@
+# The founder remains the required reviewer for every repository change.
+* @xmhuangzhijun-hue
+
+# Sensitive control-plane and release files are listed explicitly for audit clarity.
+/.github/ @xmhuangzhijun-hue
+/src/app/api/ @xmhuangzhijun-hue
+/src/lib/auth.ts @xmhuangzhijun-hue
+/src/lib/db/ @xmhuangzhijun-hue
+/drizzle/ @xmhuangzhijun-hue
+/SECURITY.md @xmhuangzhijun-hue
+/package.json @xmhuangzhijun-hue
+/package-lock.json @xmhuangzhijun-hue
