@@ -25,7 +25,8 @@ This file is the durable engineering trail for each iteration. User-facing relea
 - Python `yaml.safe_load` parsed all 10 GitHub YAML files.
 - `git diff --check` passed.
 - `npm run check` passed lint (four pre-existing image optimization warnings, zero errors), type checking, and the production build.
-- GitHub push and live workflow receipts remain pending until the commit is published.
+- Commit `43ed327` is present on `origin/master`; GitHub CI run `32938540864` completed successfully.
+- GitHub API reads confirmed all three status labels, all four workflow files, and the public non-draft `v0.5.0` Release.
 
 ### Deferred
 
