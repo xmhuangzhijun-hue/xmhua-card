@@ -49,5 +49,11 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
+      - name: Security regression
+        run: npm run security:check
+
+      - name: Dependency audit
+        run: npm audit --audit-level=moderate
+
       - name: Build
         run: npm run build

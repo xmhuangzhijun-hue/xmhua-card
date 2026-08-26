@@ -2,13 +2,12 @@ import { NextResponse } from "next/server";
 import { selfServiceTenantSchema } from "@/lib/admin-schema";
 import { createSelfServiceTenant, DatabaseRequiredError } from "@/server/admin-repository";
 import { readJsonBody, RequestBodyTooLargeError } from "@/server/request-body";
-import { enforceSignupRateLimit, requireSignupInvite } from "@/server/signup-guard";
+import { enforceValidSignupAttempt } from "@/server/signup-guard";
 
 export async function POST(request: Request) {
   try {
-    enforceSignupRateLimit(request);
     const input = selfServiceTenantSchema.parse(await readJsonBody(request, 4096));
-    requireSignupInvite(input.inviteCode);
+    enforceValidSignupAttempt(request, input.inviteCode);
     return NextResponse.json({ data: await createSelfServiceTenant(input) }, { status: 201 });
   } catch (error) {
     if (error instanceof RequestBodyTooLargeError) return NextResponse.json({ error: "REQUEST_TOO_LARGE" }, { status: 413 });

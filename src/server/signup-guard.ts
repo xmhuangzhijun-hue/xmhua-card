@@ -38,3 +38,8 @@ export function requireSignupInvite(supplied: string) {
   const suppliedHash = createHash("sha256").update(supplied).digest();
   if (!timingSafeEqual(expectedHash, suppliedHash)) throw new Error("INVALID_INVITE_CODE");
 }
+
+export function enforceValidSignupAttempt(request: Request, suppliedInvite: string) {
+  requireSignupInvite(suppliedInvite);
+  enforceSignupRateLimit(request);
+}

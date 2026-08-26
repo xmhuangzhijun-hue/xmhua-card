@@ -39,7 +39,7 @@ Set `SELF_SERVICE_SIGNUP_ENABLED=true` only after PostgreSQL is migrated and `SI
 
 `POST /api/signup` creates the tenant and starter content in one transaction. It returns a high-entropy tenant management token exactly once; PostgreSQL stores only its SHA-256 digest. The tenant studio sends that token as a Bearer credential to `GET` and `PUT /api/studio/content?tenant=<slug>`. A tenant credential cannot list tenants or read/write another tenant.
 
-Self-service creation fails closed when the database, feature flag, or invite code is absent. The route also enforces bounded request/field sizes, an in-process rate limit and `MAX_TENANTS`. Multi-instance public deployments still need shared gateway-level rate limiting and abuse monitoring. Set `TRUST_PROXY_HEADERS=true` only behind a trusted proxy that overwrites forwarded headers.
+Self-service creation fails closed when the database, feature flag, or invite code is absent. The route also enforces bounded request/field sizes, an in-process rate limit and `MAX_TENANTS`. Invalid invite codes are rejected before consuming the valid site-creation quota. Multi-instance public deployments still need shared gateway-level rate limiting for invalid-invite abuse and creation attempts. Set `TRUST_PROXY_HEADERS=true` only behind a trusted proxy that overwrites forwarded headers.
 
 ## Local development
 

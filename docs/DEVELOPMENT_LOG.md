@@ -2,6 +2,31 @@
 
 This file is the durable engineering trail for each iteration. User-facing release summaries belong in [`CHANGELOG.md`](../CHANGELOG.md).
 
+## 2026-08-26 — Issue #2 security follow-up
+
+### Feedback and evidence before changes
+
+- Contributor `qiran6919-oss` reported that the safe-download CLI silently skipped execution on macOS/Linux, invalid invitations could exhaust the shared signup quota, and CI did not execute the security regression or dependency audit.
+- Source inspection identified the cross-platform CLI mismatch: an absolute POSIX path was manually prefixed with `file:///`, producing a different URL than `import.meta.url`. The same path happened to work on Windows.
+- The signup route called `enforceSignupRateLimit` before reading and validating the invitation.
+- The downloader validated DNS with `lookup` but then used `fetch`, which independently resolved the hostname at connection time.
+- `.github/workflows/ci.yml` ran lint, type checking, and build only.
+
+### Changes
+
+- Replaced manual CLI URL construction with `pathToFileURL` and added a spawned-process regression requiring unsafe input to fail visibly with status 1.
+- Replaced the independently resolving `fetch` path with HTTP/HTTPS requests whose lookup callback returns the already validated address; redirects repeat validation and address binding.
+- Expanded non-public address rejection to IPv4-mapped IPv6, carrier-grade NAT, documentation, benchmark, multicast, and other non-global ranges.
+- Moved constant-time invitation validation before the valid-creation limiter and added quota-isolation regression coverage.
+- Added `npm run security:check` and `npm audit --audit-level=moderate` to required CI.
+- Prepared product `0.5.1` and backend/API `1.1.1`; frontend remains `1.0.1`.
+
+### Verification
+
+- `npm run security:check` passed CLI failure, signup quota isolation, mapped-address blocking, pinned-address use, authorization, schema, and private-target checks.
+- `npm run typecheck` passed.
+- Full local checks, real public download, Ubuntu PR CI, release publication, and Issue closure remain pending.
+
 ## 2026-08-26 — Founder-controlled PLM governance
 
 ### State before changes
@@ -98,3 +123,34 @@ This file is the durable engineering trail for each iteration. User-facing relea
 
 - In-process signup limiting is intentionally only a first boundary; multi-instance public deployments still require a shared gateway limit and abuse monitoring.
 - Real database write verification is only complete after the authenticated save/read/restore check succeeds against local PostgreSQL.
+
+## 2026-08-26 — Issue #2 security follow-up
+
+### Feedback and evidence before changes
+
+- Direct invocation of `scripts/safe-download.mjs` constructed its entry URL manually, so POSIX absolute paths could miss the CLI entry comparison and exit silently.
+- Signup rate limiting ran before invitation verification; with untrusted proxy headers disabled, invalid invitations could exhaust the shared `global` creation bucket.
+- DNS safety validation and the later network connection were separate resolutions, and IPv4-mapped IPv6 addresses were not normalized before policy checks.
+- CI did not execute the repository security regression or moderate dependency audit.
+
+### Changes
+
+- Switched direct-entry detection to `pathToFileURL` and added a cross-platform spawned CLI regression.
+- Bound invitation verification before signup quota consumption in one route-level guard.
+- Replaced downloader `fetch` with HTTP(S) requests whose lookup callback is pinned to the validated address; every redirect is revalidated and repinned.
+- Normalized IPv4-mapped IPv6 and rejected loopback, private, link-local, documentation, benchmark, multicast, and cloud-metadata address space.
+- Added security regression and `npm audit --audit-level=moderate` to CI.
+- Released backend/API contract version 1.1.1 without changing frontend version 1.0.1 or homepage content/layout.
+
+### Verification
+
+- `npm run security:check`, `npm run governance:test`, `npm run db:generate`, and `git diff --check` passed.
+- `npm run check` passed lint (four pre-existing image optimization warnings, zero errors), type checking, and the production build.
+- `npm audit --audit-level=moderate` returned zero vulnerabilities.
+- A real public HTTPS image download completed through the pinned-address downloader (`image/png`, 1,600 bytes).
+- Browser verification against `http://127.0.0.1:3001/?tenant=xmhua` confirmed the existing XMHUA hero, navigation, articles, projects, resources, about, social, and footer sections remain visible.
+- The running public content API returned HTTP 200, `X-API-Version: 1.1.1`, tenant `xmhua`, and `meta.source: postgresql`.
+
+### Pending remote receipts
+
+- Pull request CI, the v0.5.1 Release, and the final Issue #2 reply will be recorded after the remote workflow completes.
