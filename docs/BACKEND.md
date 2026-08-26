@@ -2,6 +2,8 @@
 
 The homepage is served through `GET /api/content`. Use `GET /api/content?tenant=<slug>` for another tenant. The default is controlled by `DEFAULT_TENANT_SLUG`.
 
+The complete versioned HTTP contract is documented in [`API.md`](API.md). A separately deployed frontend sets `NEXT_PUBLIC_API_BASE_URL`; the backend sets `CORS_ALLOWED_ORIGIN` to that frontend's exact origin. Leave both unset for same-origin deployment.
+
 The public React page is a presentation shell. All visible identity, copy, navigation, lists, links, image URLs, button labels, footer content, and analytics-consent text come from this API. The backend-owned fallback seed contains the XMHUA site and is used only for public reads when PostgreSQL is not configured.
 
 ## Stack

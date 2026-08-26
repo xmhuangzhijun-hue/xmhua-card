@@ -3,23 +3,23 @@
   "version": "0.4.0",
   "private": true,
   "description": "XMHUA public profile with an API-driven content backend",
-  "author": "JCodesMore",
+  "author": "XMHUA contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/JCodesMore/ai-website-cloner-template.git"
+    "url": "https://github.com/xmhuangzhijun-hue/xmhua-card.git"
   },
-  "homepage": "https://github.com/JCodesMore/ai-website-cloner-template",
+  "homepage": "https://github.com/xmhuangzhijun-hue/xmhua-card",
   "bugs": {
-    "url": "https://github.com/JCodesMore/ai-website-cloner-template/issues"
+    "url": "https://github.com/xmhuangzhijun-hue/xmhua-card/issues"
   },
   "keywords": [
-    "claude-code",
-    "website-clone",
-    "reverse-engineering",
+    "personal-blog",
+    "multi-tenant",
+    "headless-cms",
     "nextjs",
-    "ai",
-    "template",
+    "postgresql",
+    "drizzle-orm",
     "tailwindcss",
     "shadcn-ui"
   ],

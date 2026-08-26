@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Copy, LoaderCircle } from "lucide-react";
+import { apiUrl } from "@/lib/api-client";
 
 type CreatedSite = { tenant: { slug: string; name: string }; token: string };
 
@@ -21,7 +22,7 @@ export function SiteStarter() {
   async function createSite() {
     setState("loading"); setMessage("正在创建独立站点和初始内容…");
     try {
-      const response = await fetch("/api/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, slug }) });
+      const response = await fetch(apiUrl("/api/signup"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, slug }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "CREATE_FAILED");
       const data = payload.data as CreatedSite;

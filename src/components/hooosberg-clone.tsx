@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight, BookOpen, CodeXml, ExternalLink, Layers, Megaphone, Moon, Search, ShieldCheck, Sun } from "lucide-react";
 import { homepageContentSchema, type HomepageContent } from "@/lib/content-schema";
+import { apiUrl } from "@/lib/api-client";
 
 function Heading({ eyebrow, title, description, action, center=false }: { eyebrow:string; title:string; description:string; action?:{label:string;href:string}; center?:boolean }) {
   return <div className={`section-heading${center ? " section-heading--center" : ""}`}><p>{eyebrow}</p><h2>{title}</h2><span>{description}</span>{!center && action && <a href={action.href}>{action.label} <ArrowRight size={15}/></a>}</div>;
@@ -17,7 +18,7 @@ export function HooosbergClone() {
   useEffect(()=>{
     const controller=new AbortController();
     const tenant=new URLSearchParams(window.location.search).get("tenant");
-    fetch(`/api/content${tenant ? `?tenant=${encodeURIComponent(tenant)}` : ""}`,{signal:controller.signal})
+    fetch(apiUrl(`/api/content${tenant ? `?tenant=${encodeURIComponent(tenant)}` : ""}`),{signal:controller.signal})
       .then(async response=>{ if(!response.ok) throw new Error("content request failed"); return response.json(); })
       .then(payload=>{
         setContent(homepageContentSchema.parse(payload.data));

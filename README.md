@@ -1,214 +1,89 @@
-<div align="center">
+# XMHUA Card
 
-# AI Website Cloner Template
+一个 API 驱动、多租户的个人博客与公开名片系统。访客看到的身份信息、文案、导航、文章、产品、资源和社交链接都由后端内容接口提供；站点拥有者可以通过浏览器控制台维护内容，无需修改前端代码。
 
-### Clone any website with one command
+## 功能
 
-Give your AI coding agent a URL and watch it recreate the website as a clean Next.js app.
+- Next.js 16 App Router + React 19 + TypeScript
+- PostgreSQL + Drizzle ORM，多租户数据隔离
+- API 驱动的公开页面，支持 `?tenant=<slug>` 切换租户
+- 前端支持独立 `NEXT_PUBLIC_API_BASE_URL`，后端提供可配置 CORS
+- `/studio` 表单编辑器与 `/admin` 完整内容编辑器
+- 租户自助创建和独立管理凭据
+- Zod 校验、事务保存和默认拒绝的管理接口
+- 无数据库时，仅公开读取可回退到服务端示例内容
 
-**Best results with [Claude Code](https://docs.anthropic.com/en/docs/claude-code) + Opus 5. Works with Codex, Cursor, Gemini, and more.**
+## 快速开始
 
-[![Use this template](https://img.shields.io/badge/Use_this_template-Create_your_copy-2ea44f?style=for-the-badge&logo=github&logoColor=white)](https://github.com/JCodesMore/ai-website-cloner-template/generate) [![Discord](https://img.shields.io/badge/Join_the_community-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/hrTSX5yTpB)
-
-[Quick Start](#quick-start) · [Watch Demo](#demo) · [Supported Platforms](#supported-platforms)
-
-<a href="https://github.com/JCodesMore/ai-website-cloner-template/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a> <a href="https://github.com/JCodesMore/ai-website-cloner-template"><img src="https://img.shields.io/github/stars/JCodesMore/ai-website-cloner-template?style=flat" alt="Stars" /></a> <img src="https://img.shields.io/endpoint?url=https://gittokens.rsamf.com/badge/JCodesMore/ai-website-cloner-template" alt="tokens" />
-
-  <a href="https://trendshift.io/repositories/24302?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-24302" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/24302" alt="JCodesMore%2Fai-website-cloner-template | Trendshift" width="250" height="55" /></a> <a href="https://www.star-history.com/jcodesmore/ai-website-cloner-template/"><picture><source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=JCodesMore/ai-website-cloner-template&amp;theme=dark" /><source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=JCodesMore/ai-website-cloner-template" /><img alt="Star History Global Rank" src="https://api.star-history.com/badge?repo=JCodesMore/ai-website-cloner-template" width="216" height="55" /></picture></a>
-
-<br />
-<sub><strong>SPONSORED BY</strong></sub>
-<br /><br />
-<a href="https://www.rapidproxy.io/?ref=JCM"><img src="docs/assets/sponsors/rapidproxy-banner.png" alt="RapidProxy residential proxy service" width="680" /></a>
-<br />
-<sub>Power your scraping and automation with 90M+ residential IPs, 500MB free traffic, and non-expiring bandwidth. <a href="https://www.rapidproxy.io/?ref=JCM">Explore RapidProxy →</a></sub>
-<br /><br />
-<a href="https://www.atlascloud.ai/?utm_source=github&amp;utm_medium=sponsor&amp;utm_campaign=ai-website-cloner-template">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/sponsors/atlas-cloud-logo-white.svg" />
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/sponsors/atlas-cloud-logo.svg" />
-    <img src="docs/assets/sponsors/atlas-cloud-logo.svg" alt="Atlas Cloud" width="240" />
-  </picture>
-</a>
-<br />
-<sub>Generate AI images, video, audio, and 3D assets through one API. <a href="https://www.atlascloud.ai/?utm_source=github&amp;utm_medium=sponsor&amp;utm_campaign=ai-website-cloner-template">Explore Atlas Cloud →</a></sub>
-
-</div>
-
----
-
-## Demo
-
-[![Watch the demo](docs/design-references/comparison.png)](https://youtu.be/O669pVZ_qr0)
-
-> Click the image above to watch the full demo on YouTube.
-
-## Quick Start
-
-> **Important:** Start by making your own copy with GitHub's **Use this template** button. Do not clone this template repository directly for your website project, and do not open pull requests here with your generated website.
-
-1. **Create your own repository from this template**
-
-   On the GitHub page for this project, click **Use this template**, then click **Create a new repository**.
-
-   Give your new repository a name, choose whether it should be public or private, then click **Create repository**. If GitHub shows an **Include all branches** option, you can leave it off.
-
-   This gives you your own separate project to work in, so your website changes stay in your account instead of coming back to the main template.
-
-2. **Open your new repository on your computer**
-
-   After GitHub creates your copy, open that new repository. Click **Code** and open or clone your new repository with your preferred coding tool.
-
-   If you use the terminal, the command will look like this:
-
-   ```bash
-   git clone https://github.com/YOUR-USERNAME/YOUR-NEW-REPOSITORY.git
-   cd YOUR-NEW-REPOSITORY
-   ```
-
-3. **Install dependencies**
-   ```bash
-   npm install
-   ```
-4. **Start your AI agent** — Claude Code recommended:
-   ```bash
-   claude --chrome
-   ```
-5. **Run the skill**:
-   ```
-   /clone-website <target-url1> [<target-url2> ...]
-   ```
-6. **Customize** (optional) — after the base clone is built, modify as needed
-
-> Most supported clients expose `/clone-website` directly. If your client activates skills from natural-language requests, enter `Clone <target-url> using the clone-website workflow`. Project instructions are in `AGENTS.md`.
-
-## Supported Platforms
-
-| Agent                                                         | Status                     |
-| ------------------------------------------------------------- | -------------------------- |
-| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | **Recommended** — Opus 5   |
-| [Codex CLI](https://github.com/openai/codex)                  | Supported                  |
-| [OpenCode](https://opencode.ai/)                              | Supported                  |
-| [GitHub Copilot](https://github.com/features/copilot)         | Supported                  |
-| [Kiro](https://kiro.dev/)                                    | Supported                  |
-| [Cursor](https://cursor.com/)                                 | Supported                  |
-| [Windsurf](https://codeium.com/windsurf)                      | Supported                  |
-| [Gemini CLI](https://github.com/google-gemini/gemini-cli)     | Supported                  |
-| [Cline](https://github.com/cline/cline)                       | Supported                  |
-| [Roo Code](https://github.com/RooCodeInc/Roo-Code)            | Supported                  |
-| [Continue](https://continue.dev/)                             | Supported                  |
-| [Amazon Q](https://aws.amazon.com/q/developer/)               | Supported                  |
-| [Augment Code](https://www.augmentcode.com/)                  | Supported                  |
-
-## Prerequisites
-
-- [Node.js](https://nodejs.org/) 24+
-- An AI coding agent (see [Supported Platforms](#supported-platforms))
-
-## Tech Stack
-
-- **Next.js 16** — App Router, React 19, TypeScript strict
-- **shadcn/ui** — Radix primitives + Tailwind CSS v4
-- **Tailwind CSS v4** — oklch design tokens
-- **Lucide React** — default icons (replaced by extracted SVGs during cloning)
-
-## How It Works
-
-The `/clone-website` skill runs a multi-phase pipeline:
-
-```mermaid
-flowchart LR
-    P1["1. Reconnaissance"] --> P2["2. Foundation"]
-    P2 --> P3["3. Component Specs"]
-    P3 --> P4["4. Parallel Build"]
-    P4 --> P5["5. Assembly and QA"]
-```
-
-1. **Reconnaissance** — screenshots, design token extraction, interaction sweep (scroll, click, hover, responsive)
-2. **Foundation** — updates fonts, colors, globals, downloads all assets
-3. **Component Specs** — writes detailed spec files (`docs/research/components/`) with exact computed CSS values, states, behaviors, and content
-4. **Parallel Build** — dispatches builder agents in git worktrees, one per section/component
-5. **Assembly & QA** — merges worktrees, wires up the page, runs visual diff against the original
-
-Each builder agent receives the full component specification inline — exact `getComputedStyle()` values, interaction models, multi-state content, responsive breakpoints, and asset paths. No guessing.
-
-## Use Cases
-
-- **Platform migration** — rebuild a site you own from WordPress/Webflow/Squarespace into a modern Next.js codebase
-- **Lost source code** — your site is live but the repo is gone, the developer left, or the stack is legacy. Get the code back in a modern format
-- **Learning** — deconstruct how production sites achieve specific layouts, animations, and responsive behavior by working with real code
-
-## Not Intended For
-
-- **Phishing or impersonation** — this project must not be used for deceptive purposes, impersonation, or any activity that breaks the law.
-- **Passing off someone's design as your own** — logos, brand assets, and original copy belong to their owners.
-- **Violating terms of service** — some sites explicitly prohibit scraping or reproduction. Check first.
-
-## Project Structure
-
-```
-src/
-  app/              # Next.js routes
-  components/       # React components
-    ui/             # shadcn/ui primitives
-    icons.tsx       # Extracted SVG icons
-  lib/utils.ts      # cn() utility
-  types/            # TypeScript interfaces
-  hooks/            # Custom React hooks
-public/
-  images/           # Downloaded images from target
-  videos/           # Downloaded videos from target
-  seo/              # Favicons, OG images
-docs/
-  research/         # Extraction output & component specs
-  design-references/ # Screenshots
-scripts/
-  sync-agent-rules.sh  # Regenerate agent instruction files
-  sync-skills.mjs      # Regenerate /clone-website for all platforms
-.kiro/skills/          # Generated Kiro workspace skill
-.cline/skills/         # Generated Cline workspace skill
-.roo/skills/           # Generated Roo Code workspace skill
-.roo/commands/         # Generated Roo Code slash command
-AGENTS.md           # Agent instructions (single source of truth)
-CLAUDE.md           # Claude Code config (imports AGENTS.md)
-GEMINI.md           # Gemini CLI config (imports AGENTS.md)
-```
-
-## Commands
+需要 Node.js 24+。只查看默认公开页面时可以不配置 PostgreSQL：
 
 ```bash
-npm run dev    # Start dev server
-npm run build  # Production build
-npm run lint   # ESLint check
-npm run typecheck # TypeScript check
-npm run check  # Run lint + typecheck + build
+npm install
+npm run dev
 ```
 
-### If using docker
+打开 <http://127.0.0.1:3000>。
+
+需要内容管理、多租户写入或自助建站时：
 
 ```bash
-docker compose up app --build # build and run the app
-docker compose up dev --build # run the app in dev mode on port 3001
+copy .env.example .env.local
+npm run db:generate
+npm run db:migrate
+npm run dev
 ```
 
-## Updating for Other Platforms
+请在 `.env.local` 中设置自己的 `DATABASE_URL` 和高强度 `ADMIN_API_KEY`。不要提交 `.env.local` 或任何真实密钥。
 
-Two source-of-truth files power all platform support. Edit the source, then run the sync script:
+## 配置
 
-| What                   | Source of truth                         | Sync command                       |
-| ---------------------- | --------------------------------------- | ---------------------------------- |
-| Project instructions   | `AGENTS.md`                             | `bash scripts/sync-agent-rules.sh` |
-| `/clone-website` skill | `.claude/skills/clone-website/SKILL.md` | `node scripts/sync-skills.mjs`     |
+| 变量 | 用途 |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL 连接地址；管理写入必需 |
+| `DEFAULT_TENANT_SLUG` | 未指定租户时使用的默认 slug |
+| `ADMIN_API_KEY` | 平台管理接口的 Bearer 密钥；写入必需 |
+| `SELF_SERVICE_SIGNUP_ENABLED` | 是否开放访客自助创建站点 |
+| `LOCAL_OWNER_ACCESS` | 仅限本机开发，允许 loopback 地址免输管理密钥 |
+| `NEXT_PUBLIC_API_BASE_URL` | 前端调用的独立后端根地址；同源部署留空 |
+| `CORS_ALLOWED_ORIGIN` | 后端允许访问的独立前端 origin；同源部署留空 |
 
-Each script regenerates the platform-specific copies automatically. Agents that read the source files natively need no regeneration.
+`LOCAL_OWNER_ACCESS=true` 只能用于可信的本机环境，不要在公网部署或反向代理环境开启。
 
+## 内容与权限数据流
 
-## Star History
+```text
+浏览器页面 -> GET /api/content?tenant=<slug> -> PostgreSQL
+                                      \-> 服务端只读回退（未配置数据库时）
 
-![Star History Chart](docs/assets/star-history.png)
+平台管理员 -> /admin -> /api/admin/* -> 管理密钥校验 -> PostgreSQL 事务
+租户拥有者 -> /studio -> /api/studio/* -> 租户令牌校验 -> PostgreSQL 事务
+新租户     -> /start -> /api/signup -> 创建租户、内容和一次性管理令牌
+```
 
-## License
+前端组件只负责渲染接口返回的数据。完整 HTTP 契约见 [docs/API.md](docs/API.md)，数据库说明见 [docs/BACKEND.md](docs/BACKEND.md)。
 
-MIT
+## 独立版本更新
 
-<sub>Translations: <a href="README.ja.md">日本語</a> · <a href="README.zh-CN.md">Simplified Chinese</a></sub>
+前端和后端共用一个仓库，但分别在 `versions/frontend.json` 与 `versions/backend.json` 维护版本。只改一侧时可精确暂存该侧文件并单独提交、部署；API 兼容规则和发布顺序见 [docs/VERSIONING.md](docs/VERSIONING.md)。
+
+## 常用命令
+
+```bash
+npm run dev       # 开发服务器
+npm run lint      # ESLint
+npm run typecheck # TypeScript 类型检查
+npm run build     # 生产构建
+npm run check     # lint + typecheck + build
+npm run db:generate
+npm run db:migrate
+```
+
+## 部署
+
+部署到支持 Next.js 的平台，并提供 PostgreSQL 数据库与环境变量。生产环境至少应配置 `DATABASE_URL`、`DEFAULT_TENANT_SLUG` 和 `ADMIN_API_KEY`；开放自助建站前先完成数据库迁移。管理密钥和租户令牌都不应写入源码、构建日志或客户端默认配置。
+
+## 开源与来源
+
+本项目基于 [JCodesMore/ai-website-cloner-template](https://github.com/JCodesMore/ai-website-cloner-template) 开发，视觉实现参考 [hooosberg.com](https://hooosberg.com/)。上游名称、商标、原始文案和视觉资产归各自权利人所有；本仓库与其没有官方隶属关系。使用或部署前，请自行确认你对品牌、内容和素材拥有必要权利。
+
+项目按 [MIT License](LICENSE) 开源。

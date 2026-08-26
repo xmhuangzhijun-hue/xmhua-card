@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, LoaderCircle, Plus, Save, Trash2 } from "lucide-react";
 import { homepageContentSchema, type HomepageContent } from "@/lib/content-schema";
+import { apiUrl } from "@/lib/api-client";
 
 type State = "idle" | "loading" | "saving" | "success" | "error";
 
 async function studioApi<T>(slug: string, token: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`/api/studio/content?tenant=${encodeURIComponent(slug)}`, { ...init, headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers } });
+  const response = await fetch(apiUrl(`/api/studio/content?tenant=${encodeURIComponent(slug)}`), { ...init, headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers } });
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.error ?? "REQUEST_FAILED");
   return payload as T;

@@ -4,12 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Check, Database, FileJson, KeyRound, LoaderCircle, Plus, RefreshCw, Save, ShieldCheck } from "lucide-react";
 import { homepageContentSchema, type HomepageContent } from "@/lib/content-schema";
+import { apiUrl } from "@/lib/api-client";
 
 type Tenant = { id: number; slug: string; name: string; active: boolean; updatedAt: string };
 type State = "idle" | "loading" | "saving" | "success" | "error";
 
 async function api<T>(path: string, key: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, { ...init, headers: { "Content-Type": "application/json", ...(key ? { Authorization: `Bearer ${key}` } : {}), ...init?.headers } });
+  const response = await fetch(apiUrl(path), { ...init, headers: { "Content-Type": "application/json", ...(key ? { Authorization: `Bearer ${key}` } : {}), ...init?.headers } });
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.error ?? "REQUEST_FAILED");
   return payload as T;
