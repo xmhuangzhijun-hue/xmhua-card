@@ -1,0 +1,48 @@
+name: Issue triage
+
+on:
+  issues:
+    types:
+      - opened
+      - reopened
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Mark issue as needing triage
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const label = {
+              name: "status: needs triage",
+              color: "D4C5F9",
+              description: "Awaiting maintainer review and prioritization",
+            };
+
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: label.name,
+              });
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ...label,
+              });
+            }
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: [label.name],
+            });

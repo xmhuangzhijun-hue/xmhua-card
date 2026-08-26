@@ -1,0 +1,27 @@
+name: Contribution governance
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+
+jobs:
+  development-log:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout pull request
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check iteration records
+        run: node scripts/check-governance.mjs --base "${{ github.event.pull_request.base.sha }}" --head "${{ github.event.pull_request.head.sha }}"

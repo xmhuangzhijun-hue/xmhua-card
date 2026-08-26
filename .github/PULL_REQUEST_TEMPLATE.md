@@ -17,3 +17,7 @@
 ## Checklist
 
 - [ ] `npm run check` passes (lint + typecheck + build)
+- [ ] `npm run governance:test` passes
+- [ ] `docs/DEVELOPMENT_LOG.md` records what changed, why, and how it was verified
+- [ ] `CHANGELOG.md` is updated when version metadata changes
+- [ ] No credentials, tokens, `.env` files, or private data are included

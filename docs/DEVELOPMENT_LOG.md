@@ -2,6 +2,35 @@
 
 This file is the durable engineering trail for each iteration. User-facing release summaries belong in [`CHANGELOG.md`](../CHANGELOG.md).
 
+## 2026-08-26 — Open-source feedback workflow
+
+### State before changes
+
+- Bug and feature Issue forms and a basic PR template existed, but new feedback had no common triage status.
+- Pull requests did not enforce the project's development-log policy.
+- Version tags did not create GitHub Releases or grouped release notes.
+- The installed GitHub CLI credential can manage repository content and workflows, but it does not have GitHub Projects scope.
+
+### Changes
+
+- Added an Issue workflow that creates and applies `status: needs triage` without posting automated public comments.
+- Added a pull-request governance check requiring every iteration to update this development log, and requiring `CHANGELOG.md` when version metadata changes.
+- Added generated release-note categories and an idempotent `v*` tag workflow that publishes overall GitHub Releases.
+- Expanded the PR checklist and contribution guide with the feedback, security-reporting, logging, testing, and release paths.
+- Added deterministic regression coverage for the governance rules.
+
+### Verification
+
+- `npm run governance:test` passed positive and negative cases for development-log and version-log enforcement.
+- Python `yaml.safe_load` parsed all 10 GitHub YAML files.
+- `git diff --check` passed.
+- `npm run check` passed lint (four pre-existing image optimization warnings, zero errors), type checking, and the production build.
+- GitHub push and live workflow receipts remain pending until the commit is published.
+
+### Deferred
+
+- A GitHub Projects board requires `read:project`/`project` authorization. No account permission was changed in this iteration.
+
 ## 2026-08-26 — Security feedback hardening
 
 ### Feedback and evidence before changes

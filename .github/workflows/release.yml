@@ -1,0 +1,39 @@
+name: Publish release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Create GitHub release with generated notes
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const tag = context.ref.replace("refs/tags/", "");
+            try {
+              await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag,
+              });
+              core.notice(`Release ${tag} already exists; no duplicate was created.`);
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tag,
+                name: tag,
+                generate_release_notes: true,
+                draft: false,
+                prerelease: tag.includes("-"),
+              });
+            }

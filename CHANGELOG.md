@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- GitHub Issue triage status automation, pull-request development-log governance, and generated Release notes for overall `v*` tags.
+- Regression checks for the repository governance rules.
+
+### Changed
+
+- Contribution and pull-request guidance now documents the feedback, private security-reporting, development-log, and release workflow.
+
 ## [0.5.0] - 2026-08-26
 
 ### Security

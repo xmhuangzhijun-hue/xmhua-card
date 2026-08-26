@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Questions & Discussion
-    url: https://discord.gg/hrTSX5yTpB
-    about: Ask questions and chat with the community on Discord
+  - name: Security vulnerability
+    url: https://github.com/xmhuangzhijun-hue/xmhua-card/security/advisories/new
+    about: Report security vulnerabilities privately. Do not publish exploit details in an issue.
