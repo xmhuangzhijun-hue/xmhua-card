@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added a public `/work` portfolio route covering Hermes Agent engineering, Obsidian automation, AI coding collaboration, advertising data products, and the XMHUA Card platform.
+- Added a direct portfolio entry to the existing homepage navigation.
+
 ## [0.5.1] - 2026-08-26
 
 ### Added

@@ -2,6 +2,37 @@
 
 This file is the durable engineering trail for each iteration. User-facing release summaries belong in [`CHANGELOG.md`](../CHANGELOG.md).
 
+## 2026-08-31 — Public AI work portfolio
+
+### Source feedback and state before changes
+
+- The existing personal blog described projects at a high level but did not provide a recruiter-facing case-study route.
+- A separate Hermes-only document was too narrow; the requested public presentation needed to reuse this blog and include Obsidian, AI coding collaboration, advertising data products, and other verified work.
+- The homepage, content API, multi-tenant backend, and management routes had to remain unchanged.
+
+### Changes
+
+- Added a statically rendered `/work` route with five evidence-led case studies: Hermes, Obsidian, Codex/Claude Code engineering, an advertising data workbench, and XMHUA Card itself.
+- Each case separates context, responsibility, implementation, verification evidence, and honest limits. Internal product names, credentials, production addresses, customer accounts, and private life data are excluded.
+- Added a `案例` link to the existing homepage navigation and route-specific metadata for search and sharing.
+- Added responsive mobile layouts, keyboard focus states, 44-pixel navigation targets, and reduced-motion handling while preserving the existing blue-gray visual system.
+
+### Verification
+
+- `npm run check` passed ESLint with the four pre-existing homepage image warnings, TypeScript, and the Next.js production build; `/work` is statically prerendered.
+- Production-mode browser verification at `http://127.0.0.1:3018/work` found five case studies, the expected title and no Next.js development overlay.
+- Browser checks at 778-pixel and 375-pixel viewports found no horizontal overflow. Desktop and mobile screenshots were visually inspected, including the first case-study body.
+- The original homepage still renders its existing hero and exposes one `/work` navigation link at the mobile viewport.
+
+### Failed attempts and recovery
+
+- The first validation command used the bundled fallback pnpm even though this repository is npm-managed. pnpm began moving dependencies and left `.pnpm` resolution residue.
+- The pnpm processes were stopped, the affected dependency directory was moved out of the repository, and `npm ci` rebuilt `node_modules` from `package-lock.json` before final checks.
+
+### Deferred
+
+- No public deployment or push was performed in this iteration. Publishing remains a separate external action.
+
 ## 2026-08-26 — Issue #2 security follow-up
 
 ### Feedback and evidence before changes

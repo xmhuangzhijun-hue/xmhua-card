@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { ArrowRight, ArrowUpRight, BookOpen, CodeXml, ExternalLink, Layers, Megaphone, Moon, Search, ShieldCheck, Sun } from "lucide-react";
 import { homepageContentSchema, type HomepageContent } from "@/lib/content-schema";
 import { apiUrl } from "@/lib/api-client";
@@ -35,7 +36,7 @@ export function HooosbergClone() {
   return <>
     <header className="site-header">
       <aside className="site-announcement"><div className="site-announcement__inner"><Megaphone size={16}/><p>{site.announcement} <a href={site.announcementLink.href}>{site.announcementLink.label} <ArrowUpRight size={13}/></a>{site.announcementCode&&<code>{site.announcementCode}</code>}{site.announcementSuffix}</p></div></aside>
-      <div className="site-header__inner"><a className="brand" href="#"><img className="brand-mark" src={site.brandImage} alt=""/><strong>{site.brandName}</strong></a><div className="site-header__right"><nav className="nav-links">{site.navigation.map(link=><a href={link.href} key={link.label}>{link.label}</a>)}{ui.moreLinks.length>0&&<details className="nav-more"><summary>{ui.moreLabel}</summary><div className="nav-more__menu">{ui.moreLinks.map(link=><a href={link.href} key={link.label}>{link.label}</a>)}</div></details>}</nav><div className="site-header__actions"><a className="language-switch" href="#">{ui.languageLabel}</a><button className="theme-toggle" onClick={()=>setDark(!dark)} aria-label={ui.languageLabel}>{dark?<Sun size={17}/>:<Moon size={17}/>}</button></div></div></div>
+      <div className="site-header__inner"><a className="brand" href="#"><img className="brand-mark" src={site.brandImage} alt=""/><strong>{site.brandName}</strong></a><div className="site-header__right"><nav className="nav-links"><Link href="/work">案例</Link>{site.navigation.map(link=><a href={link.href} key={link.label}>{link.label}</a>)}{ui.moreLinks.length>0&&<details className="nav-more"><summary>{ui.moreLabel}</summary><div className="nav-more__menu">{ui.moreLinks.map(link=><a href={link.href} key={link.label}>{link.label}</a>)}</div></details>}</nav><div className="site-header__actions"><a className="language-switch" href="#">{ui.languageLabel}</a><button className="theme-toggle" onClick={()=>setDark(!dark)} aria-label="切换深浅色主题">{dark?<Sun size={17}/>:<Moon size={17}/>}</button></div></div></div>
     </header>
     <main>
       <section className="landing-hero"><div className="hero-grid"/><div className="hero-content"><p className="hero-kicker">{hero.kicker}</p><h1>{hero.title}</h1><p className="hero-subtitle">{hero.description.split("\n").map((line,index)=><span key={line}>{index>0&&<br/>}{line}</span>)}</p><div className="hero-actions"><a className="button button--primary button--xl" href={hero.primaryAction.href}><BookOpen size={18}/>{hero.primaryAction.label}</a><a className="button button--secondary button--xl" href={hero.secondaryAction.href}><Search size={18}/>{hero.secondaryAction.label}</a></div><div className="hero-proof">{hero.tags.map(tag=><span key={tag}>{tag}</span>)}</div></div></section>
