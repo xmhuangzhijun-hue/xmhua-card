@@ -2,6 +2,33 @@
 
 This file is the durable engineering trail for each iteration. User-facing release summaries belong in [`CHANGELOG.md`](../CHANGELOG.md).
 
+## 2026-08-31 — Evidence-first AI capability page and isolated business demo
+
+### Source feedback and state before changes
+
+- The first portfolio iteration still felt abstract: a recruiter could read project names but could not quickly judge the depth of AI use.
+- The separate `ai-product-builder-portfolio` repository obscured the work and was explicitly rejected as a public entry point.
+- The IAA frontend was useful evidence only if reviewers could enter a privacy-safe environment themselves.
+
+### Changes
+
+- Rebuilt `/work` around one visible capability chain: source intake → governed external memory → long-running Agent → business execution.
+- Added implementation details and direct public evidence for Codex/Claude memory coordination, knowledge compilation, the Qinghe Hermes instance, five upstream PRs, and the IAA product.
+- Embedded a separately built Vite demo at `/demo/iaa/`; its public login is client-only, fixed-seed, session-scoped, and explicitly disconnected from production.
+- Excluded only `public/demo/**` from this repository's lint because those minified assets are validated in their source repository.
+
+### Verification
+
+- IAA source: `npm run build -- --base=/demo/iaa/` passed (1,590 modules).
+- Embedded output scan found no production domain, production account marker, database URL, admin key, or rejected portfolio URL.
+- `npm run check` passed ESLint (four pre-existing homepage image warnings), TypeScript, and the Next.js production build; `/work` remains statically prerendered.
+- Browser acceptance opened `/work`, followed the local Demo link, used the published demo credentials, and rendered the operational table and filters. No application error was observed; the browser reported only Next development-mode CSP/eval diagnostics that do not occur in production builds.
+
+### Deferred
+
+- No production deployment or remote push was performed in this iteration.
+- Deletion of the rejected separate portfolio repository remains a distinct incomplete action.
+
 ## 2026-08-31 — Public AI work portfolio
 
 ### Source feedback and state before changes

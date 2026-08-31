@@ -11,10 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a public `/work` portfolio route covering Hermes Agent engineering, Obsidian automation, AI coding collaboration, advertising data products, and the XMHUA Card platform.
 - Added a direct portfolio entry to the existing homepage navigation.
+- Added an isolated, fixed-seed IAA operations demo at `/demo/iaa/` with public demo credentials and no production connection.
 
 ### Changed
 
 - Rebuilt `/work` as four product walkthroughs with concrete users, tasks, interaction flows, feature details, exception handling, evidence, and clearly labeled privacy-safe interface models.
+- Reframed `/work` as a 60-second AI capability review spanning input research, cross-Agent memory, a production Hermes instance, open-source fixes, and an interactive business product; removed every dependency on the separate portfolio repository.
 
 ## [0.5.1] - 2026-08-26
 

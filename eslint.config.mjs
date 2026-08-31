@@ -11,6 +11,8 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    // Embedded Vite demos are checked in their source repositories before copying.
+    "public/demo/**",
     "next-env.d.ts",
   ]),
 ]);

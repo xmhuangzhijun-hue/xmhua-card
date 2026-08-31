@@ -1,19 +1,86 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Bot, Check, CircleAlert, Clock3, FileText, KeyRound, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpenCheck, Bot, BrainCircuit, Database, GitPullRequest, ShieldCheck } from "lucide-react";
 
-const projects = [
-  { id:"hermes",number:"01",kicker:"HERMES · 多渠道 AI AGENT",title:"用户发一句话，Agent 完成理解、调用工具和回执。",summary:"它不是聊天壳。Hermes 把消息渠道、模型、MCP 工具、长期记忆和权限连成一条可运行链路，并且让用户知道任务到底有没有完成。",user:"需要在 QQ 等日常消息入口使用 AI 的个人用户",task:"记录事项、查询状态、调用业务工具，并得到明确结果",role:"Agent 架构 / 渠道接入 / 工具契约 / 生产诊断",features:["Profile 隔离","QQ Bot API v2","MCP 工具调用","幂等写入","异步终态回执","会话压缩"],flow:["消息进入 Gateway","模型判断意图","按权限调用 MCP","写入后返回可读回执"],exception:"工具进入 queued / pending 时不谎报失败；继续追踪 leased、committed、verified 或 failed 终态。",proof:"已验证 WebSocket connected、qqbot connected、Ready；定位 225 条消息、约 16.3 万 tokens 导致的压缩超时。",visual:"hermes" },
-  { id:"obsidian",number:"02",kicker:"OBSIDIAN · 个人数字系统",title:"把散落的记录，变成能持续运转的个人数据系统。",summary:"项目状态、工程日志、知识、日记和结构化生活数据各有归属。自动化只读取授权来源，有证据才写入，没有证据就停止。",user:"长期使用 Obsidian 管理项目与个人记录的重度用户",task:"每天自动整理资料，同时保护私人内容和历史版本",role:"信息架构 / 自动化 / 隐私边界 / 可恢复性",features:["职责分层","来源追踪","原子写入","已有内容不覆盖","Git 版本","加密备份"],flow:["收集授权来源","生成候选内容","校验日期与结构","原子写入并回执"],exception:"没有原生对话或速记证据时 fail closed：不生成、不补写，也不根据上下文猜测私人生活。",proof:"任务返回 created、filled_empty、skipped_existing 或 failure；写入后再校验 frontmatter 与目标文件。",visual:"obsidian" },
-  { id:"ad-workbench",number:"03",kicker:"IAA 投放 OS · 数据工作台",title:"运营不是看报表，而是在一个页面里发现问题并采取动作。",summary:"将 vivo 与 GDT 数据、筛选、聚合、小时趋势、异常告警和飞书报告连在一起，面向实际投放运营，而不是只做图表展示。",user:"每天管理多产品、多账户的广告投放运营",task:"快速定位异常账户，判断问题时段，并把结果送达负责人",role:"产品设计 / 数据链路 / 自动报告 / 生产验收",features:["双平台切换","15 种聚合维度","小时下钻","CSV 导出","飞书告警","RBAC"],flow:["选择平台与日期","按产品/账户筛选","点选异常行","查看小时趋势并导出"],exception:"两批数据指纹不稳定时最多等待 25 分钟；仍不稳定就发延迟说明，不发送可能错误的小时报。",proof:"一次联盟恢复完成 37 个应用 × 52 个模块，共 1,924 个采集结果；稳定性改动通过 42 项测试与生产回读。",visual:"dashboard" },
-  { id:"xmhua-card",number:"04",kicker:"XMHUA CARD · 多租户内容产品",title:"你正在看的博客，本身也是一个可以自助创建和管理的产品。",summary:"用户创建自己的站点后只显示一次管理凭据，再进入 Studio 管理主页、文章、产品、资源和社交链接；公开页始终读取内容 API。",user:"想快速拥有独立个人主页和博客的创作者",task:"创建站点、管理内容、独立发布，同时隔离其他租户",role:"产品定义 / 全栈实现 / 安全加固 / 发布治理",features:["自助建站","一次性管理凭据","内容 Studio","租户隔离","事务保存","默认拒绝"],flow:["输入站点名与 slug","保存一次性管理凭据","连接 Studio","编辑内容并发布"],exception:"管理接口默认拒绝；Host、SSRF、DNS 重绑定、IPv4-mapped IPv6 与注册限流均有专项防护。",proof:"Next.js 16 + React 19 + PostgreSQL / Drizzle；安全回归、类型检查、生产构建与 CI 均有记录。",visual:"studio" },
+const systems = [
+  {
+    id: "memory",
+    number: "01",
+    icon: BrainCircuit,
+    label: "CODEX × CLAUDE CODE",
+    title: "两个编码 Agent，怎样共享事实而不互相污染记忆。",
+    intro: "我维护的不是两份 MEMORY.md，而是一套跨工具的外部记忆协议：项目文件优先、Agent 各自负责、shared 只保存当前有效共识，失败经验在相似任务前强制复核。",
+    facts: ["原始证据只登记路径与指纹", "每次变更以 change_id 归档", "Codex / Claude 保留独立观察", "proposal → validate → snapshot", "下一次接手重新校准代码与运行状态"],
+    flow: ["项目 + 功能 + 问题", "受控 Retrieval", "有来源 ContextPacket", "执行与验证", "日志 / proposal", "另一端接续"],
+    links: [
+      ["检查外部记忆实现", "https://github.com/xmhuangzhijun-hue/organic-agent-os"],
+    ],
+  },
+  {
+    id: "knowledge",
+    number: "02",
+    icon: BookOpenCheck,
+    label: "输入启发 × 知识库",
+    title: "外部材料不是收藏后总结，而是经过消化才有资格进入知识库。",
+    intro: "视频、文章、论文和对话先保存发现路径，再回溯一手来源；事实、解释、推断和观点分层处理，完成七层分析与 Gap Analysis 后，仍需真实任务验证才能升级为知识或 Skill。",
+    facts: ["二手内容只承担发现路径", "一手来源仍需真实性审查", "七层分析保留隐含假设与限制", "知识编译决定更新哪里", "未经确认不标记已吸收"],
+    flow: ["外部输入", "源头回溯", "七层分析", "知识编译", "吸收裁决", "真实任务应用"],
+    links: [["查看知识治理实现", "https://github.com/xmhuangzhijun-hue/organic-agent-os"]],
+  },
+  {
+    id: "qinghe",
+    number: "03",
+    icon: Bot,
+    label: "清禾 × HERMES",
+    title: "我把 Hermes 部署成一个持续理解、执行和服务我的个人 Agent。",
+    intro: "独立云端 Gateway、systemd 服务、Profile 隔离、消息渠道、MCP 工具、长期记忆和终态回执共同组成清禾。它不会把整个 Vault 塞给模型，而是按当前问题读取有来源、有权限、有时效的相关事实。",
+    facts: ["隔离 HERMES_HOME / 会话 / 技能 / 凭据", "候选运行时预构建后再切换", "业务写入幂等、软删除、可追踪", "来源不足时失败关闭", "自然消息入口是最终验收层"],
+    flow: ["消息入口", "人格与任务上下文", "相关记忆检索", "模型理解", "MCP 执行", "verified 回执"],
+    links: [
+      ["查看我的 Hermes fork", "https://github.com/xmhuangzhijun-hue/hermes-agent"],
+      ["检查上游 PR #97743", "https://github.com/NousResearch/hermes-agent/pull/97743"],
+    ],
+  },
+  {
+    id: "upstream",
+    number: "04",
+    icon: GitPullRequest,
+    label: "OPEN SOURCE CONTRIBUTIONS",
+    title: "真实实例里遇到的问题，被整理成可审查的 Hermes 上游修复。",
+    intro: "这些 PR 不是为了填贡献记录而找的题：它们来自 Mem0 污染、视觉超时重试、微信重投递、会话顺序和管理端本地化等真实运行问题。",
+    facts: ["#97156 · Mem0 捕获边界", "#97572 · 视觉满预算超时", "#97581 · 微信无 ID 去重", "#97743 · 同会话预处理顺序", "#98001 · Web 导航本地化"],
+    flow: ["生产症状", "首个断点", "检查 upstream", "最小修复", "行为测试", "公开 review"],
+    links: [
+      ["#97156 · Mem0 捕获边界", "https://github.com/NousResearch/hermes-agent/pull/97156"],
+      ["#97572 · 视觉超时重试", "https://github.com/NousResearch/hermes-agent/pull/97572"],
+      ["#97581 · 微信消息去重", "https://github.com/NousResearch/hermes-agent/pull/97581"],
+      ["#97743 · 会话处理顺序", "https://github.com/NousResearch/hermes-agent/pull/97743"],
+      ["#98001 · Web 导航本地化（已关闭）", "https://github.com/NousResearch/hermes-agent/pull/98001"],
+    ],
+  },
+  {
+    id: "business",
+    number: "05",
+    icon: Database,
+    label: "IAA 业务中台 · LIVE DEMO",
+    title: "给外部评审一个可以自己登录、筛选和操作的脱敏业务中台。",
+    intro: "体验环境复用真实产品的信息架构与交互，但只包含固定种子数据，不连接生产后端。可以查看实时统计、推广管理、今日/历史聚合、综合看板、指标说明和时段下钻。",
+    facts: ["公开 Demo 租户", "固定种子模拟数据", "刷新后操作重置", "生产域名与生产账号完全隔离", "界面明确标注能力与未实现边界"],
+    flow: ["公开账号登录", "选择产品与账户", "多维聚合", "查看异常与趋势", "时段下钻", "理解指标口径"],
+    links: [
+      ["进入脱敏业务中台", "/demo/iaa/index.html"],
+    ],
+    credential: "demo@xmhua.dev / AI-Builder-2026",
+  },
 ] as const;
 
-function ProductVisual({ type }: { type: (typeof projects)[number]["visual"] }) {
-  if(type==="hermes") return <div className="product-ui product-ui--chat" aria-label="Hermes 交互流程示意"><div className="ui-top"><span className="ui-avatar"><Bot size={17}/></span><div><strong>Hermes</strong><small>在线 · 已连接工具</small></div><span className="ui-pill">QQ</span></div><div className="chat-space"><div className="bubble bubble--user">帮我记录：周五前整理 AI 岗位投递材料</div><div className="tool-call"><span><SlidersHorizontal size={14}/> 调用任务工具</span><code>create_task</code></div><div className="bubble bubble--agent"><Check size={15}/> <span>已记录。截止时间：周五 18:00<br/><small>任务 ID · TASK-1042</small></span></div></div><div className="receipt-line"><span className="is-done">queued</span><ArrowRight/><span className="is-done">leased</span><ArrowRight/><span className="is-done">committed</span><ArrowRight/><strong>verified</strong></div></div>;
-  if(type==="obsidian") return <div className="product-ui product-ui--vault" aria-label="Obsidian 自动整理界面结构示意"><aside><strong>PERSONAL OS</strong><span>▾ 项目</span><span>　当前状态.md</span><span>▾ 日志</span><span className="selected">　今天.md</span><span>▸ 知识库</span><span>▸ 生活记录</span></aside><div className="note"><small>2026-08-31 · DAILY NOTE</small><h4>今天</h4><div className="note-callout"><ShieldCheck size={16}/><span><strong>来源边界</strong><br/>仅使用已授权的对话与速记</span></div><p>## 项目推进</p><span className="note-line wide"/><span className="note-line"/><p>## 待处理</p><span className="note-line wide"/></div><div className="json-receipt"><span>AUTOMATION RECEIPT</span><code>{`{`}</code><code>{` "status": "created",`}</code><code>{` "validated": true,`}</code><code>{` "overwrite": false`}</code><code>{`}`}</code></div></div>;
-  if(type==="dashboard") return <div className="product-ui product-ui--dashboard" aria-label="广告数据工作台脱敏界面结构示意"><div className="dash-head"><div><small>IAA 投放 OS</small><strong>投放工作台</strong></div><span>vivo <b>/ GDT</b></span></div><div className="filter-row"><span>今天⌄</span><span>全部产品⌄</span><span>全部账户⌄</span><button>查询</button></div><div className="metric-row"><div><small>消耗</small><strong>已脱敏</strong></div><div><small>ROI</small><strong>1.24</strong></div><div><small>转化</small><strong>+12.8%</strong></div></div><div className="data-grid"><div className="grid-head"><span>产品</span><span>消耗</span><span>ROI</span><span>状态</span></div><div><span>产品 A</span><span>••••</span><span>1.31</span><b>正常</b></div><div className="is-alert"><span>产品 B</span><span>••••</span><span>0.82</span><b><CircleAlert size={13}/> 超成本</b></div><div><span>产品 C</span><span>••••</span><span>1.18</span><b>正常</b></div></div><div className="dash-note"><Clock3 size={15}/><span>数据批次仍在变化，小时报延迟发送 · 最长等待 25 分钟</span></div></div>;
-  return <div className="product-ui product-ui--studio" aria-label="XMHUA Card 建站与管理流程示意"><div className="studio-side"><strong>XMHUA / STUDIO</strong><span className="active">概览</span><span>首页内容</span><span>文章</span><span>产品</span><span>资源目录</span><span>社交链接</span></div><div className="studio-main"><small>站点设置 / hooosberg</small><h4>编辑公开主页</h4><label>主页标题<input readOnly value="AI Product Builder"/></label><label>个人介绍<textarea readOnly value="我构建进入真实工作流的 AI 产品。"/></label><div className="studio-actions"><span><KeyRound size={14}/> 管理凭据已验证</span><button>保存并发布</button></div></div></div>;
+export function WorkShowcase() {
+  return <main className="work-page">
+    <header className="work-nav"><Link className="work-brand" href="/" aria-label="返回 XMHUA 首页"><Image src="/xmhua-mark.svg" alt="" width={27} height={27} priority/><strong>XMHUA</strong></Link><nav aria-label="作品页导航"><a href="#systems">工程系统</a><a href="#principles">原则</a><a href="https://github.com/xmhuangzhijun-hue" target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={14}/></a></nav></header>
+    <section className="work-hero" aria-labelledby="work-title"><div><p className="work-eyebrow">60 SECOND AI CAPABILITY REVIEW</p><h1 id="work-title">我把 AI 用到了<br/><em>系统层。</em></h1><p className="work-hero__lead">不是只会调用模型。我让 Codex 与 Claude Code 共享外部记忆，把输入编译成可复用知识，部署长期运行的 Hermes Agent，并把业务数据流程做成可操作产品。</p><div className="work-hero__actions"><a className="work-button work-button--primary" href="#systems">按证据判断我的水平</a><a className="work-button" href="https://github.com/xmhuangzhijun-hue" target="_blank" rel="noreferrer">检查 GitHub <ArrowUpRight size={16}/></a></div></div><aside className="hero-index"><p>你会在这里看到</p><div><strong>01</strong><span>跨 Agent 外部记忆</span><small>Codex ↔ Claude Code</small></div><div><strong>02</strong><span>知识编译流水线</span><small>输入启发 → 可复用知识</small></div><div><strong>03</strong><span>生产 Agent 实例</span><small>Hermes 部署、运维与修复</small></div><div><strong>04</strong><span>业务产品与开源贡献</span><small>可登录 Demo + 5 个 PR</small></div></aside></section>
+    <section className="capability-line" aria-label="AI 能力链"><p>INPUT</p><span>溯源与分析</span><p>MEMORY</p><span>跨端共享事实</span><p>AGENT</p><span>理解与执行</span><p>BUSINESS</p><span>真实产品验收</span></section>
+    <section className="work-ledger" id="systems"><div className="work-section-heading"><p>SYSTEMS, NOT PROMPTS</p><h2>五个系统，回答“具体做到了什么”。</h2><span>公开材料用于核验能力；私人数据、客户账户和生产凭据不进入展示。</span></div>{systems.map(({icon:Icon,...item})=><article className="system-case" id={item.id} key={item.id}><header><span>{item.number}</span><Icon size={24}/><p>{item.label}</p><h3>{item.title}</h3><p className="system-intro">{item.intro}</p></header><div className="system-flow">{item.flow.map((step,index)=><div key={step}><small>{String(index+1).padStart(2,"0")}</small><span>{step}</span>{index<item.flow.length-1&&<ArrowRight size={14}/>}</div>)}</div><div className="system-bottom"><div><p className="system-kicker">可检查的实现细节</p><ul>{item.facts.map(fact=><li key={fact}><ShieldCheck size={15}/>{fact}</li>)}</ul></div><div className="system-links"><p className="system-kicker">公开证据</p>{item.links.map(([label,href])=><a href={href} target={href.startsWith("/")?undefined:"_blank"} rel={href.startsWith("/")?undefined:"noreferrer"} key={href}>{label}<ArrowUpRight size={15}/></a>)}{"credential" in item&&<code><span>公开账号</span>{item.credential}</code>}</div></div></article>)}</section>
+    <section className="work-method" id="principles"><div><p className="work-eyebrow">ENGINEERING PRINCIPLES</p><h2>不把“AI 做了”当成完成。</h2><p>模型负责理解和判断，确定性系统负责事实与副作用，真实用户入口负责最终验收。</p></div><ol><li><span>01</span><strong>事实有来源</strong><p>当前代码与运行状态优先，历史用于避免重犯。</p></li><li><span>02</span><strong>记忆有治理</strong><p>候选不能覆盖 shared，吸收必须经验证。</p></li><li><span>03</span><strong>动作有回执</strong><p>queued、committed 和 verified 不能混为一谈。</p></li><li><span>04</span><strong>贡献可审查</strong><p>公开仓库、PR、测试和边界都允许外部质疑。</p></li></ol></section>
+    <section className="work-contact"><p>如果你在招聘 AI Agent、AI 应用工程或 FDE，欢迎直接检查我的工作。</p><a href="https://github.com/xmhuangzhijun-hue" target="_blank" rel="noreferrer">查看全部公开仓库 <ArrowUpRight size={18}/></a></section><footer className="work-footer"><Link href="/"><ArrowLeft size={15}/> 返回博客首页</Link><span>© 2026 XMHUA · Public engineering portfolio</span></footer>
+  </main>;
 }
-
-export function WorkShowcase(){return <main className="work-page"><header className="work-nav"><Link className="work-brand" href="/" aria-label="返回 XMHUA 首页"><Image src="/xmhua-mark.svg" alt="" width={27} height={27} priority/><strong>XMHUA</strong></Link><nav aria-label="作品页导航"><a href="#cases">产品案例</a><a href="#method">工作方式</a><a href="https://github.com/xmhuangzhijun-hue" target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={14}/></a></nav></header><section className="work-hero" aria-labelledby="work-title"><div className="work-hero__copy"><p className="work-eyebrow">AI PRODUCT BUILDER · PORTFOLIO</p><h1 id="work-title">四个真实产品，<br/>拆开给你看。</h1><p className="work-hero__lead">不是工具清单，也不是“会用 AI”的空话。下面直接展示谁在用、怎么操作、系统如何处理异常，以及我交付了什么。</p><div className="work-hero__actions"><a className="work-button work-button--primary" href="#cases">进入产品案例</a><a className="work-button" href="https://github.com/xmhuangzhijun-hue" target="_blank" rel="noreferrer">查看 GitHub <ArrowUpRight size={16}/></a></div></div><aside className="hero-index" aria-label="案例索引"><p>PRODUCT INDEX</p>{projects.map(p=><a href={`#${p.id}`} key={p.id}><span>{p.number}</span>{p.kicker.split(" · ")[0]}<ArrowRight size={14}/></a>)}</aside></section><section className="work-ledger" id="cases" aria-labelledby="cases-title"><div className="work-section-heading"><p>PRODUCT WALKTHROUGHS</p><h2 id="cases-title">从界面开始，不从概念开始。</h2><span>页面内产品画面均为基于真实功能制作的脱敏结构示意，不包含私人或客户数据。</span></div><div className="work-ledger__list">{projects.map(p=><article className="case-study" id={p.id} key={p.id}><header className="case-head"><span>{p.number}</span><p>{p.kicker}</p><h3>{p.title}</h3><p className="case-summary">{p.summary}</p></header><div className="case-context"><div><small>使用者</small><p>{p.user}</p></div><div><small>核心任务</small><p>{p.task}</p></div><div><small>我的职责</small><p>{p.role}</p></div></div><div className="visual-label"><span>脱敏界面结构 / INTERACTION MODEL</span><span>基于真实字段与流程制作</span></div><ProductVisual type={p.visual}/><div className="case-detail"><div className="flow-panel"><h4>用户怎么用</h4><ol>{p.flow.map((step,i)=><li key={step}><span>{i+1}</span><p>{step}</p></li>)}</ol></div><div className="feature-panel"><h4>做进产品里的能力</h4><div>{p.features.map(feature=><span key={feature}><Check size={14}/>{feature}</span>)}</div></div></div><div className="case-receipts"><div><CircleAlert size={18}/><span><small>异常怎么处理</small>{p.exception}</span></div><div><FileText size={18}/><span><small>结果与证据</small>{p.proof}</span></div></div></article>)}</div></section><section className="work-method" id="method" aria-labelledby="method-title"><div><p className="work-eyebrow">HOW I BUILD</p><h2 id="method-title">产品细节来自真实约束。</h2><p>入口要自然，状态要诚实，异常要能恢复，结果要由用户看到。</p></div><ol><li><span>01</span><strong>定义用户任务</strong><p>先确定谁在什么场景下要完成什么。</p></li><li><span>02</span><strong>画完整链路</strong><p>界面、模型、工具、数据和回执缺一不可。</p></li><li><span>03</span><strong>设计异常路径</strong><p>超时、缺数、重复写入和权限失败都要有明确行为。</p></li><li><span>04</span><strong>用真实入口验收</strong><p>最终看用户能否在页面或消息渠道完成任务。</p></li></ol></section><section className="work-contact"><p>正在寻找 AI Agent、AI 应用开发、AI 产品工程相关机会。</p><a href="mailto:xmhuangzhijun-hue@users.noreply.github.com">聊聊具体岗位 <ArrowUpRight size={18}/></a></section><footer className="work-footer"><Link href="/"><ArrowLeft size={15}/> 返回博客首页</Link><span>© 2026 XMHUA · 公开内容已脱敏</span></footer></main>}
