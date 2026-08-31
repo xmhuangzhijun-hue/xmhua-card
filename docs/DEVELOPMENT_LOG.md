@@ -188,3 +188,28 @@ This file is the durable engineering trail for each iteration. User-facing relea
 - Master CI run `32961620282` passed generated-file sync, lint, type checking, security regression, dependency audit, and production build.
 - Tags `v0.5.1` and `backend-v1.1.1` point to the merge; the public non-draft v0.5.1 GitHub Release was published successfully.
 - Issue #2 was closed by the merge, updated to `status: released`, and received a public response linking the fix, automated guards, verification receipts, and Release. Milestone `v0.5.1 - Security follow-up` was closed.
+
+## 2026-08-31 — Product-detail portfolio walkthroughs
+
+### Feedback and scope
+
+- The first `/work` iteration named capabilities and technologies but did not let a recruiter understand what each product does or how a user operates it.
+- Kept the existing blog route and public privacy boundary. Reworked only the portfolio case component and its route-scoped stylesheet.
+
+### Changes
+
+- Replaced five text-heavy capability cards with four concrete product walkthroughs: Hermes, Obsidian Personal OS, IAA 投放 OS, and XMHUA Card.
+- Added, for every product, a named user, core task, owner role, four-step usage flow, shipped feature set, exception behavior, and result evidence.
+- Added four CSS-rendered product interface models using real field names and flows: chat/tool receipt, Vault/automation receipt, advertising operations dashboard, and tenant content Studio.
+- Labeled every product model as a privacy-safe interaction structure so it cannot be mistaken for a production screenshot.
+- Rebuilt the hero and product index around the page's hiring purpose and added responsive layouts for the embedded product interfaces.
+
+### Verification
+
+- `npm run check` passed lint with four pre-existing homepage image warnings and zero errors, TypeScript checking, and the Next.js production build.
+- Browser verification confirmed the new heading, four case studies, no console errors, and a 375 px viewport with no horizontal overflow.
+- The local production preview returned the rebuilt static `/work` page at `http://127.0.0.1:3018/work`.
+
+### Deferred
+
+- This iteration updates the local public-facing site implementation only; no remote deployment was performed.
