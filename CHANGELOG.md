@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 未发布
+
+### 新增
+
+- 社交条目支持二维码类型，微信等没有可跳转主页的平台可以在后台上传二维码，访客点击后弹出扫码窗口。
+- 后台支持图片上传（PNG / JPG / WebP，按文件头校验，拒绝 SVG），图片经 `/api/media/` 提供。
+- 笔记新增可选的「原文链接」，显示在正文上方。
+
+### 修复
+
+- 「链接地址」改名为「网址后缀」，显示最终公开地址、内联提示规则，并能把误粘贴的完整网址一键转成合法后缀。
+- 表单校验失败时按中文字段名提示，不再只显示英文字段。
+
 ## [Unreleased]
 
 ### Added

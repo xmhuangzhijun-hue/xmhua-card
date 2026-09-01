@@ -123,3 +123,18 @@
     justify-content: flex-start;
   }
 }
+
+.note-source {
+  margin: -18px 0 34px;
+  color: var(--notes-muted);
+  font-size: 13.5px;
+}
+.note-source a {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  color: var(--notes-blue);
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

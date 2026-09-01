@@ -9,12 +9,13 @@ import {
   siteSettingsSchema,
   socialLinkInputSchema,
 } from "../lib/content-schema.js";
-import { parseBody, parseId } from "../lib/http.js";
+import { badRequest, parseBody, parseId } from "../lib/http.js";
 import { requireAdmin } from "../middleware/auth.js";
 import * as collections from "../services/collections.js";
 import { readSettings, writeSettings } from "../services/content.js";
 import { listTenants, requireTenant, tenantSlugSchema, type TenantRow } from "../services/tenant.js";
 import { createTenant } from "../services/provisioning.js";
+import { deleteImage, listImages, storeImage } from "../lib/uploads.js";
 import { z } from "zod";
 
 export const adminRoutes = new Hono();
@@ -72,6 +73,22 @@ adminRoutes.get("/overview", async context => {
       },
     },
   });
+});
+
+adminRoutes.get("/uploads", async context => {
+  return context.json({ data: await listImages() });
+});
+
+adminRoutes.post("/uploads", async context => {
+  const body = await context.req.parseBody();
+  const file = body.file;
+  if (!(file instanceof File)) throw badRequest("FILE_REQUIRED");
+  return context.json({ data: await storeImage(file) }, 201);
+});
+
+adminRoutes.delete("/uploads/:name", async context => {
+  await deleteImage(context.req.param("name"));
+  return context.json({ data: { ok: true } });
 });
 
 adminRoutes.get("/settings", async context => {

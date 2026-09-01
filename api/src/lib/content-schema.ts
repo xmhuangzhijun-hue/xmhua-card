@@ -85,6 +85,8 @@ export const articleInputSchema = z.object({
   slug,
   body: bodyText,
   published: z.boolean(),
+  sourceUrl: href.default(""),
+  sourceLabel: shortText.default(""),
 });
 
 export const productInputSchema = z.object({
@@ -104,11 +106,16 @@ export const directoryLinkInputSchema = z.object({
   href,
 });
 
+export const socialKinds = ["link", "qrcode"] as const;
+
 export const socialLinkInputSchema = z.object({
   icon: shortText.min(1),
   label: shortText.min(1),
   handle: shortText,
   href,
+  kind: z.enum(socialKinds).default("link"),
+  qrAsset: href.default(""),
+  note: shortText.default(""),
 });
 
 export const pageInputSchema = z.object({
@@ -133,6 +140,8 @@ export const publicContentSchema = siteSettingsSchema.omit({ directory: true }).
     slug,
     body: bodyText,
     published: z.boolean(),
+    sourceUrl: href,
+    sourceLabel: shortText,
   })),
   products: z.array(z.object({
     id: itemId,
@@ -158,6 +167,9 @@ export const publicContentSchema = siteSettingsSchema.omit({ directory: true }).
     label: shortText,
     handle: shortText,
     href,
+    kind: z.enum(socialKinds),
+    qrAsset: href,
+    note: shortText,
   })),
   pages: z.array(z.object({ slug, title: shortText, description: longText })),
 });

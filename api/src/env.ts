@@ -23,6 +23,14 @@ export const env = {
   sessionTtlHours: integer("ADMIN_SESSION_TTL_HOURS", 24 * 14),
   /** Origins allowed to send credentialed browser requests. Same-origin deploys need none. */
   corsOrigins: (optional("CORS_ALLOWED_ORIGIN") ?? "").split(",").map(value => value.trim()).filter(Boolean),
+  /** Where uploaded images live. Must outlive releases, so never inside a release dir. */
+  uploadDir: optional("UPLOAD_DIR") ?? "./uploads",
+  /**
+   * Public URL prefix for stored images. It sits under /api on purpose: the web
+   * server already routes /api to this service, so serving media needs no extra
+   * vhost rule and behaves identically in development and production.
+   */
+  uploadPublicPath: (optional("UPLOAD_PUBLIC_PATH") ?? "/api/media").replace(/\/$/, ""),
   /** Cookies are only marked Secure when the site is actually served over HTTPS. */
   secureCookies: (optional("ADMIN_COOKIE_SECURE") ?? "true") !== "false",
   isProduction: process.env.NODE_ENV === "production",

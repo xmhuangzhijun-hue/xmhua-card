@@ -68,6 +68,8 @@ export async function getPublicContent(tenant: TenantRow): Promise<PublicContent
       slug: row.slug,
       body: row.body,
       published: row.published,
+      sourceUrl: row.sourceUrl,
+      sourceLabel: row.sourceLabel,
     })),
     products: productRows.map(row => ({
       id: row.id,
@@ -89,8 +91,11 @@ export async function getPublicContent(tenant: TenantRow): Promise<PublicContent
       })),
     },
     socials: socialRows
-      .filter(row => isLive(row.href))
-      .map(row => ({ id: row.id, icon: row.icon, label: row.label, handle: row.handle, href: row.href })),
+      .filter(isPublishableSocial)
+      .map(row => ({
+        id: row.id, icon: row.icon, label: row.label, handle: row.handle,
+        href: row.href, kind: row.kind, qrAsset: row.qrAsset, note: row.note,
+      })),
     pages: pageRows.map(row => ({ slug: row.slug, title: row.title, description: row.description })),
   });
 }
@@ -115,6 +120,14 @@ export async function getPageBySlug(tenant: TenantRow, slug: string) {
   const page = rows[0];
   if (!page) throw notFound("PAGE_NOT_FOUND");
   return page;
+}
+
+/**
+ * A link entry needs a destination; a QR entry needs an image. Either way an entry
+ * the owner has not finished is hidden rather than shipped as something dead.
+ */
+export function isPublishableSocial(row: { kind: string; href: string; qrAsset: string }) {
+  return row.kind === "qrcode" ? isLive(row.qrAsset) : isLive(row.href);
 }
 
 /** A href that is empty or a bare "#" is an unfilled placeholder, not a destination. */

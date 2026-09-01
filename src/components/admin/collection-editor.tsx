@@ -179,10 +179,13 @@ export function CollectionEditor({ config, onChanged }: { config: CollectionConf
               </div>
             </header>
             <div className="ac-form__body">
-              {config.fields.map(spec => (
-                <Field key={spec.name} spec={spec} value={draft[spec.name] ?? ""}
-                  onChange={next => setDraft(current => ({ ...current, [spec.name]: next }))} />
-              ))}
+              {config.fields
+                .filter(spec => !spec.visibleWhen || spec.visibleWhen(draft))
+                .map(spec => (
+                  // Two variants of one field (same name, different kind) can coexist.
+                  <Field key={`${spec.name}:${spec.label}`} spec={spec} value={draft[spec.name] ?? ""}
+                    onChange={next => setDraft(current => ({ ...current, [spec.name]: next }))} />
+                ))}
             </div>
           </>
         )}

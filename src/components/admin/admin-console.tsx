@@ -29,14 +29,24 @@ const articles: CollectionConfig = {
   blank: {
     category: "", title: "", excerpt: "",
     publishedAt: new Date().toISOString().slice(0, 10),
-    slug: "", body: "", published: false,
+    slug: "", body: "", published: false, sourceUrl: "", sourceLabel: "",
   },
   fields: [
     { name: "title", label: "标题", type: "text", placeholder: "这篇笔记讲什么" },
-    { name: "slug", label: "链接地址", type: "text", help: "只能用小写字母、数字和连字符。公开地址是 /notes/你填的内容", placeholder: "my-first-note" },
+    { name: "slug", label: "网址后缀", type: "slug", prefix: "/notes/" },
     { name: "category", label: "分类", type: "text", help: "分类会自动成为笔记页的筛选项。", placeholder: "工程方法" },
     { name: "publishedAt", label: "发布日期", type: "date" },
     { name: "excerpt", label: "摘要", type: "textarea", help: "列表和搜索结果里显示的一两句话。" },
+    {
+      name: "sourceUrl", label: "原文链接", type: "url",
+      help: "这篇笔记讲的东西在哪——论文、文章、仓库地址。会显示在正文上方，留空就不显示。",
+      placeholder: "https://arxiv.org/abs/…",
+    },
+    {
+      name: "sourceLabel", label: "原文标题", type: "text",
+      help: "原文链接显示成什么文字。留空就显示域名。",
+      visibleWhen: row => Boolean(String(row.sourceUrl ?? "").trim()),
+    },
     { name: "published", label: "已发布", type: "boolean", help: "关掉就是草稿，公开页面看不到。" },
     { name: "body", label: "正文", type: "markdown", placeholder: "开始写……" },
   ],
@@ -61,18 +71,52 @@ const products: CollectionConfig = {
   ],
 };
 
+const isQrKind = (row: { kind?: unknown }) => String(row.kind ?? "link") === "qrcode";
+
 const socialLinks: CollectionConfig = {
   collection: "social-links",
   singular: "社交账号",
   reorderable: true,
   title: row => String(row.label || ""),
   subtitle: row => String(row.handle || ""),
-  incomplete: row => (placeholderHref(row.href) ? "没绑定，不会显示" : null),
-  blank: { icon: "/xmhua-mark.svg", label: "", handle: "", href: "" },
+  incomplete: row => {
+    // A QR entry is publishable once it has an image; a link entry needs a URL.
+    if (isQrKind(row)) return String(row.qrAsset ?? "").trim() ? null : "还没传二维码，不会显示";
+    return placeholderHref(row.href) ? "没绑定，不会显示" : null;
+  },
+  blank: { icon: "/xmhua-mark.svg", label: "", handle: "", href: "", kind: "link", qrAsset: "", note: "" },
   fields: [
-    { name: "label", label: "平台", type: "text", placeholder: "小红书" },
-    { name: "handle", label: "账号名", type: "text", help: "页面上显示的账号昵称或 ID。" },
-    { name: "href", label: "主页链接", type: "url", help: "打开你在该平台主页的完整地址，点击后会新标签页跳转。没填就不显示这一项。" },
+    {
+      name: "kind", label: "类型", type: "select",
+      help: "微信这类没有可跳转主页的平台选「扫码」，访客点开会看到二维码。",
+      options: [
+        { value: "link", label: "链接 — 点击跳转到主页" },
+        { value: "qrcode", label: "扫码 — 点击弹出二维码" },
+      ],
+    },
+    { name: "label", label: "平台", type: "text", placeholder: "微信" },
+    { name: "handle", label: "账号名", type: "text", help: "页面上显示的账号昵称或 ID。扫码类型下会附一个「复制」按钮。" },
+    {
+      name: "qrAsset", label: "二维码图片", type: "image",
+      help: "微信 → 我 → 我的二维码 → 保存图片，然后传上来。支持 PNG / JPG / WebP，2MB 以内。",
+      visibleWhen: isQrKind,
+    },
+    {
+      name: "note", label: "扫码提示语", type: "text",
+      placeholder: "扫码加我微信，请备注来意",
+      help: "显示在二维码下方。留空则用默认提示。",
+      visibleWhen: isQrKind,
+    },
+    {
+      name: "href", label: "主页链接", type: "url",
+      help: "打开你在该平台主页的完整地址，点击后会新标签页跳转。没填就不显示这一项。",
+      visibleWhen: row => !isQrKind(row),
+    },
+    {
+      name: "href", label: "附带主页链接（可选）", type: "url",
+      help: "扫码类型下可留空。填了会在二维码下方多一个「打开主页」入口，适合公众号。",
+      visibleWhen: isQrKind,
+    },
     { name: "icon", label: "图标地址", type: "text" },
   ],
 };
@@ -110,7 +154,7 @@ const pages: CollectionConfig = {
   blank: { slug: "", title: "", description: "", body: "", published: true },
   fields: [
     { name: "title", label: "页面标题", type: "text" },
-    { name: "slug", label: "链接地址", type: "text", help: "公开地址是 /你填的内容，例如 privacy" },
+    { name: "slug", label: "网址后缀", type: "slug", prefix: "/" },
     { name: "description", label: "副标题", type: "textarea" },
     { name: "published", label: "已发布", type: "boolean" },
     { name: "body", label: "正文", type: "markdown" },
