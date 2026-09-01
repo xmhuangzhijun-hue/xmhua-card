@@ -75,9 +75,11 @@ export function SiteFooter({ content }: { content: SiteContent }) {
           <p>{footer.description}</p>
         </div>
         <nav className="site-footer__social">
-          {socials.map(social => (
+          {/* QR-only entries have no destination to link to; they live in the About grid. */}
+          {socials.filter(social => isLiveHref(social.href)).map(social => (
             <a href={social.href} key={social.id} target="_blank" rel="noreferrer noopener">{social.label}</a>
           ))}
+          {socials.some(social => social.kind === "qrcode") && <a href="#about">微信 / 扫码</a>}
           {isLiveHref(ui.emailLink.href) && <a href={ui.emailLink.href}>{ui.emailLink.label}</a>}
         </nav>
         <nav className="site-footer__legal">

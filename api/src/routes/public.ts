@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { getArticleBySlug, getPageBySlug, getPublicContent } from "../services/content.js";
 import { requireTenant } from "../services/tenant.js";
+import { readImage } from "../lib/uploads.js";
 
 export const publicRoutes = new Hono();
 
@@ -52,3 +53,19 @@ function readingMinutes(body: string) {
   const characters = body.replace(/\s+/g, "").length;
   return Math.max(1, Math.round(characters / 400));
 }
+
+/**
+ * Serves uploaded images. Names are content hashes, so a stored file never
+ * changes and can be cached indefinitely. nosniff stops a browser from
+ * reinterpreting the bytes as anything but the declared image type.
+ */
+publicRoutes.get("/media/:name", async context => {
+  const image = await readImage(context.req.param("name"));
+  if (!image) return context.json({ error: "NOT_FOUND" }, 404);
+  return context.body(image.bytes.buffer as ArrayBuffer, 200, {
+    "Content-Type": image.mime,
+    "Cache-Control": "public, max-age=31536000, immutable",
+    "X-Content-Type-Options": "nosniff",
+    "Content-Security-Policy": "default-src 'none'",
+  });
+});

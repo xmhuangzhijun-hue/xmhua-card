@@ -36,6 +36,20 @@
       "when": 1788244349645,
       "tag": "0004_regular_phil_sheldon",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788273217792,
+      "tag": "0005_even_vertigo",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788273884594,
+      "tag": "0006_aberrant_shinko_yamashiro",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, CodeXml, ExternalLink, Layers, Search, ShieldCheck } from "lucide-react";
+import { ArrowRight, BookOpen, CodeXml, Layers, Search, ShieldCheck } from "lucide-react";
 import { isLiveHref, type SectionHeading, type SiteContent } from "@/lib/content-types";
 import { AnalyticsConsent } from "./analytics-consent";
+import { SocialGrid } from "./social-grid";
 import { SiteFooter, SiteHeader } from "./site-chrome";
 
 const directoryIcons = { search: Search, code: CodeXml, layers: Layers, shield: ShieldCheck };
@@ -150,19 +151,7 @@ export function HomePage({ content }: { content: SiteContent }) {
               </div>
             </div>
           </div>
-          {socials.length > 0 && (
-            <div className="social-card-grid">
-              {socials.map(social => (
-                <a className="social-card" href={social.href} key={social.id} target="_blank" rel="noreferrer noopener">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img className="social-card__icon" src={social.icon} alt="" />
-                  <span>{social.label}</span>
-                  <strong>{social.handle}</strong>
-                  <ExternalLink className="social-card__external" size={14} />
-                </a>
-              ))}
-            </div>
-          )}
+          {socials.length > 0 && <SocialGrid socials={socials} />}
         </section>
       </main>
       <SiteFooter content={content} />

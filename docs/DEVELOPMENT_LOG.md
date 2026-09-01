@@ -348,3 +348,60 @@ This file is the durable engineering trail for each iteration. User-facing relea
 - 尚未部署。生产发布、数据库迁移与 Nginx 路由调整见 `docs/DEPLOYMENT.md`，需要站点主人确认后执行。
 - 六篇笔记的正文仍是每篇三段的占位内容。后台已经具备写作能力，但内容本身要由站点主人补。
 - 项目卡片与能力卡片的链接仍为空，公开页面因此不渲染这些按钮；需要站点主人在后台补齐。
+
+## 2026-09-01 — WeChat QR social entries, image uploads, and a slug field that explains itself
+
+### Feedback and evidence before changes
+
+- Asked whether social accounts could be bound by "扫描授权" (OAuth). They cannot for most of
+  the listed platforms: WeChat, Xiaohongshu and Bilibili expose no third-party OAuth for a
+  personal site, Douyin and Kuaishou require enterprise qualification, and the domain is not
+  ICP-filed, so callback domains would fail validation. What OAuth would return is the profile
+  URL that is already typed by hand.
+- WeChat is structurally different from the other nine entries: a personal account has no
+  linkable page at all, so the existing `href` model cannot represent it.
+- A note was rejected on save with `slug must be kebab-case`: a full arXiv URL had been typed
+  into the field labelled 「链接地址」. The label invited exactly that mistake, and there was no
+  field anywhere for the source link the note was actually about.
+
+### Changes
+
+- `social_links` gained `kind` (`link` | `qrcode`), `qr_asset` and `note`. A QR entry is
+  publishable once it has an image; a link entry still needs a URL. Existing rows default to
+  `link`, so the migration is additive.
+- Public social cards render QR entries as a button that opens a dialog with the code, the
+  handle plus a copy button, an owner-written hint, and an optional profile link. Link entries
+  are unchanged. The footer lists only entries with a real destination and points QR-only
+  entries at the About section.
+- Added authenticated image upload. Type is decided by magic bytes, not the declared content
+  type or filename; SVG is refused because it can carry script. Stored names are content
+  hashes, so uploads are idempotent, cacheable forever, and no client string reaches the
+  filesystem. Images are served from `/api/media/:name` with `nosniff` and a locked-down CSP,
+  which reuses the existing `/api` proxy rule instead of needing a new vhost location.
+- Replaced the article and page slug inputs with a dedicated field: it shows the resulting
+  public URL, states the rule inline before the server can reject it, and converts a pasted
+  URL into a usable slug with one click.
+- Articles gained optional `source_url` / `source_label`, rendered above the body as
+  「原文：…」 with `target="_blank"` and `rel="noreferrer noopener"`.
+- Validation failures now name the field using the Chinese label shown in the console.
+
+### Verification
+
+- `npm run check` passed in both packages; `npm audit --audit-level=moderate` reported zero
+  vulnerabilities in both.
+- Upload boundary, exercised against a running API: PNG accepted (4429 bytes, stored under its
+  content hash); SVG carrying a script tag refused with `UNSUPPORTED_IMAGE_TYPE`; unauthenticated
+  upload refused with 401; `/api/media/..%2f..%2f..%2fetc%2fpasswd` refused with 400; a served
+  image returned 200 with `image/png`.
+- Browser verification of the QR dialog: the WeChat card renders as a `button` with no href, the
+  dialog opens, the image loads at its natural size, and the footer shows an in-page anchor
+  rather than a dead link.
+- Browser verification of the slug field: pasting `https://arxiv.org/abs/2605.06614` produced the
+  warning 「这里不要填完整网址」 and a one-click fix, after which the note saved successfully.
+- The published note rendered 「原文：arXiv 2605.06614」 linking to the paper with
+  `target="_blank"` and `rel="noreferrer noopener"`.
+
+### Deferred
+
+- Paste-a-share-blob extraction for Douyin/Kuaishou/Xiaohongshu links, and camera QR scanning to
+  fill an address, were discussed but not built in this iteration.

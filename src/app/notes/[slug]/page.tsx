@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ContentUnavailableError, getSiteContent } from "@/lib/api-client";
+import { isLiveHref } from "@/lib/content-types";
 import { renderMarkdown } from "@/lib/markdown";
 import "../notes.css";
 import "./detail.css";
@@ -65,6 +66,14 @@ export default async function NotePage({ params }: NotePageProps) {
         <p className="note-meta">{article.category} · {article.publishedAt} · 约 {minutes} 分钟</p>
         <h1>{article.title}</h1>
         <p className="note-lead">{article.excerpt}</p>
+        {isLiveHref(article.sourceUrl) && (
+          <p className="note-source">
+            原文：
+            <a href={article.sourceUrl} target="_blank" rel="noreferrer noopener">
+              {article.sourceLabel || hostOf(article.sourceUrl)} <ExternalLink size={13} />
+            </a>
+          </p>
+        )}
         {article.body.trim()
           ? <div className="note-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(article.body) }} />
           : <p className="note-body note-body--empty">这篇笔记还没有正文。</p>}
@@ -93,4 +102,13 @@ export default async function NotePage({ params }: NotePageProps) {
       </footer>
     </main>
   );
+}
+
+/** Falls back to the domain when no label was given for a source link. */
+function hostOf(url: string) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
 }

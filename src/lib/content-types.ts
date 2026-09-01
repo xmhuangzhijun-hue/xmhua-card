@@ -26,6 +26,9 @@ export type Article = {
   slug: string;
   body: string;
   published: boolean;
+  /** Optional link to the material the note is about. */
+  sourceUrl: string;
+  sourceLabel: string;
 };
 
 export type ArticleDetail = Omit<Article, "published"> & { readingMinutes: number };
@@ -48,12 +51,18 @@ export type DirectoryLink = {
   href: string;
 };
 
+export type SocialKind = "link" | "qrcode";
+
 export type SocialLink = {
   id: number;
   icon: string;
   label: string;
   handle: string;
   href: string;
+  /** "qrcode" is for platforms with no linkable personal page, WeChat above all. */
+  kind: SocialKind;
+  qrAsset: string;
+  note: string;
 };
 
 export type PageSummary = { slug: string; title: string; description: string };

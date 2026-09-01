@@ -38,6 +38,9 @@ export const articles = pgTable("articles", {
   href: text("href").notNull(),
   slug: text("slug").notNull(),
   body: text("body").notNull().default(""),
+  /** Optional link to the material a note is about (a paper, article or repo). */
+  sourceUrl: text("source_url").notNull().default(""),
+  sourceLabel: text("source_label").notNull().default(""),
   sortOrder: integer("sort_order").notNull(),
   published: boolean("published").default(true).notNull(),
 }, table => [
@@ -68,6 +71,14 @@ export const directoryLinks = pgTable("directory_links", {
   sortOrder: integer("sort_order").notNull(),
 }, table => [index("directory_links_tenant_sort_idx").on(table.tenantId, table.sortOrder)]);
 
+/**
+ * Social entries come in two shapes.
+ *
+ * "link" opens a profile URL. "qrcode" is for platforms with no linkable personal
+ * page - WeChat above all - where the visitor scans an image instead of following
+ * a link. A qrcode entry may still carry an href (an official-account page, say),
+ * but it is the image that makes it publishable.
+ */
 export const socialLinks = pgTable("social_links", {
   id: serial("id").primaryKey(),
   tenantId: integer("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
@@ -75,6 +86,9 @@ export const socialLinks = pgTable("social_links", {
   label: text("label").notNull(),
   handle: text("handle").notNull(),
   href: text("href").notNull(),
+  kind: text("kind").notNull().default("link"),
+  qrAsset: text("qr_asset").notNull().default(""),
+  note: text("note").notNull().default(""),
   sortOrder: integer("sort_order").notNull(),
 }, table => [index("social_links_tenant_sort_idx").on(table.tenantId, table.sortOrder)]);
 

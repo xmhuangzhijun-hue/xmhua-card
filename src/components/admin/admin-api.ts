@@ -75,17 +75,41 @@ export function describeError(error: unknown) {
     case "INVALID_CREDENTIALS": return "用户名或密码不正确。";
     case "UNAUTHORIZED": return "登录已失效，请重新登录。";
     case "SLUG_TAKEN": return "这个链接地址已经被另一条记录占用，换一个。";
-    case "INVALID_BODY": return `有字段没填对：${summarizeDetail(error.detail)}`;
+    case "INVALID_BODY": return `这些字段没填对：${summarizeDetail(error.detail)}`;
     case "INVALID_JSON": return "提交内容不是合法数据。";
     case "SETTINGS_NOT_SEEDED": return "这个站点还没有初始化内容。";
     default: return error.code;
   }
 }
 
+/** Field names come back in English; the console shows the label the owner saw. */
+const fieldLabels: Record<string, string> = {
+  slug: "网址后缀",
+  title: "标题",
+  category: "分类",
+  excerpt: "摘要",
+  body: "正文",
+  publishedAt: "发布日期",
+  sourceUrl: "原文链接",
+  sourceLabel: "原文标题",
+  name: "名称",
+  label: "平台",
+  handle: "账号名",
+  href: "链接",
+  qrAsset: "二维码图片",
+  icon: "图标",
+  image: "图标地址",
+  summary: "介绍",
+  subtitle: "副标题",
+  platform: "标签",
+  description: "说明",
+};
+
 function summarizeDetail(detail: unknown): string {
   if (!detail || typeof detail !== "object") return "请检查必填项";
-  const fields = collectFieldNames(detail as Record<string, unknown>, []);
-  return fields.length > 0 ? fields.slice(0, 4).join("、") : "请检查必填项";
+  const fields = collectFieldNames(detail as Record<string, unknown>, [])
+    .map(path => fieldLabels[path.split(".").pop() ?? path] ?? path);
+  return fields.length > 0 ? [...new Set(fields)].slice(0, 4).join("、") : "请检查必填项";
 }
 
 function collectFieldNames(node: Record<string, unknown>, path: string[]): string[] {

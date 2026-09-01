@@ -3,14 +3,20 @@
 import { useId, useState } from "react";
 import { Eye, Pencil } from "lucide-react";
 import { renderMarkdown } from "@/lib/markdown";
+import { ImageField } from "./image-field";
+import { SlugField } from "./slug-field";
 
 export type FieldSpec = {
   name: string;
   label: string;
-  type: "text" | "textarea" | "markdown" | "url" | "date" | "boolean" | "select";
+  type: "text" | "textarea" | "markdown" | "url" | "date" | "boolean" | "select" | "image" | "slug";
   help?: string;
   placeholder?: string;
   options?: { value: string; label: string }[];
+  /** For "slug": the public URL prefix shown in front of the value. */
+  prefix?: string;
+  /** Hides the field unless the current draft matches, e.g. only for one kind. */
+  visibleWhen?: (draft: FieldValues) => boolean;
 };
 
 export type FieldValues = Record<string, string | boolean>;
@@ -21,6 +27,15 @@ export function Field({ spec, value, onChange }: {
   onChange: (next: string | boolean) => void;
 }) {
   const id = useId();
+
+  if (spec.type === "slug") {
+    return <SlugField value={String(value ?? "")} prefix={spec.prefix ?? "/"} onChange={next => onChange(next)} />;
+  }
+
+  if (spec.type === "image") {
+    return <ImageField label={spec.label} help={spec.help} value={String(value ?? "")}
+      onChange={next => onChange(next)} />;
+  }
 
   if (spec.type === "boolean") {
     return (
