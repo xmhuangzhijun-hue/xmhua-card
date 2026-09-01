@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, ArrowUpRight, ExternalLink } from "lucide-react"
 import { notFound } from "next/navigation";
 import { ContentUnavailableError, getSiteContent } from "@/lib/api-client";
 import { isLiveHref } from "@/lib/content-types";
-import { renderMarkdown } from "@/lib/markdown";
+import { renderMarkdown, stripInlineMarkdown } from "@/lib/markdown";
 import "../notes.css";
 import "./detail.css";
 
@@ -40,8 +40,12 @@ export async function generateMetadata({ params }: NotePageProps): Promise<Metad
     if (!loaded) return { title: "笔记未找到 | XMHUA" };
     return {
       title: `${loaded.article.title} | XMHUA`,
-      description: loaded.article.excerpt,
-      openGraph: { title: loaded.article.title, description: loaded.article.excerpt, type: "article" },
+      description: stripInlineMarkdown(loaded.article.excerpt),
+      openGraph: {
+        title: loaded.article.title,
+        description: stripInlineMarkdown(loaded.article.excerpt),
+        type: "article",
+      },
     };
   } catch (error) {
     if (error instanceof ContentUnavailableError) return { title: "笔记 | XMHUA" };
@@ -65,7 +69,7 @@ export default async function NotePage({ params }: NotePageProps) {
       <article className="note-article">
         <p className="note-meta">{article.category} · {article.publishedAt} · 约 {minutes} 分钟</p>
         <h1>{article.title}</h1>
-        <p className="note-lead">{article.excerpt}</p>
+        <p className="note-lead">{stripInlineMarkdown(article.excerpt)}</p>
         {isLiveHref(article.sourceUrl) && (
           <p className="note-source">
             原文：

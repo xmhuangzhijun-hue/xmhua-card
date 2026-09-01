@@ -241,3 +241,18 @@ function escapeHtml(value: string) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
+
+/**
+ * Plain-text form of a Markdown fragment, for places that must not carry markup:
+ * excerpts, list rows and meta descriptions.
+ */
+export function stripInlineMarkdown(text: string) {
+  return text
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)\s]+\)/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/(^|[^*])\*([^*]+)\*/g, "$1$2")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}

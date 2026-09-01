@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, CodeXml, Layers, Search, ShieldCheck } from "lucide-react";
 import { isLiveHref, type SectionHeading, type SiteContent } from "@/lib/content-types";
+import { stripInlineMarkdown } from "@/lib/markdown";
 import { AnalyticsConsent } from "./analytics-consent";
 import { SocialGrid } from "./social-grid";
 import { SiteFooter, SiteHeader } from "./site-chrome";
@@ -60,7 +61,7 @@ export function HomePage({ content }: { content: SiteContent }) {
               <Link className="article-row" href={`/notes/${article.slug}`} key={article.id}>
                 <span className="article-row__category">{article.category}</span>
                 <span className="article-row__title">{article.title}</span>
-                <span className="article-row__excerpt">{article.excerpt}</span>
+                <span className="article-row__excerpt">{stripInlineMarkdown(article.excerpt)}</span>
                 <span className="article-row__date">{article.publishedAt}</span>
               </Link>
             ))}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowUpRight, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { SiteContent } from "@/lib/content-types";
+import { stripInlineMarkdown } from "@/lib/markdown";
 import { ThemeToggle } from "@/components/site/theme-toggle";
 
 const allCategory = "全部";
@@ -82,7 +83,7 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
                 <span className="notes-copy">
                   <small>{article.category}</small>
                   <strong>{article.title}</strong>
-                  <span>{article.excerpt}</span>
+                  <span>{stripInlineMarkdown(article.excerpt)}</span>
                 </span>
                 <time dateTime={article.publishedAt}>{article.publishedAt}</time>
                 <ArrowUpRight size={18} aria-hidden="true" />

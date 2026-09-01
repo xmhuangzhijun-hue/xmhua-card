@@ -575,7 +575,7 @@ textarea { resize: vertical; }
   border: 1px solid var(--ac-line);
   border-radius: 10px;
 }
-.ac-markdown__preview table { width: 100%; border-collapse: collapse; font-size: 0.86em; }
+.ac-markdown__preview table { width: max-content; min-width: 100%; border-collapse: collapse; font-size: 0.86em; }
 .ac-markdown__preview th {
   padding: 9px 12px;
   border-bottom: 1px solid var(--ac-line);
