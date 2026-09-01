@@ -21,8 +21,12 @@ function Heading({ eyebrow, title, description, action, center = false }: Sectio
   );
 }
 
+/** The homepage teases the newest notes; the full index lives at /notes. */
+const HOMEPAGE_ARTICLE_LIMIT = 6;
+
 export function HomePage({ content }: { content: SiteContent }) {
-  const { hero, sections, articles, products, directory, author, socials, site, ui } = content;
+  const { hero, sections, products, directory, author, socials, site, ui } = content;
+  const articles = content.articles.slice(0, HOMEPAGE_ARTICLE_LIMIT);
 
   return (
     <>
