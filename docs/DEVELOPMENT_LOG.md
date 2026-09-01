@@ -2,6 +2,33 @@
 
 This file is the durable engineering trail for each iteration. User-facing release summaries belong in [`CHANGELOG.md`](../CHANGELOG.md).
 
+## 2026-09-01 — Public notes library
+
+### Source feedback and scope
+
+- The homepage exposed a short development-record section but had no durable place to browse a growing body of public notes.
+- The requested reference used a compact numbered index; this iteration borrows that information architecture while retaining XMHUA branding, content, and the existing blue-gray visual system.
+- Existing homepage, `/work`, content API, database schema, and management permissions remain unchanged.
+
+### Changes
+
+- Added a statically rendered `/notes` route that reads the existing tenant-aware `/api/content` article collection instead of introducing a second content source.
+- Added category filters, title/summary search, empty-state feedback, article numbering, published dates, dark mode, and responsive mobile behavior.
+- Rows with a real content link remain navigable; placeholder `#` rows are intentionally non-clickable so the interface does not imply that article bodies already exist.
+- Added a persistent “笔记” link to the public homepage navigation and pointed the seed homepage’s “查看全部笔记” action to `/notes`.
+
+### Verification
+
+- `npm run check` passed ESLint with the existing homepage image warnings and zero errors, TypeScript, and the Next.js production build; `/notes` is statically prerendered.
+- Production-mode browser acceptance found six notes and six derived categories at desktop width, with no horizontal page overflow.
+- Filtering “数据产品” produced one row; an unmatched query displayed the intentional empty state; clearing the query restored six rows.
+- At a 375 px viewport, `/notes` and the homepage had no horizontal page overflow, and the homepage “笔记” navigation entry remained visible.
+
+### Deferred
+
+- Current seed articles contain summaries but no body field, so this iteration does not invent full article pages. Those can be added as a separate content-model extension when real Markdown or rich-text bodies are ready.
+- No remote push or production deployment was performed.
+
 ## 2026-08-31 — Evidence-first AI capability page and isolated business demo
 
 ### Source feedback and state before changes

@@ -16,7 +16,7 @@ export const seedHomepageContent: HomepageContent = {
     tags: ["AI 产品", "Agent", "独立开发", "数据产品", "个人数字系统", "长期构建"],
   },
   sections: {
-    articles: { eyebrow: "开发记录", title: "记录产品如何真正落地。", description: "从需求判断、架构取舍到验证与复盘，保留真实构建过程。", action: { label: "查看全部记录", href: "#articles" } },
+    articles: { eyebrow: "开发记录", title: "记录产品如何真正落地。", description: "从需求判断、架构取舍到验证与复盘，保留真实构建过程。", action: { label: "查看全部笔记", href: "/notes" } },
     products: { eyebrow: "代表项目", title: "产品是判断的最终证据。", description: "展示正在持续构建的 Agent、数据产品和个人数字系统。", action: { label: "查看全部项目", href: "#products" } },
     directory: { eyebrow: "能力与资源", title: "把可复用能力连接起来。", description: "整理产品开发、Agent 工程、数据系统和长期学习入口。" },
   },
