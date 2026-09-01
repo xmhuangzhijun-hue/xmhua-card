@@ -31,7 +31,8 @@ export function HooosbergClone() {
   useEffect(()=>{ if(content) document.title=content.ui.pageTitle; },[content]);
   if(error) return <main className="content-state" data-state="error"/>;
   if(!content) return <main className="content-state" data-state="loading" aria-busy="true"/>;
-  const {site,hero,sections,articles,products,directory,author,socials,footer,ui}=content;
+  const {site,hero,sections,articles,products,directory,author,footer,ui}=content;
+  const socials=content.socials.filter(social=>social.href&&social.href!=="#");
   const directoryIcons={search:Search,code:CodeXml,layers:Layers,shield:ShieldCheck};
   return <>
     <header className="site-header">

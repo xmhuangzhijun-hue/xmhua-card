@@ -42,7 +42,7 @@ async function insertTenantContent(tx: Transaction, tenantId: number, content: H
     await tx.delete(products).where(eq(products.tenantId, tenantId));
     await tx.delete(directoryLinks).where(eq(directoryLinks.tenantId, tenantId));
     await tx.delete(socialLinks).where(eq(socialLinks.tenantId, tenantId));
-    if (content.articles.length) await tx.insert(articles).values(content.articles.map((item, index) => ({ tenantId, category: item.category, title: item.title, excerpt: item.excerpt, publishedAt: item.publishedAt, href: item.href, sortOrder: index + 1, published: true })));
+    if (content.articles.length) await tx.insert(articles).values(content.articles.map((item, index) => ({ tenantId, category: item.category, title: item.title, excerpt: item.excerpt, publishedAt: item.publishedAt, href: `/notes/${item.slug}`, slug: item.slug, body: item.body, sortOrder: index + 1, published: item.published })));
     if (content.products.length) await tx.insert(products).values(content.products.map((item, index) => ({ tenantId, image: item.image, name: item.name, subtitle: item.subtitle, summary: item.summary, platform: item.platform, href: item.href, sortOrder: index + 1, published: true })));
     if (content.directory.links.length) await tx.insert(directoryLinks).values(content.directory.links.map((item, index) => ({ tenantId, icon: item.icon, title: item.title, description: item.description, href: item.href, sortOrder: index + 1 })));
     if (content.socials.length) await tx.insert(socialLinks).values(content.socials.map((item, index) => ({ tenantId, icon: item.icon, label: item.label, handle: item.handle, href: item.href, sortOrder: index + 1 })));
@@ -97,7 +97,7 @@ export async function createTenant(input: { slug: string; name: string; seedCont
 
 export async function readTenantContent(slug: string) {
   databaseOrThrow();
-  return getHomepageContent(slug);
+  return getHomepageContent(slug, true);
 }
 
 export async function writeTenantContent(slug: string, content: HomepageContent) {
@@ -105,5 +105,5 @@ export async function writeTenantContent(slug: string, content: HomepageContent)
   const [tenant] = await db.select().from(tenants).where(and(eq(tenants.slug, slug), eq(tenants.active, true))).limit(1);
   if (!tenant) throw new TenantNotFoundError("Tenant not found");
   await replaceTenantContent(db, tenant.id, content);
-  return getHomepageContent(slug);
+  return getHomepageContent(slug, true);
 }

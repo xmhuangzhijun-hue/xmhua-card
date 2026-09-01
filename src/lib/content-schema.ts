@@ -49,7 +49,7 @@ export const homepageContentSchema = z.object({
     products: sectionHeadingSchema,
     directory: sectionHeadingSchema,
   }),
-  articles: z.array(z.object({ id: itemId, category: shortText, title: shortText, excerpt: longText, publishedAt: shortText, href })).max(100),
+  articles: z.array(z.object({ id: itemId, category: shortText, title: shortText, excerpt: longText, publishedAt: shortText, href, slug: z.string().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/), body: z.string().max(100_000), published: z.boolean().default(true) })).max(100),
   products: z.array(z.object({ id: itemId, image: href, name: shortText, subtitle: shortText, summary: longText, platform: shortText, href })).max(50),
   directory: z.object({ kicker: shortText, title: shortText, description: longText, primaryAction: linkSchema, secondaryAction: linkSchema, links: z.array(z.object({ id: itemId, icon: z.enum(["search", "code", "layers", "shield"]), title: shortText, description: longText, href })).max(50) }),
   author: z.object({ kicker: shortText, title: shortText, paragraphs: z.array(longText).max(20) }),

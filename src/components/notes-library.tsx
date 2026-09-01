@@ -9,10 +9,6 @@ import { homepageContentSchema, type HomepageContent } from "@/lib/content-schem
 
 const allCategory = "全部";
 
-function isReadableHref(href: string) {
-  return href !== "" && href !== "#";
-}
-
 export function NotesLibrary() {
   const [content, setContent] = useState<HomepageContent | null>(null);
   const [category, setCategory] = useState(allCategory);
@@ -103,11 +99,9 @@ export function NotesLibrary() {
             <span className="notes-number">{number}</span>
             <span className="notes-copy"><small>{article.category}</small><strong>{article.title}</strong><span>{article.excerpt}</span></span>
             <time dateTime={article.publishedAt}>{article.publishedAt}</time>
-            {isReadableHref(article.href) && <ArrowUpRight size={18} aria-hidden="true" />}
+            <ArrowUpRight size={18} aria-hidden="true" />
           </>;
-          return isReadableHref(article.href)
-            ? <a className="notes-row" href={article.href} key={article.id}>{body}</a>
-            : <article className="notes-row notes-row--static" key={article.id} data-visible-index={index}>{body}</article>;
+          return <Link className="notes-row" href={article.href} key={article.id} data-visible-index={index}>{body}</Link>;
         })}
         {visibleArticles.length === 0 && <div className="notes-empty"><strong>没有匹配的笔记</strong><span>换一个分类或搜索词试试。</span></div>}
       </div>

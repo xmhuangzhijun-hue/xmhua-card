@@ -273,3 +273,27 @@ This file is the durable engineering trail for each iteration. User-facing relea
 ### Deferred
 
 - This iteration updates the local public-facing site implementation only; no remote deployment was performed.
+
+## 2026-09-01 — Personal-blog publishing workflow correction
+
+### Feedback and first evidenced break
+
+- The public article rows and homepage development records used `href: "#"`, so they were intentionally rendered as static display content and could not open a note.
+- Articles had no slug or body in the schema or database, and the Studio exposed only title, category, excerpt, and a raw link. It therefore could not create, preview, draft, or publish a real blog post.
+- Seeded social entries used placeholder handles and `#` links. They looked configured but could not reach the corresponding account.
+
+### Changes
+
+- Added article slugs, long-form bodies, and draft/published state to the validated content contract and PostgreSQL schema, with a safe migration for existing rows.
+- Added `/notes/[slug]` article pages and connected both the homepage development-record rows and the public notes catalog to those pages.
+- Rebuilt the Studio article editor around new draft, title, category, URL slug, date, excerpt, body, preview, and publish controls.
+- Clarified social-account configuration in Studio and hid unconfigured placeholder links from the public site. Connected the confirmed GitHub account to its real public profile.
+- Added six short initial note bodies derived from the existing public summaries so every current public note has readable content without inventing new project outcome claims.
+
+### Verification
+
+- `npm run typecheck`, `npm run lint`, and `npm run build` passed; the production build includes dynamic route `/notes/[slug]`.
+
+### Deployment-dependent verification
+
+- PostgreSQL migration, authenticated Studio save/read, public article navigation, and real external-account navigation still require verification on the production deployment before this correction is described as released.

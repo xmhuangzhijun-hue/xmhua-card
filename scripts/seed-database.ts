@@ -24,7 +24,7 @@ async function main() {
   await tx.delete(socialLinks).where(eq(socialLinks.tenantId, tenantId));
 
   for (const [index, article] of articleData.entries()) {
-    await tx.insert(articles).values({ tenantId, category: article.category, title: article.title, excerpt: article.excerpt, publishedAt: article.publishedAt, href: article.href, sortOrder: index + 1, published: true });
+    await tx.insert(articles).values({ tenantId, category: article.category, title: article.title, excerpt: article.excerpt, publishedAt: article.publishedAt, href: article.href, slug: article.slug, body: article.body, sortOrder: index + 1, published: article.published });
   }
   for (const [index, product] of productData.entries()) {
     await tx.insert(products).values({ tenantId, image: product.image, name: product.name, subtitle: product.subtitle, summary: product.summary, platform: product.platform, href: product.href, sortOrder: index + 1, published: true });

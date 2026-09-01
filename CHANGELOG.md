@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added real article detail pages and a Studio publishing workflow with drafts, editable long-form bodies, previews, stable slugs, and publish controls.
 - Added a public `/notes` library with numbered entries, category filtering, title/summary search, dark mode, and responsive mobile behavior.
 - Added a direct notes entry to the homepage navigation while continuing to use the existing tenant-aware article content source.
 - Added a public `/work` portfolio route covering Hermes Agent engineering, Obsidian automation, AI coding collaboration, advertising data products, and the XMHUA Card platform.
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Unconfigured social placeholders are hidden; configured accounts now use their saved public profile or official add-contact link.
 - Rebuilt `/work` as four product walkthroughs with concrete users, tasks, interaction flows, feature details, exception handling, evidence, and clearly labeled privacy-safe interface models.
 - Reframed `/work` as a 60-second AI capability review spanning input research, cross-Agent memory, a production Hermes instance, open-source fixes, and an interactive business product; removed every dependency on the separate portfolio repository.
 

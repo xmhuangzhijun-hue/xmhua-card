@@ -18,8 +18,9 @@ export const siteSettings = pgTable("site_settings", {
 export const articles = pgTable("articles", {
   id: serial("id").primaryKey(), tenantId: integer("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }), category: text("category").notNull(), title: text("title").notNull(),
   excerpt: text("excerpt").notNull(), publishedAt: text("published_at").notNull(), href: text("href").notNull(),
+  slug: text("slug").notNull(), body: text("body").notNull().default(""),
   sortOrder: integer("sort_order").notNull(), published: boolean("published").default(true).notNull(),
-}, table => [index("articles_tenant_sort_idx").on(table.tenantId, table.sortOrder)]);
+}, table => [index("articles_tenant_sort_idx").on(table.tenantId, table.sortOrder), uniqueIndex("articles_tenant_slug_uidx").on(table.tenantId, table.slug)]);
 
 export const products = pgTable("products", {
   id: serial("id").primaryKey(), tenantId: integer("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }), image: text("image").notNull(), name: text("name").notNull(),

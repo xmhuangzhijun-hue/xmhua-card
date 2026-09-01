@@ -8,7 +8,7 @@ export type ContentSource = "postgresql" | "seed";
 
 export const defaultTenantSlug = process.env.DEFAULT_TENANT_SLUG ?? "xmhua";
 
-export async function getHomepageContent(tenantSlug = defaultTenantSlug): Promise<{ data: HomepageContent; source: ContentSource }> {
+export async function getHomepageContent(tenantSlug = defaultTenantSlug, includeDrafts = false): Promise<{ data: HomepageContent; source: ContentSource }> {
   const db = getDatabase();
   if (!db) {
     if (tenantSlug !== defaultTenantSlug) throw new Error("Tenant is unavailable without PostgreSQL");
@@ -21,7 +21,9 @@ export async function getHomepageContent(tenantSlug = defaultTenantSlug): Promis
 
   const [settingsRows, articleRows, productRows, directoryRows, socialRows] = await Promise.all([
     db.select().from(siteSettings).where(and(eq(siteSettings.tenantId, tenant.id), eq(siteSettings.key, "homepage"))).limit(1),
-    db.select().from(articles).where(and(eq(articles.tenantId, tenant.id), eq(articles.published, true))).orderBy(asc(articles.sortOrder)),
+    includeDrafts
+      ? db.select().from(articles).where(eq(articles.tenantId, tenant.id)).orderBy(asc(articles.sortOrder))
+      : db.select().from(articles).where(and(eq(articles.tenantId, tenant.id), eq(articles.published, true))).orderBy(asc(articles.sortOrder)),
     db.select().from(products).where(and(eq(products.tenantId, tenant.id), eq(products.published, true))).orderBy(asc(products.sortOrder)),
     db.select().from(directoryLinks).where(eq(directoryLinks.tenantId, tenant.id)).orderBy(asc(directoryLinks.sortOrder)),
     db.select().from(socialLinks).where(eq(socialLinks.tenantId, tenant.id)).orderBy(asc(socialLinks.sortOrder)),
@@ -34,7 +36,7 @@ export async function getHomepageContent(tenantSlug = defaultTenantSlug): Promis
 
   const candidate = {
     ...(settings as object),
-    articles: articleRows.map(article => ({ id: article.id, category: article.category, title: article.title, excerpt: article.excerpt, publishedAt: article.publishedAt, href: article.href })),
+    articles: articleRows.map(article => ({ id: article.id, category: article.category, title: article.title, excerpt: article.excerpt, publishedAt: article.publishedAt, href: `/notes/${article.slug}`, slug: article.slug, body: article.body, published: article.published })),
     products: productRows.map(product => ({ id: product.id, image: product.image, name: product.name, subtitle: product.subtitle, summary: product.summary, platform: product.platform, href: product.href })),
     directory: {
       ...((settings as { directory?: object }).directory ?? {}),

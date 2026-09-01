@@ -29,7 +29,7 @@ export function createStarterContent(name: string): HomepageContent {
       products: { eyebrow: "代表作品", title: "展示你正在做的事。", description: "项目、服务、产品或任何值得被看见的作品。", action: { label: "查看全部作品", href: "#products" } },
       directory: { eyebrow: "常用入口", title: "把重要链接放在一起。", description: "整理你的推荐、资源和长期关注方向。" },
     },
-    articles: [{ id: 1, category: "开始", title: `欢迎来到 ${name}`, excerpt: "这是你的第一篇示例文章。进入工作台，把它替换成自己的内容。", publishedAt: new Date().toISOString().slice(0, 10), href: "#" }],
+    articles: [{ id: 1, category: "开始", title: `欢迎来到 ${name}`, excerpt: "这是你的第一篇示例文章。进入工作台，把它替换成自己的内容。", publishedAt: new Date().toISOString().slice(0, 10), slug: "welcome", body: "这是你的第一篇正文。\n\n进入内容工作台后，你可以修改标题、摘要、正文和发布状态。", published: true, href: "/notes/welcome" }],
     products: [{ id: 1, image: "/xmhua-mark.svg", name: "我的第一个作品", subtitle: "作品简介", summary: "用一句话说明它为谁解决了什么问题。", platform: "Web", href: "#" }],
     directory: {
       kicker: "快速入口", title: "我的链接", description: "把常用资源和推荐入口集中展示。",
