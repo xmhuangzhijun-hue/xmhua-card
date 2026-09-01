@@ -1,92 +1,115 @@
 # XMHUA Card
 
-一个 API 驱动、多租户的个人博客与公开名片系统。访客看到的身份信息、文案、导航、文章、产品、资源和社交链接都由后端内容接口提供；站点拥有者可以通过浏览器控制台维护内容，无需修改前端代码。
+一个个人博客：**前端和后端是两个独立的服务**。前端只负责渲染，所有内容、鉴权和写入都在后端。站点主人通过 `/admin` 后台增删改站点上的每一处内容，不需要改代码、不需要重新部署。
+
+## 结构
+
+```
+xmhua-card/
+├── api/          独立后端服务（Hono + Drizzle + PostgreSQL）
+│   ├── src/      路由、服务层、数据模型、迁移脚本
+│   └── drizzle/  数据库迁移
+└── src/          Next.js 前端（不含数据库驱动，不含任何写接口）
+```
+
+前端**没有** `DATABASE_URL`，也没有 API 路由。它通过 HTTP 从后端读取内容，因此后端换语言、前端换框架互不影响。
 
 ## 功能
 
-- Next.js 16 App Router + React 19 + TypeScript
-- PostgreSQL + Drizzle ORM，多租户数据隔离
-- API 驱动的公开页面，支持 `?tenant=<slug>` 切换租户
-- 前端支持独立 `NEXT_PUBLIC_API_BASE_URL`，后端提供可配置 CORS
-- `/studio` 表单编辑器与 `/admin` 完整内容编辑器
-- 租户自助创建和独立管理凭据
-- Zod 校验、事务保存和默认拒绝的管理接口
-- 无数据库时，仅公开读取可回退到服务端示例内容
+- 后端：Hono + PostgreSQL + Drizzle，多租户数据隔离，Zod 校验，事务写入
+- 前端：Next.js 16 App Router + React 19，服务端渲染 + ISR，笔记与独立页面静态预渲染
+- `/admin` 内容后台：账号密码登录，笔记 / 项目 / 社交账号 / 能力卡片 / 独立页面的完整增删改和排序，站点设置可视化编辑
+- 后台首页列出「还没完成的部分」：正文太短的笔记、没填链接的项目和社交账号
+- 笔记正文支持 Markdown，编辑器带实时预览；正文全部转义后渲染，不引入解析器依赖
+- 没填地址（空或 `#`）的链接**不会**出现在公开页面上，站点不会对外露出点不开的链接
+- `/privacy`、`/terms`、`/cookies` 等独立页面同样由后台编辑
+- 密码用 scrypt 加盐哈希存储；会话只保存 token 的 SHA-256，Cookie 为 HttpOnly + SameSite=Lax
 
-## 快速开始
+## 本地开发
 
-需要 Node.js 24+。只查看默认公开页面时可以不配置 PostgreSQL：
+需要 Node.js 24+。
 
 ```bash
 npm install
-npm run dev
+npm ci --prefix api
 ```
 
-打开 <http://127.0.0.1:3000>。
-
-需要内容管理、多租户写入或自助建站时：
+后端需要一个 PostgreSQL。没有现成实例时，可以用 PGlite 数据目录（进程内的真实 PostgreSQL，删目录即还原）：
 
 ```bash
-copy .env.example .env.local
-npm run db:generate
+cd api
+export DATABASE_URL="pglite:./.dev-postgres"
 npm run db:migrate
+npm run db:seed
+ADMIN_USERNAME=你的用户名 ADMIN_PASSWORD=至少十位的密码 npm run admin:create
 npm run dev
 ```
 
-请在 `.env.local` 中设置自己的 `DATABASE_URL` 和高强度 `ADMIN_API_KEY`。不要提交 `.env.local` 或任何真实密钥。
+另开一个终端启动前端：
+
+```bash
+API_INTERNAL_BASE_URL=http://127.0.0.1:39300 npm run dev
+```
+
+打开 <http://127.0.0.1:3000>，后台在 <http://127.0.0.1:3000/admin>。
+
+生产用真实 PostgreSQL 时，把 `DATABASE_URL` 换成 `postgres://...` 即可，代码路径不变。
 
 ## 配置
 
+前端：
+
 | 变量 | 用途 |
 | --- | --- |
-| `DATABASE_URL` | PostgreSQL 连接地址；管理写入必需 |
+| `API_INTERNAL_BASE_URL` | 服务端渲染时访问后端的地址，通常是回环地址 |
+| `NEXT_PUBLIC_API_BASE_URL` | 浏览器访问后端的地址；反向代理把 `/api` 挂在同源时留空 |
+
+后端（`api/`）：
+
+| 变量 | 用途 |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL 连接地址，必填。后端不提供无数据库的回退内容 |
+| `API_PORT` / `API_HOST` | 监听端口和地址，默认 `127.0.0.1:39300` |
+| `DB_POOL_MAX` | 连接池大小，默认 8 |
 | `DEFAULT_TENANT_SLUG` | 未指定租户时使用的默认 slug |
-| `ADMIN_API_KEY` | 平台管理接口的 Bearer 密钥；写入必需 |
-| `SELF_SERVICE_SIGNUP_ENABLED` | 是否开放访客自助创建站点，默认关闭 |
-| `SIGNUP_INVITE_CODE` | 自助创建所需的私密邀请码 |
-| `SIGNUP_RATE_LIMIT` / `SIGNUP_RATE_WINDOW_SECONDS` | 单个限流键在时间窗口内可尝试的次数 |
-| `MAX_TENANTS` | 数据库允许的租户总量上限 |
-| `TRUST_PROXY_HEADERS` | 仅在可信反向代理会覆盖转发头时设为 `true` |
-| `NEXT_PUBLIC_API_BASE_URL` | 前端调用的独立后端根地址；同源部署留空 |
-| `CORS_ALLOWED_ORIGIN` | 后端允许访问的独立前端 origin；同源部署留空 |
+| `ADMIN_SESSION_TTL_HOURS` | 后台登录有效期，默认 336 小时 |
+| `ADMIN_COOKIE_SECURE` | 仅在本机明文 HTTP 调试时设为 `false` |
+| `ADMIN_API_KEY` | 可选的机器凭据，供脚本和 CI 使用；后台登录不需要 |
+| `CORS_ALLOWED_ORIGIN` | 前后端不同源时允许的 origin，逗号分隔；同源部署留空 |
+| `SELF_SERVICE_SIGNUP_ENABLED` | 多租户自助建站开关，默认关闭 |
+| `SIGNUP_INVITE_CODE` | 自助建站所需的私密邀请码 |
+| `SIGNUP_RATE_LIMIT` / `SIGNUP_RATE_WINDOW_SECONDS` | 自助建站限流 |
+| `MAX_TENANTS` | 租户总量上限 |
+| `TRUST_PROXY_HEADERS` | 仅当可信反向代理会覆盖转发头时设为 `true` |
 
-平台管理和租户工作台始终要求 Bearer 凭据，本机访问也不例外。Docker Compose 默认只绑定 `127.0.0.1`；若要公开部署，应由受控反向代理提供 TLS 和外层限流。
+后台密码不写进代码、不进 Git。用 `npm run admin:create --prefix api` 创建或重置，密码通过 `ADMIN_PASSWORD` 环境变量传入，只有哈希入库。
 
-## 内容与权限数据流
+## 数据流
 
 ```text
-浏览器页面 -> GET /api/content?tenant=<slug> -> PostgreSQL
-                                      \-> 服务端只读回退（未配置数据库时）
-
-平台管理员 -> /admin -> /api/admin/* -> 管理密钥校验 -> PostgreSQL 事务
-租户拥有者 -> /studio -> /api/studio/* -> 租户令牌校验 -> PostgreSQL 事务
-新租户     -> /start -> 邀请码与限流 -> /api/signup -> 创建租户、内容和一次性管理令牌
+浏览器  ──GET /notes────────▶  Next.js  ──GET /api/content──▶  API  ──▶  PostgreSQL
+浏览器  ──POST /api/auth/login──────────────────────────────▶  API  ──▶  PostgreSQL
+浏览器  ──PUT  /api/admin/articles/12 （带会话 Cookie）──────▶  API  ──▶  PostgreSQL
 ```
 
-前端组件只负责渲染接口返回的数据。完整 HTTP 契约见 [docs/API.md](docs/API.md)，数据库说明见 [docs/BACKEND.md](docs/BACKEND.md)。
-
-## 独立版本更新
-
-前端和后端共用一个仓库，但分别在 `versions/frontend.json` 与 `versions/backend.json` 维护版本。只改一侧时可精确暂存该侧文件并单独提交、部署；API 兼容规则和发布顺序见 [docs/VERSIONING.md](docs/VERSIONING.md)。
-
-## 常用命令
-
-```bash
-npm run dev       # 开发服务器
-npm run lint      # ESLint
-npm run typecheck # TypeScript 类型检查
-npm run build     # 生产构建
-npm run check     # lint + typecheck + build
-npm run db:generate
-npm run db:migrate
-```
+反向代理把 `/api/*` 直接转发给后端服务，其余路径转发给 Next.js，因此后台 Cookie 是同源的，不需要 CORS。
 
 ## 部署
 
-部署到支持 Next.js 的平台，并提供 PostgreSQL 数据库与环境变量。生产环境至少应配置 `DATABASE_URL`、`DEFAULT_TENANT_SLUG` 和 `ADMIN_API_KEY`；开放自助建站前还必须配置 `SIGNUP_INVITE_CODE`、合理限额并完成数据库迁移。应用内限流是单进程防线，多实例公网部署仍应在网关层增加共享限流。管理密钥、邀请码和租户令牌都不应写入源码、构建日志或客户端默认配置。
+前后端是两个进程，各自有构建产物：
 
-## 开源与来源
+```bash
+npm run build --prefix api    # 产出 api/dist，用 node dist/index.js 启动
+npm run build                 # 产出 .next/standalone
+```
 
-本项目基于 [JCodesMore/ai-website-cloner-template](https://github.com/JCodesMore/ai-website-cloner-template) 开发，视觉实现参考 [hooosberg.com](https://hooosberg.com/)。上游名称、商标、原始文案和视觉资产归各自权利人所有；本仓库与其没有官方隶属关系。使用或部署前，请自行确认你对品牌、内容和素材拥有必要权利。
+构建前端时需要能访问后端（静态预渲染要读内容）。参考 `docs/DEPLOYMENT.md`。
 
-项目按 [MIT License](LICENSE) 开源。
+## 安全边界
+
+- 前端不持有数据库连接、管理密钥或写接口，被攻破也改不了内容
+- 所有写入经 Zod 校验并在单个事务内完成
+- 管理接口默认拒绝：没有有效会话 Cookie 或机器密钥一律 401
+- 修改密码会吊销该账号的全部会话
+- 笔记正文先整体转义再套用 Markdown 规则，`javascript:` 和 `data:` 链接不会生成
+- 真实密钥、Token 和业务数据一律不入库外的任何文件，也不进仓库

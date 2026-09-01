@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Split the backend into a standalone `api/` service (Hono + Drizzle + PostgreSQL) with its own build, type check, security regression and dependency audit.
+- Added a real content console at `/admin`: username and password sign-in, full create/edit/delete/reorder for notes, products, social accounts, capability cards and standalone pages, a visual site-settings editor, and password change.
+- Added a console dashboard that lists unfinished work: notes with a stub body, and products, social accounts and capability cards whose link is still a placeholder.
+- Added Markdown bodies for notes and pages, with a live preview in the editor and a dependency-free renderer that escapes all input before formatting.
+- Added editable `/privacy`, `/terms` and `/cookies` pages backed by a new `pages` table.
+- Added previous/next navigation and reading time to note detail pages.
+- Added `admin_users` and `admin_sessions` tables: scrypt password hashes, SHA-256 session tokens, HttpOnly cookies, and session revocation on password change.
+
+### Changed
+
+- The frontend no longer holds a database driver, API routes or credentials; it reads everything from the content API over HTTP.
+- Home, notes index, note detail and standalone pages are server-rendered with ISR instead of fetching after mount, so the blog is indexable.
+- Links that were never filled in are dropped instead of rendering as dead links: unbound social accounts are filtered by the API, and placeholder products, capability cards, email and announcement links are not rendered as anchors.
+- Removed the multi-tenant signup and studio entries from the public site. The endpoints stay in the API behind `SELF_SERVICE_SIGNUP_ENABLED`.
+- Theme preference moved to an external store plus an inline bootstrap script, removing the first-paint flash and the cascading render on mount.
+- CI now installs, checks, audits and builds both packages, and builds the frontend against a seed-backed stub so it needs no database.
+
+### Fixed
+
+- Removed 13 dead `href="#"` links from the homepage.
+- Upgraded `drizzle-orm` to 0.45.2, clearing the high-severity SQL identifier escaping advisory.
+
+## [0.5.1 后续] - 未发布的既有条目
+
+### Added
+
 - Added real article detail pages and a Studio publishing workflow with drafts, editable long-form bodies, previews, stable slugs, and publish controls.
 - Added a public `/notes` library with numbered entries, category filtering, title/summary search, dark mode, and responsive mobile behavior.
 - Added a direct notes entry to the homepage navigation while continuing to use the existing tenant-aware article content source.

@@ -21,14 +21,17 @@ A reusable template for reverse-engineering any website into a clean, modern Nex
 - **UI:** shadcn/ui (Radix primitives, Tailwind CSS v4, `cn()` utility)
 - **Icons:** Lucide React (default — will be replaced/supplemented by extracted SVGs)
 - **Styling:** Tailwind CSS v4 with oklch design tokens
-- **Deployment:** Vercel
+- **Deployment:** systemd services behind Nginx; see `docs/DEPLOYMENT.md`
 
 ## Commands
-- `npm run dev` — Start dev server
-- `npm run build` — Production build
-- `npm run lint` — ESLint check
-- `npm run typecheck` — TypeScript check
-- `npm run check` — Run lint + typecheck + build
+- `npm run dev` — Start the frontend dev server
+- `npm run check` — Frontend lint + typecheck + build
+- `npm run check --prefix api` — API typecheck + security regression + build
+- `npm run db:migrate --prefix api` — Apply database migrations
+- `npm run admin:create --prefix api` — Create or reset a console account
+
+The frontend build renders from the API, so `API_INTERNAL_BASE_URL` must point at
+a running API (or the CI stub) before `npm run build`.
 
 ## Code Style
 - TypeScript strict mode, no `any`
@@ -44,25 +47,30 @@ A reusable template for reverse-engineering any website into a clean, modern Nex
 - **Beauty-first** — every pixel matters
 
 ## Project Structure
+
+This repository holds two independently built and deployed services.
+
 ```
-src/
-  app/              # Next.js routes
-  components/       # React components
-    ui/             # shadcn/ui primitives
-    icons.tsx       # Extracted SVG icons as React components
-  lib/
-    utils.ts        # cn() utility (shadcn)
-  types/            # TypeScript interfaces
-  hooks/            # Custom React hooks
-public/
-  images/           # Downloaded images from target site
-  videos/           # Downloaded videos from target site
-  seo/              # Favicons, OG images, webmanifest
-docs/
-  research/         # Inspection output (design tokens, components, layout)
-  design-references/ # Screenshots and visual references
-scripts/            # Asset download scripts
+api/                  Standalone content API (Hono + Drizzle + PostgreSQL)
+  src/
+    routes/           HTTP routing only
+    services/         Business logic; never touches HTTP
+    lib/              Schemas, password, session, HTTP helpers
+    db/               Drizzle schema, connection, migration entry
+    scripts/          Admin account creation, security regression
+  drizzle/            Migrations
+src/                  Next.js frontend. No database driver, no API routes.
+  app/                Routes; /admin is the content console
+  components/
+    site/             Public site chrome and homepage
+    admin/            Content console
+  lib/                API client, content types, Markdown renderer
+public/               Static assets
+docs/                 API, backend, deployment, development log
 ```
+
+The frontend reads everything over HTTP from the API. Do not reintroduce a
+database driver, credential or write endpoint into `src/`.
 
 ## MOST IMPORTANT NOTES
 - Every persistent product iteration must update `docs/DEVELOPMENT_LOG.md`; every released version must also update `CHANGELOG.md`. Record the source feedback, exact scope, verification evidence, and any unverified or deferred work. Never describe a change as complete without matching verification.

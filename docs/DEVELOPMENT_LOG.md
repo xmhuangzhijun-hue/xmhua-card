@@ -301,3 +301,50 @@ This file is the durable engineering trail for each iteration. User-facing relea
 - Authenticated Studio GET, same-document PUT, and GET-after-write returned 200/200/200 with `saved: true`; unauthenticated Studio API access returned 401.
 - The public article URL returned 200 through Nginx and contained its persisted body. The public Studio route returned 200.
 - The confirmed GitHub profile is configured. Other placeholder social accounts remain hidden until their real profile or official add-contact links are saved in Studio.
+
+## 2026-09-01 — 前后端分离与真实内容后台
+
+### 反馈与改前证据
+
+站点主人的判断是「有形无神，不是可用可对外展示的个人博客」，具体三条：笔记打不开、没有能自己编辑内容的后台、社交链接点了不跳转。改动前用生产接口核对：
+
+- `GET /api/content` 返回 `meta.source: postgresql`，六篇笔记 `body` 长度 121–160 字符，即每篇只有一段占位文字。
+- 九个社交账号中八个 `href` 为 `#`，三个项目 `href` 全部为 `#`，四张能力卡片 `href` 全部为 `#`。
+- 首页共 13 个 `href="#"` 的死链（项目按钮、能力卡片、Email、隐私政策、服务条款、语言切换、站点标志）。
+- `/admin` 存在但界面是一个装载整站 JSON 的 `textarea`，且首页没有入口；`/start` 多租户注册入口挂在个人博客首页主导航上。
+- 首页与笔记页都是客户端挂载后再 `fetch`，服务端返回空壳，博客内容不可被抓取。
+
+### 变更范围
+
+后端拆成 `api/` 下的独立服务；前端移除全部数据访问；新增可视化内容后台。多租户能力按站点主人的决定保留在后端，只从公开站点移除入口。
+
+### 变更
+
+- 新增 `api/`：Hono + Drizzle + PostgreSQL 的独立服务，含公开只读接口、账号密码登录、管理增删改接口、多租户开通接口，自带类型检查、安全回归与构建。
+- 前端删除 `src/app/api`、`src/db`、`src/server`、`drizzle/` 与 drizzle/postgres 依赖，改为通过 HTTP 读取后端；服务端渲染走内网地址，浏览器走同源 `/api`。
+- 迁移 `0004` 新增 `pages`、`admin_users`、`admin_sessions` 三张表，全部是 `CREATE TABLE`，不改动既有表。
+- 首页、笔记列表、笔记正文、独立页面改为服务端渲染 + ISR，笔记与独立页面在构建期静态预渲染。
+- 新增 `/admin` 后台：账号密码登录、笔记 / 项目 / 社交账号 / 能力卡片 / 独立页面的增删改与排序、站点设置可视化编辑、修改密码；首页列出未完成项。
+- 笔记与页面正文改用 Markdown，编辑器带实时预览；渲染器先整体转义再套用格式规则，不引入解析器依赖。
+- 地址为空或 `#` 的社交账号在接口层被过滤；项目、能力卡片、页脚 Email、公告链接在前端不渲染成链接。
+- 移除公开站点上的 `/start`、`/studio` 入口和重复导航项；新增 `/privacy`、`/terms`、`/cookies` 三个可后台编辑的页面。
+- 主题偏好改用外部 store 加文档头内联脚本，消除首屏闪烁与挂载后的级联渲染。
+- CI 拆成前端与后端两套安装、类型检查、安全回归与依赖审计；前端构建通过一个读取种子数据的桩服务完成，不需要数据库。
+- 升级 `drizzle-orm` 到 0.45.2，修复其 SQL 标识符转义的高危告警。
+
+### 验证
+
+- 后端：`npm run typecheck --prefix api` 与 `npm run security:check --prefix api` 通过；`npm audit --audit-level=moderate --prefix api` 零漏洞。
+- 前端：`npx eslint` 零错误零警告，`npx tsc --noEmit` 通过，`next build` 生成 16 个页面，其中 6 篇笔记与 3 个独立页面为静态预渲染。
+- 接口：健康检查、内容、笔记详情、页面详情均 200；未登录访问管理接口返回 401；错误密码返回 401；重复 slug 返回 409；非法 slug 与非法日期返回 400；12 个并发请求全部 200。
+- 浏览器实测（生产模式，`next start`）：用真实账号登录 `/admin`，在「社交账号」里给 X 填入主页地址并保存，后台待办从 8 条降到 7 条，公开首页在 20 秒内出现该链接，全程没有改代码、没有重新构建。
+- 首页链接审计：改动前 13 个 `href="#"`，改动后 0 个。
+- 笔记正文页渲染出标题、分类、日期、阅读时长、正文段落与上一篇 / 下一篇导航；`/privacy` 渲染出五个 Markdown 小标题。
+- Markdown 渲染器对 `<img src=x onerror=...>` 全部转义，`javascript:` 链接不生成 `<a>`。
+- 响应式：首页、笔记列表、笔记正文、后台在 375px 视口下均无横向溢出；1280px 同样无溢出。
+
+### 未完成
+
+- 尚未部署。生产发布、数据库迁移与 Nginx 路由调整见 `docs/DEPLOYMENT.md`，需要站点主人确认后执行。
+- 六篇笔记的正文仍是每篇三段的占位内容。后台已经具备写作能力，但内容本身要由站点主人补。
+- 项目卡片与能力卡片的链接仍为空，公开页面因此不渲染这些按钮；需要站点主人在后台补齐。

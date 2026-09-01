@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     "build/**",
     // Embedded Vite demos are checked in their source repositories before copying.
     "public/demo/**",
+    // The API is a separate package with its own typecheck and build.
+    "api/**",
     "next-env.d.ts",
   ]),
 ]);

@@ -2,7 +2,7 @@
   "name": "xmhua-card",
   "version": "0.5.1",
   "private": true,
-  "description": "XMHUA public profile with an API-driven content backend",
+  "description": "XMHUA personal blog: a Next.js frontend and a standalone content API.",
   "author": "XMHUA contributors",
   "license": "MIT",
   "repository": {
@@ -15,13 +15,11 @@
   },
   "keywords": [
     "personal-blog",
-    "multi-tenant",
     "headless-cms",
     "nextjs",
     "postgresql",
-    "drizzle-orm",
-    "tailwindcss",
-    "shadcn-ui"
+    "hono",
+    "tailwindcss"
   ],
   "engines": {
     "node": ">=24"
@@ -33,10 +31,6 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check": "npm run lint && npm run typecheck && npm run build",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx scripts/seed-database.ts",
     "security:check": "tsx scripts/security-regression.ts",
     "governance:test": "node scripts/governance-regression.mjs"
   },
@@ -44,10 +38,8 @@
     "@base-ui/react": "^1.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.6.0",
     "next": "16.3.0",
-    "postgres": "^3.4.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "shadcn": "^4.1.0",
@@ -65,7 +57,6 @@
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "drizzle-kit": "^0.31.10",
     "esbuild": "^0.25.12",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",

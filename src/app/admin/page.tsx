@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
-import { ContentAdmin } from "@/components/admin/content-admin";
+import { AdminConsole } from "@/components/admin/admin-console";
 import "./admin.css";
 
-export const metadata: Metadata = { title: "内容工作台 · XMHUA" };
+export const metadata: Metadata = {
+  title: "内容后台 · XMHUA",
+  // The console must never be indexed or previewed by crawlers.
+  robots: { index: false, follow: false },
+};
 
-export default function AdminPage() { return <ContentAdmin />; }
+export default function AdminPage() {
+  return <AdminConsole />;
+}

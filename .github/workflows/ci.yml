@@ -40,20 +40,45 @@ jobs:
           fi
           echo "All generated files are in sync with their sources."
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: npm ci
+
+      - name: Install API dependencies
+        run: npm ci --prefix api
 
       - name: Lint
         run: npm run lint
 
-      - name: Type check
+      - name: Type check (frontend)
         run: npm run typecheck
 
-      - name: Security regression
+      - name: Type check (API)
+        run: npm run typecheck --prefix api
+
+      - name: Security regression (frontend tooling)
         run: npm run security:check
 
-      - name: Dependency audit
+      - name: Security regression (API)
+        run: npm run security:check --prefix api
+
+      - name: Dependency audit (frontend)
         run: npm audit --audit-level=moderate
 
-      - name: Build
-        run: npm run build
+      - name: Dependency audit (API)
+        run: npm audit --audit-level=moderate --prefix api
+
+      - name: Build API
+        run: npm run build --prefix api
+
+      # The frontend renders from the API at build time. A stub serves the
+      # published content shape so the build does not need a database.
+      - name: Build frontend
+        run: |
+          node .github/scripts/stub-content-api.mjs &
+          STUB_PID=$!
+          trap "kill $STUB_PID" EXIT
+          for _ in $(seq 1 30); do
+            curl -sf http://127.0.0.1:39399/api/health >/dev/null && break
+            sleep 1
+          done
+          API_INTERNAL_BASE_URL=http://127.0.0.1:39399 npm run build

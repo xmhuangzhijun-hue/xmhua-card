@@ -1,55 +1,49 @@
-# Backend
+# 后端
 
-The homepage is served through `GET /api/content`. Use `GET /api/content?tenant=<slug>` for another tenant. The default is controlled by `DEFAULT_TENANT_SLUG`.
+后端是 `api/` 下的独立 Node 服务，与前端分开构建、分开部署、分开重启。前端不含数据库驱动。
 
-The complete versioned HTTP contract is documented in [`API.md`](API.md). A separately deployed frontend sets `NEXT_PUBLIC_API_BASE_URL`; the backend sets `CORS_ALLOWED_ORIGIN` to that frontend's exact origin. Leave both unset for same-origin deployment.
+## 分层
 
-The public React page is a presentation shell. All visible identity, copy, navigation, lists, links, image URLs, button labels, footer content, and analytics-consent text come from this API. The backend-owned fallback seed contains the XMHUA site and is used only for public reads when PostgreSQL is not configured.
+```
+api/src/
+├── index.ts          进程入口：连接数据库，挂载路由，统一错误处理
+├── env.ts            环境变量解析，唯一读取 process.env 的地方
+├── db/               Drizzle schema、连接、迁移入口
+├── lib/              密码、会话、HTTP 辅助、内容 Schema、注册限流
+├── services/         业务逻辑：租户、内容读取、集合增删改、鉴权、多租户开通
+├── routes/           HTTP 路由，只做参数解析与响应
+└── scripts/          建账号、安全回归
+```
 
-## Stack
+路由不直接写数据库，服务层不关心 HTTP。Zod Schema 集中在 `lib/content-schema.ts`，读写共用同一份定义。
 
-- Next.js 16 Route Handlers
-- PostgreSQL
-- Drizzle ORM and Drizzle Kit
-- Zod response validation
-- Bearer-key protected administration routes
+## 数据模型
 
-## Multi-tenant administration
+| 表 | 说明 |
+| --- | --- |
+| `tenants` | 租户，含自助建站令牌哈希 |
+| `site_settings` | 每租户一份 JSON 设置文档，键为 `homepage` |
+| `articles` | 笔记，含 Markdown 正文、slug、发布状态、排序 |
+| `products` | 首页项目卡片 |
+| `directory_links` | 能力地图卡片 |
+| `social_links` | 社交账号 |
+| `pages` | 独立页面（隐私政策、服务条款、Cookie 说明等） |
+| `admin_users` | 后台账号，密码为 scrypt 哈希 |
+| `admin_sessions` | 会话，只存 token 的 SHA-256 与过期时间 |
 
-Every content row belongs to a record in `tenants`; tenant deletion cascades only to that tenant's content. The public API, management reads, and management writes always resolve a tenant before querying content.
+后三张表由迁移 `0004` 新增，均为 `CREATE TABLE`，不改动既有表，因此可以在不停机的情况下先迁移再发布，回滚也不需要回退数据库。
 
-Set `ADMIN_API_KEY` to a long random value, then open `/admin`. The key is sent as an `Authorization: Bearer` header and kept in browser `sessionStorage`, so closing the tab session clears it. It is never stored in the content database.
+## 数据库连接
 
-`/studio` provides a form-based editor for routine tenant updates. `/admin` provides the complete validated content document editor for every API-driven field.
+`DATABASE_URL` 以 `postgres://` 开头时使用 postgres-js 连接真实实例；以 `pglite:` 开头时使用进程内 PGlite 数据目录，仅供本地开发。PGlite 依赖是 devDependency 且动态导入，生产构建不会加载。
 
-Management endpoints:
+## 安全约定
 
-- `GET /api/admin/tenants` — list tenants
-- `POST /api/admin/tenants` — create a tenant, optionally with initial content
-- `GET /api/admin/content?tenant=<slug>` — load one tenant's content
-- `PUT /api/admin/content?tenant=<slug>` — validate and replace one tenant's content in a transaction
+- 管理接口默认拒绝，会话 Cookie 与机器密钥二选一
+- 密码校验对不存在的账号也消耗等量计算
+- 改密码会吊销该账号全部会话
+- 每次登录都会顺带清理过期会话
+- 所有写入先经 Zod 校验，集合重排在单个事务内完成
+- 跨租户 id 按不存在处理
 
-Writes fail closed: without `ADMIN_API_KEY` or `DATABASE_URL`, no management write is accepted. A full-content save replaces only the selected tenant's articles, products, directory links and social links inside one PostgreSQL transaction.
-
-Administrative and tenant studio routes always require a valid Bearer credential, including on loopback. There is no hostname-based authentication bypass.
-
-## Self-service sites
-
-Set `SELF_SERVICE_SIGNUP_ENABLED=true` only after PostgreSQL is migrated and `SIGNUP_INVITE_CODE` is configured. Visitors can then use `/start` to create an isolated site and `/studio?tenant=<slug>` to edit it without source-code access.
-
-`POST /api/signup` creates the tenant and starter content in one transaction. It returns a high-entropy tenant management token exactly once; PostgreSQL stores only its SHA-256 digest. The tenant studio sends that token as a Bearer credential to `GET` and `PUT /api/studio/content?tenant=<slug>`. A tenant credential cannot list tenants or read/write another tenant.
-
-Self-service creation fails closed when the database, feature flag, or invite code is absent. The route also enforces bounded request/field sizes, an in-process rate limit and `MAX_TENANTS`. Invalid invite codes are rejected before consuming the valid site-creation quota. Multi-instance public deployments still need shared gateway-level rate limiting for invalid-invite abuse and creation attempts. Set `TRUST_PROXY_HEADERS=true` only behind a trusted proxy that overwrites forwarded headers.
-
-## Local development
-
-Without `DATABASE_URL`, the server repository returns backend-owned seed content and the API reports `meta.source: "seed"`. The React client still reads everything through `/api/content`.
-
-To use PostgreSQL:
-
-1. Copy `.env.example` to `.env.local` and set `DATABASE_URL`, `DEFAULT_TENANT_SLUG`, and `ADMIN_API_KEY`. Enable `SELF_SERVICE_SIGNUP_ENABLED` only when you are ready to accept new sites.
-2. Run `npm run db:migrate`.
-3. Run `npm run db:seed`.
-4. Start the application with `npm run dev`.
-
-When PostgreSQL is active, the API reports `meta.source: "postgresql"`. A configured but unseeded database returns HTTP 503 instead of silently falling back.
+`npm run security:check --prefix api` 覆盖上述断言，无需数据库即可运行，并在 CI 中执行。

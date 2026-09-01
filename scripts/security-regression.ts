@@ -4,27 +4,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { Readable } from "node:stream";
-import { homepageContentSchema } from "../src/lib/content-schema";
-import { isAdminCredential } from "../src/server/admin-auth";
-import { seedHomepageContent } from "../src/server/seed-content";
-import { enforceValidSignupAttempt, requireSignupInvite } from "../src/server/signup-guard";
 import { blockedAddress, safeDownload } from "./safe-download.mjs";
 
-process.env.ADMIN_API_KEY = "regression-admin-key";
-assert.equal(isAdminCredential(new Request("http://127.0.0.1/api/admin/tenants", { headers: { host: "127.0.0.1" } })), false);
-assert.equal(isAdminCredential(new Request("http://attacker.example/api/admin/tenants", { headers: { authorization: "Bearer regression-admin-key", host: "127.0.0.1" } })), true);
-
-homepageContentSchema.parse(seedHomepageContent);
-assert.equal(homepageContentSchema.safeParse({ ...seedHomepageContent, articles: Array.from({ length: 101 }, (_, id) => ({ id, category: "x", title: "x", excerpt: "x", publishedAt: "x", href: "#" })) }).success, false);
-
-process.env.SIGNUP_INVITE_CODE = "regression-invite";
-requireSignupInvite("regression-invite");
-assert.throws(() => requireSignupInvite("wrong-invite"), /INVALID_INVITE_CODE/);
-process.env.SIGNUP_RATE_LIMIT = "1";
-const signupRequest = new Request("http://localhost/api/signup");
-for (let attempt = 0; attempt < 10; attempt += 1) assert.throws(() => enforceValidSignupAttempt(signupRequest, `wrong-${attempt}`), /INVALID_INVITE_CODE/);
-enforceValidSignupAttempt(signupRequest, "regression-invite");
-assert.throws(() => enforceValidSignupAttempt(signupRequest, "regression-invite"), /SIGNUP_RATE_LIMITED/);
+// Authentication, signup and content-schema regressions moved to api/ with the
+// backend they cover. See api/src/scripts/security-regression.ts.
 
 async function verifyDownloadBoundary() {
   await assert.rejects(() => safeDownload("http://127.0.0.1/private", "ignored"), /blocked/);

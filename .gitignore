@@ -47,3 +47,8 @@ next-env.d.ts
 
 # Local temp files
 temp/
+
+# Standalone API build output and local dev database
+api/dist/
+api/node_modules/
+api/.dev-postgres/
