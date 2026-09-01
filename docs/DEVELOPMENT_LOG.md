@@ -27,7 +27,13 @@ This file is the durable engineering trail for each iteration. User-facing relea
 ### Deferred
 
 - Current seed articles contain summaries but no body field, so this iteration does not invent full article pages. Those can be added as a separate content-model extension when real Markdown or rich-text bodies are ready.
-- No remote push or production deployment was performed.
+
+### Production release
+
+- Commit `7fa294a` was pushed to `origin/master`, built as a verified Linux x86_64 standalone artifact, and deployed as isolated release `/opt/xmhua-card/releases/20260901T1124Z-7fa294a`.
+- Candidate-port checks passed before the `/opt/xmhua-card/current` symlink was switched and `xmhua-card.service` restarted.
+- Public browser acceptance at `https://huangzhijun.online/notes` rendered the expected title and six rows; the homepage exposed the notes entry. The blog service, Nginx, and the adjacent Qinghe gateway remained active.
+- The verified rollback target is the prior release `/opt/xmhua-card/releases/20260831T1940Z-d5fedfd`.
 
 ## 2026-08-31 — Evidence-first AI capability page and isolated business demo
 

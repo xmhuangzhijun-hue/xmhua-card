@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a public `/notes` library with numbered entries, category filtering, title/summary search, dark mode, and responsive mobile behavior.
+- Added a direct notes entry to the homepage navigation while continuing to use the existing tenant-aware article content source.
 - Added a public `/work` portfolio route covering Hermes Agent engineering, Obsidian automation, AI coding collaboration, advertising data products, and the XMHUA Card platform.
 - Added a direct portfolio entry to the existing homepage navigation.
 - Added an isolated, fixed-seed IAA operations demo at `/demo/iaa/` with public demo credentials and no production connection.
