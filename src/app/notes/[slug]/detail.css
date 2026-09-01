@@ -138,3 +138,43 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* Tables. Wide ones scroll inside their own box so the page never scrolls sideways. */
+.note-body .table-scroll {
+  margin: 0 0 1.7em;
+  overflow-x: auto;
+  border: 1px solid var(--notes-line);
+  border-radius: 12px;
+}
+.note-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 0.82em;
+  line-height: 1.7;
+}
+.note-body thead th {
+  position: sticky;
+  top: 0;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--notes-line);
+  background: color-mix(in srgb, var(--notes-line) 30%, transparent);
+  font-weight: 750;
+  text-align: left;
+  white-space: nowrap;
+}
+.note-body tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--notes-line) 60%, transparent);
+  vertical-align: top;
+}
+.note-body tbody tr:last-child td {
+  border-bottom: 0;
+}
+.note-body table code {
+  white-space: nowrap;
+}
+.note-body li > ul,
+.note-body li > ol {
+  margin: 0.5em 0 0;
+}

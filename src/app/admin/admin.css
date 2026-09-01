@@ -537,3 +537,56 @@ textarea { resize: vertical; }
 
 .ac-slug input { flex: 1; min-width: 0; border-radius: 0 9px 9px 0; font-family: ui-monospace, Consolas, monospace; }
 .ac-slug__fix { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+/* Markdown preview elements. Mirrors the public note styling closely enough to
+   judge a draft without leaving the console. */
+.ac-markdown__preview h2 { margin: 1.6em 0 0.6em; font-size: 1.2em; font-weight: 800; }
+.ac-markdown__preview h3 { margin: 1.4em 0 0.5em; font-size: 1.05em; font-weight: 750; }
+.ac-markdown__preview > :first-child { margin-top: 0; }
+.ac-markdown__preview ul,
+.ac-markdown__preview ol { margin: 0 0 1.2em; padding-left: 1.4em; }
+.ac-markdown__preview li > ul,
+.ac-markdown__preview li > ol { margin: 0.4em 0 0; }
+.ac-markdown__preview a { color: var(--ac-blue); text-decoration: underline; text-underline-offset: 3px; }
+.ac-markdown__preview blockquote {
+  margin: 0 0 1.2em;
+  padding-left: 16px;
+  border-left: 3px solid var(--ac-line);
+  color: var(--ac-muted);
+}
+.ac-markdown__preview code {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--ac-line) 55%, transparent);
+  font: 0.85em/1.6 ui-monospace, Consolas, monospace;
+}
+.ac-markdown__preview pre {
+  margin: 0 0 1.3em;
+  padding: 14px 16px;
+  overflow-x: auto;
+  border: 1px solid var(--ac-line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ac-line) 28%, transparent);
+}
+.ac-markdown__preview pre code { padding: 0; background: none; font-size: 0.82em; }
+.ac-markdown__preview .table-scroll {
+  margin: 0 0 1.3em;
+  overflow-x: auto;
+  border: 1px solid var(--ac-line);
+  border-radius: 10px;
+}
+.ac-markdown__preview table { width: 100%; border-collapse: collapse; font-size: 0.86em; }
+.ac-markdown__preview th {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--ac-line);
+  background: color-mix(in srgb, var(--ac-line) 30%, transparent);
+  font-weight: 750;
+  text-align: left;
+  white-space: nowrap;
+}
+.ac-markdown__preview td {
+  padding: 9px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ac-line) 55%, transparent);
+  vertical-align: top;
+}
+.ac-markdown__preview tbody tr:last-child td { border-bottom: 0; }
