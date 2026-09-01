@@ -296,4 +296,8 @@ This file is the durable engineering trail for each iteration. User-facing relea
 
 ### Deployment-dependent verification
 
-- PostgreSQL migration, authenticated Studio save/read, public article navigation, and real external-account navigation still require verification on the production deployment before this correction is described as released.
+- Production PostgreSQL was installed on the existing ECS host and bound to the dedicated `xmhua-card` operating-system/database role. The application now reports `meta.source: postgresql` instead of `seed`.
+- Release `/opt/xmhua-card/releases/20260901T1300Z-5bed1ca` is active; the previous release remains available as the rollback target.
+- Authenticated Studio GET, same-document PUT, and GET-after-write returned 200/200/200 with `saved: true`; unauthenticated Studio API access returned 401.
+- The public article URL returned 200 through Nginx and contained its persisted body. The public Studio route returned 200.
+- The confirmed GitHub profile is configured. Other placeholder social accounts remain hidden until their real profile or official add-contact links are saved in Studio.
