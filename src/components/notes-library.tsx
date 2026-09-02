@@ -49,8 +49,9 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
       <section className="notes-intro" aria-labelledby="notes-title">
         <div>
           <p>PUBLIC WORKING NOTES</p>
-          <h1 id="notes-title">公开笔记</h1>
-          <span>记录 AI 产品、Agent、数据系统与独立开发中的真实问题、判断和复盘。</span>
+          <h1 id="notes-title">{content.sections.articles.eyebrow}</h1>
+          {/* Shared with the homepage section so one edit in the console updates both. */}
+          <span>{content.sections.articles.description}</span>
         </div>
         <dl>
           <div><dt>{content.articles.length}</dt><dd>篇公开记录</dd></div>
