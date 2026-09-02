@@ -22,10 +22,8 @@ const articles: CollectionConfig = {
   reorderable: true,
   title: row => String(row.title || ""),
   subtitle: row => `${row.category} · ${row.publishedAt}`,
-  incomplete: row => {
-    if (!row.published) return "草稿";
-    return String(row.body ?? "").trim().length < 200 ? "正文太短" : null;
-  },
+  // Draft state has its own tab and chip now, so this only flags real content gaps.
+  incomplete: row => (String(row.body ?? "").trim().length < 200 ? "正文太短" : null),
   blank: {
     category: "", title: "", excerpt: "",
     publishedAt: new Date().toISOString().slice(0, 10),
@@ -150,7 +148,6 @@ const pages: CollectionConfig = {
   singular: "页面",
   title: row => String(row.title || ""),
   subtitle: row => `/${row.slug}`,
-  incomplete: row => (row.published ? null : "未发布"),
   blank: { slug: "", title: "", description: "", body: "", published: true },
   fields: [
     { name: "title", label: "页面标题", type: "text" },

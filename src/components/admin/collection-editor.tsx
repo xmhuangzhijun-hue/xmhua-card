@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, Check, LoaderCircle, Plus, Save, Trash2, TriangleAlert } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, LoaderCircle, Plus, Save, Search, Trash2, TriangleAlert } from "lucide-react";
 import { adminApi, describeError } from "./admin-api";
 import { Field, type FieldSpec, type FieldValues } from "./fields";
 
@@ -20,12 +20,17 @@ export type CollectionConfig = {
 
 type Row = FieldValues & { id: number };
 
+/** Which slice of the collection the list is showing. */
+type ListFilter = "all" | "published" | "draft" | "incomplete";
+
 export function CollectionEditor({ config, onChanged }: { config: CollectionConfig; onChanged?: () => void }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [selectedId, setSelectedId] = useState<number | "new" | null>(null);
   const [draft, setDraft] = useState<FieldValues>(config.blank);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const [filter, setFilter] = useState<ListFilter>("all");
+  const [query, setQuery] = useState("");
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -43,6 +48,8 @@ export function CollectionEditor({ config, onChanged }: { config: CollectionConf
   useEffect(() => {
     setSelectedId(null);
     setDraft(config.blank);
+    setFilter("all");
+    setQuery("");
     void load();
   }, [config, load]);
 
@@ -96,10 +103,13 @@ export function CollectionEditor({ config, onChanged }: { config: CollectionConf
     }
   }
 
-  async function move(index: number, direction: -1 | 1) {
+  // Positions come from the full list, never from the filtered view, so ordering
+  // stays correct no matter what the list is currently showing.
+  async function move(row: Row, direction: -1 | 1) {
+    const index = rows.findIndex(candidate => candidate.id === row.id);
     const target = index + direction;
-    if (target < 0 || target >= rows.length) return;
-    const ids = rows.map(row => row.id);
+    if (index === -1 || target < 0 || target >= rows.length) return;
+    const ids = rows.map(item => item.id);
     [ids[index], ids[target]] = [ids[target]!, ids[index]!];
     setBusy(true);
     try {
@@ -113,10 +123,39 @@ export function CollectionEditor({ config, onChanged }: { config: CollectionConf
   }
 
   const dirtyLabel = selectedId === "new" ? `新建${config.singular}` : config.title(draft);
-  const incompleteCount = useMemo(
-    () => (config.incomplete ? rows.filter(row => config.incomplete!(row)).length : 0),
-    [config, rows],
-  );
+
+  const supportsPublished = "published" in config.blank;
+  const counts = useMemo(() => ({
+    all: rows.length,
+    published: rows.filter(row => row.published === true).length,
+    draft: rows.filter(row => row.published === false).length,
+    incomplete: config.incomplete ? rows.filter(row => config.incomplete!(row)).length : 0,
+  }), [config, rows]);
+
+  const visibleRows = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase("zh-CN");
+    return rows.filter(row => {
+      const byStatus =
+        filter === "published" ? row.published === true
+        : filter === "draft" ? row.published === false
+        : filter === "incomplete" ? Boolean(config.incomplete?.(row))
+        : true;
+      if (!byStatus) return false;
+      if (!needle) return true;
+      const haystack = `${config.title(row)} ${config.subtitle?.(row) ?? ""}`.toLocaleLowerCase("zh-CN");
+      return haystack.includes(needle);
+    });
+  }, [config, filter, query, rows]);
+
+  // Reordering writes absolute positions, so it is only offered on the unfiltered list.
+  const canReorder = Boolean(config.reorderable) && filter === "all" && !query.trim();
+
+  const tabs = [
+    { id: "all" as const, label: "全部", count: counts.all, show: true },
+    { id: "draft" as const, label: "草稿", count: counts.draft, show: supportsPublished },
+    { id: "published" as const, label: "已发布", count: counts.published, show: supportsPublished },
+    { id: "incomplete" as const, label: "待完善", count: counts.incomplete, show: counts.incomplete > 0 },
+  ].filter(tab => tab.show);
 
   return (
     <div className="ac-collection">
@@ -124,28 +163,62 @@ export function CollectionEditor({ config, onChanged }: { config: CollectionConf
         <div className="ac-list__head">
           <div>
             <strong>{rows.length} 条</strong>
-            {incompleteCount > 0 && <span className="ac-badge"><TriangleAlert size={12} />{incompleteCount} 条待完善</span>}
+            {counts.incomplete > 0 && (
+              <span className="ac-badge"><TriangleAlert size={12} />{counts.incomplete} 条待完善</span>
+            )}
           </div>
           <button type="button" className="ac-button ac-button--primary" onClick={startNew}>
             <Plus size={15} />新建
           </button>
         </div>
+
+        <div className="ac-list__filters" role="tablist" aria-label={`筛选${config.singular}`}>
+          {tabs.map(tab => (
+            <button
+              type="button"
+              key={tab.id}
+              role="tab"
+              aria-selected={filter === tab.id}
+              className={filter === tab.id ? "is-active" : ""}
+              onClick={() => setFilter(tab.id)}
+            >
+              {tab.label}
+              <span className={`ac-list__count${tab.id === "draft" && tab.count > 0 ? " ac-list__count--draft" : ""}`}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <label className="ac-list__search">
+          <Search size={14} aria-hidden="true" />
+          <input
+            value={query}
+            onChange={event => setQuery(event.target.value)}
+            placeholder={`搜索${config.singular}标题`}
+            aria-label={`搜索${config.singular}`}
+          />
+        </label>
         <ul>
-          {rows.map((row, index) => {
+          {visibleRows.map(row => {
             const warning = config.incomplete?.(row) ?? null;
+            const position = rows.findIndex(candidate => candidate.id === row.id);
             return (
               <li key={row.id} className={selectedId === row.id ? "is-active" : ""}>
                 <button type="button" className="ac-list__row" onClick={() => selectRow(row)}>
                   <span className="ac-list__title">{config.title(row)}</span>
                   {config.subtitle && <span className="ac-list__subtitle">{config.subtitle(row)}</span>}
-                  {warning && <span className="ac-list__warning"><TriangleAlert size={11} />{warning}</span>}
+                  <span className="ac-list__flags">
+                    {row.published === false && <span className="ac-chip ac-chip--draft">草稿</span>}
+                    {warning && <span className="ac-list__warning"><TriangleAlert size={11} />{warning}</span>}
+                  </span>
                 </button>
-                {config.reorderable && (
+                {canReorder && (
                   <div className="ac-list__order">
-                    <button type="button" onClick={() => move(index, -1)} disabled={index === 0} aria-label="上移">
+                    <button type="button" onClick={() => move(row, -1)} disabled={position === 0} aria-label="上移">
                       <ArrowUp size={13} />
                     </button>
-                    <button type="button" onClick={() => move(index, 1)} disabled={index === rows.length - 1} aria-label="下移">
+                    <button type="button" onClick={() => move(row, 1)} disabled={position === rows.length - 1} aria-label="下移">
                       <ArrowDown size={13} />
                     </button>
                   </div>
@@ -154,6 +227,17 @@ export function CollectionEditor({ config, onChanged }: { config: CollectionConf
             );
           })}
           {rows.length === 0 && !busy && <li className="ac-list__empty">还没有内容，点「新建」开始。</li>}
+          {rows.length > 0 && visibleRows.length === 0 && (
+            <li className="ac-list__empty">
+              这个条件下没有{config.singular}。
+              <button type="button" className="ac-list__reset" onClick={() => { setFilter("all"); setQuery(""); }}>
+                查看全部
+              </button>
+            </li>
+          )}
+          {config.reorderable && !canReorder && visibleRows.length > 0 && (
+            <li className="ac-list__hint">筛选或搜索时不能调整顺序，先切回「全部」。</li>
+          )}
         </ul>
       </aside>
 
