@@ -218,7 +218,7 @@ export function AdminConsole() {
     <main className="ac-shell">
       <header className="ac-masthead">
         <div className="ac-masthead__brand">
-          <Link href="/">XMHUA</Link>
+          <Link href="/">黄智军</Link>
           <span>内容后台</span>
         </div>
         <div className="ac-masthead__right">

@@ -37,9 +37,9 @@ async function loadNote(slug: string) {
 export async function generateMetadata({ params }: NotePageProps): Promise<Metadata> {
   try {
     const loaded = await loadNote((await params).slug);
-    if (!loaded) return { title: "笔记未找到 | XMHUA" };
+    if (!loaded) return { title: "笔记未找到 | 黄智军" };
     return {
-      title: `${loaded.article.title} | XMHUA`,
+      title: `${loaded.article.title} | 黄智军`,
       description: stripInlineMarkdown(loaded.article.excerpt),
       openGraph: {
         title: loaded.article.title,
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: NotePageProps): Promise<Metad
       },
     };
   } catch (error) {
-    if (error instanceof ContentUnavailableError) return { title: "笔记 | XMHUA" };
+    if (error instanceof ContentUnavailableError) return { title: "笔记 | 黄智军" };
     throw error;
   }
 }
@@ -103,6 +103,10 @@ export default async function NotePage({ params }: NotePageProps) {
       <footer className="notes-footer">
         <span>记录真实问题、判断和复盘。</span>
         <Link href="/notes">返回公开笔记 <ArrowUpRight size={15} /></Link>
+        <span className="notes-footer__icp">
+          © 2026 黄智军 ·{" "}
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener">闽ICP备2026035561号-1</a>
+        </span>
       </footer>
     </main>
   );

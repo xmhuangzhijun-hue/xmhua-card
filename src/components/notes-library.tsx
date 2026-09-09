@@ -35,7 +35,7 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
   return (
     <main className="notes-page">
       <header className="notes-nav">
-        <Link className="notes-brand" href="/" aria-label="返回 XMHUA 首页">
+        <Link className="notes-brand" href="/" aria-label="返回黄智军首页">
           <Image src={content.site.brandImage} alt="" width={29} height={29} priority />
           <strong>{content.site.brandName}</strong>
         </Link>
@@ -103,6 +103,10 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
       <footer className="notes-footer">
         <span>持续整理真实构建过程，不把测试通过当作用户结果。</span>
         <Link href="/work">查看公开案例 <ArrowUpRight size={15} /></Link>
+        <span className="notes-footer__icp">
+          © 2026 黄智军 ·{" "}
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener">闽ICP备2026035561号-1</a>
+        </span>
       </footer>
     </main>
   );

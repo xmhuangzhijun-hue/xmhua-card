@@ -35,8 +35,8 @@ async function loadPage(slug: string) {
 
 export async function generateMetadata({ params }: StandalonePageProps): Promise<Metadata> {
   const page = await loadPage((await params).slug);
-  if (!page) return { title: "页面未找到 | XMHUA" };
-  return { title: `${page.title} | XMHUA`, description: page.description };
+  if (!page) return { title: "页面未找到 | 黄智军" };
+  return { title: `${page.title} | 黄智军`, description: page.description };
 }
 
 export default async function StandalonePage({ params }: StandalonePageProps) {
@@ -46,7 +46,7 @@ export default async function StandalonePage({ params }: StandalonePageProps) {
   return (
     <main className="notes-page note-detail">
       <header className="notes-nav">
-        <Link className="notes-brand" href="/">XMHUA</Link>
+        <Link className="notes-brand" href="/">黄智军</Link>
         <Link href="/"><ArrowLeft size={16} />返回首页</Link>
       </header>
       <article className="note-article">
@@ -54,6 +54,12 @@ export default async function StandalonePage({ params }: StandalonePageProps) {
         {page.description && <p className="note-lead">{page.description}</p>}
         <div className="note-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(page.body) }} />
       </article>
+      <footer className="notes-footer">
+        <span className="notes-footer__icp">
+          © 2026 黄智军 ·{" "}
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener">闽ICP备2026035561号-1</a>
+        </span>
+      </footer>
     </main>
   );
 }
