@@ -23,7 +23,44 @@ type Block =
   | { kind: "rule" };
 
 export function renderMarkdown(source: string) {
-  return parseBlocks(source.replace(/\r\n?/g, "\n").split("\n")).map(renderBlock).join("\n");
+  const blocks = parseBlocks(source.replace(/\r\n?/g, "\n").split("\n"));
+  const seen = new Map<string, number>();
+  return blocks.map(block => renderBlock(block, seen)).join("\n");
+}
+
+/**
+ * A stable anchor for a heading.
+ *
+ * Chinese headings have no meaningful ASCII slug, so the text is kept as-is with
+ * whitespace and punctuation folded to hyphens — valid in an HTML5 id, and the
+ * browser encodes it in the fragment. Repeats take a numeric suffix so two
+ * sections with the same name still address separately.
+ */
+export function headingId(text: string, seen?: Map<string, number>): string {
+  const base = text
+    .replace(/[`*_~[\]()]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\p{Letter}\p{Number}-]/gu, "")
+    || "section";
+  if (!seen) return base;
+  const count = seen.get(base) ?? 0;
+  seen.set(base, count + 1);
+  return count === 0 ? base : `${base}-${count + 1}`;
+}
+
+/** The h2/h3 outline of a document, for building a table of contents. */
+export function extractHeadings(source: string): { level: number; text: string; id: string }[] {
+  const blocks = parseBlocks(source.replace(/\r\n?/g, "\n").split("\n"));
+  const seen = new Map<string, number>();
+  const out: { level: number; text: string; id: string }[] = [];
+  for (const block of blocks) {
+    if (block.kind !== "heading") continue;
+    // Consumes the counter in the same order renderMarkdown does, so the ids match.
+    const id = headingId(block.text, seen);
+    if (block.level === 2 || block.level === 3) out.push({ level: block.level, text: block.text, id });
+  }
+  return out;
 }
 
 const bulletPattern = /^(\s*)[-*+]\s+(.*)$/;
@@ -174,10 +211,12 @@ function renderList(block: ListBlock): string {
   return `<${tag}>${items}</${tag}>`;
 }
 
-function renderBlock(block: Block): string {
+function renderBlock(block: Block, seen?: Map<string, number>): string {
   switch (block.kind) {
-    case "heading":
-      return `<h${block.level}>${inline(block.text)}</h${block.level}>`;
+    case "heading": {
+      const id = headingId(block.text, seen);
+      return `<h${block.level} id="${id}">${inline(block.text)}</h${block.level}>`;
+    }
     case "paragraph":
       return `<p>${inline(block.text)}</p>`;
     case "list":
@@ -195,7 +234,8 @@ function renderBlock(block: Block): string {
       return `<div class="table-scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
     }
     case "quote":
-      return `<blockquote>${parseBlocks(block.lines).map(renderBlock).join("")}</blockquote>`;
+      // Passing renderBlock straight to map would hand it the array index as `seen`.
+      return `<blockquote>${parseBlocks(block.lines).map(child => renderBlock(child, seen)).join("")}</blockquote>`;
     case "code": {
       const className = block.language ? ` class="language-${escapeHtml(block.language)}"` : "";
       return `<pre><code${className}>${escapeHtml(block.lines.join("\n"))}</code></pre>`;

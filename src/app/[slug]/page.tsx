@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ContentUnavailableError, getPage, getSiteContent } from "@/lib/api-client";
-import { renderMarkdown } from "@/lib/markdown";
+import { extractHeadings, renderMarkdown } from "@/lib/markdown";
+import { DocOutline } from "@/components/site/doc-outline";
 import "../notes/notes.css";
 import "../notes/[slug]/detail.css";
 
@@ -43,17 +44,25 @@ export default async function StandalonePage({ params }: StandalonePageProps) {
   const page = await loadPage((await params).slug);
   if (!page) notFound();
 
+  const headings = extractHeadings(page.body);
+
   return (
-    <main className="notes-page note-detail">
+    <main className="notes-page note-detail doc-page">
       <header className="notes-nav">
         <Link className="notes-brand" href="/">黄智军</Link>
         <Link href="/"><ArrowLeft size={16} />返回首页</Link>
       </header>
-      <article className="note-article">
-        <h1>{page.title}</h1>
-        {page.description && <p className="note-lead">{page.description}</p>}
-        <div className="note-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(page.body) }} />
-      </article>
+      {/* Two columns on wide screens: the document, and an outline that follows
+          the reader. Below 1080px the outline collapses above the text. */}
+      <div className="doc-shell">
+        <article className="note-article">
+          <p className="doc-eyebrow">站点说明</p>
+          <h1>{page.title}</h1>
+          {page.description && <p className="note-lead">{page.description}</p>}
+          <div className="note-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(page.body) }} />
+        </article>
+        <DocOutline headings={headings} />
+      </div>
       <footer className="notes-footer">
         <span className="notes-footer__icp">
           © 2026 黄智军 ·{" "}

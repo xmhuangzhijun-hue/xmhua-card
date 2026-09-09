@@ -273,3 +273,125 @@
   cursor: pointer;
 }
 .notes-page .notes-tags__more:hover { border-color: var(--notes-ink); color: var(--notes-ink); }
+
+/* ==================================================== 文档骨架与目录 == */
+/*
+ * Long-form pages (notes and the standalone privacy/terms/cookies documents)
+ * were a bare column: title, then heading-paragraph-heading-paragraph with no
+ * way to see the shape of the document or where you are in it. They now sit in
+ * a two-column shell with an outline that follows the reader.
+ *
+ * The outline is server-rendered from the same parse that produced the body, so
+ * its links work with no JavaScript; the client only adds the highlight.
+ */
+.note-detail .doc-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 216px;
+  gap: clamp(32px, 4vw, 64px);
+  align-items: start;
+  width: min(1120px, calc(100% - var(--ds-gutter) * 2));
+  margin-inline: auto;
+}
+.note-detail .doc-shell .note-article {
+  width: 100%;
+  max-width: 760px;
+  margin: 0;
+}
+
+.note-detail .doc-eyebrow {
+  margin: 0 0 12px;
+  color: var(--notes-blue);
+  font: 800 11.5px/1.3 ui-monospace, Consolas, monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.doc-toc {
+  position: sticky;
+  top: 84px;
+  padding-top: clamp(26px, 3vw, 40px);
+}
+.doc-toc__label {
+  margin: 0 0 10px;
+  padding-left: 13px;
+  color: var(--notes-faint);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+.doc-toc ol {
+  display: grid;
+  gap: 1px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border-left: 1px solid var(--notes-line);
+}
+.doc-toc a {
+  display: block;
+  padding: 6px 13px;
+  margin-left: -1px;
+  border-left: 2px solid transparent;
+  color: var(--notes-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.doc-toc li[data-level="3"] a { padding-left: 26px; font-size: 12.5px; }
+.doc-toc a:hover { color: var(--notes-ink); }
+.doc-toc a[aria-current="true"] {
+  border-left-color: var(--notes-blue);
+  color: var(--notes-ink);
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .doc-toc a { transition: color .2s var(--mo-ease), border-color .2s var(--mo-ease); }
+}
+
+/* Anchored headings must not land under the sticky page nav. */
+.note-detail .note-body :is(h2, h3) { scroll-margin-top: 90px; }
+
+@media (max-width: 1080px) {
+  .note-detail .doc-shell { grid-template-columns: 1fr; gap: 0; }
+  .note-detail .doc-shell .note-article { max-width: none; }
+  /* Above the text rather than beside it, and no longer sticky. */
+  .doc-toc { position: static; order: -1; padding-top: 22px; }
+  .doc-toc ol { display: flex; flex-wrap: wrap; gap: 6px; border-left: 0; }
+  .doc-toc a {
+    padding: 5px 11px;
+    margin: 0;
+    border: 1px solid var(--notes-line);
+    border-radius: 999px;
+    font-size: 12.5px;
+  }
+  .doc-toc li[data-level="3"] { display: none; }
+  .doc-toc a[aria-current="true"] { border-color: var(--notes-blue); }
+}
+
+/* ============================================================ 案例页构图 == */
+/*
+ * Three fixes, all the same complaint: type sized for a poster inside a layout
+ * that is actually a dense capability review.
+ */
+.work-page .capability-line {
+  width: min(var(--ds-container), calc(100% - var(--ds-gutter) * 2));
+  margin-bottom: clamp(52px, 6vw, 84px);
+}
+.work-page .capability-line p { font-size: 11.5px; }
+.work-page .capability-line span { font-size: 13.5px; font-weight: 650; }
+
+/* The right-hand index in the hero was 10–11px against a 58px headline. */
+.work-page .hero-index { font-size: var(--ds-small); }
+.work-page .hero-index strong { font-size: 14.5px; }
+.work-page .hero-index span { font-size: 12.5px; }
+
+/* A .65 / 1.65 / 1 three-column heading row left the middle title stranded
+   between two thin rails; the label column no longer competes with it. */
+.work-page .work-section-heading {
+  grid-template-columns: minmax(0, 0.5fr) minmax(0, 2fr) minmax(0, 0.9fr);
+  gap: clamp(20px, 3vw, 40px);
+  padding-bottom: 26px;
+}
+.work-page .work-eyebrow { font-size: 11.5px; }
+.work-page .system-kicker { font-size: var(--ds-meta); }
+.work-page .system-intro { font-size: var(--ds-body); line-height: 1.7; }
+.work-page .system-case, .work-page .system-links { font-size: var(--ds-small); }

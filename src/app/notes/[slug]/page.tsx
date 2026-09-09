@@ -4,8 +4,9 @@ import { ArrowLeft, ArrowRight, ArrowUpRight, ExternalLink } from "lucide-react"
 import { notFound } from "next/navigation";
 import { ContentUnavailableError, getSiteContent } from "@/lib/api-client";
 import { ReadingProgress } from "@/components/site/reading-progress";
+import { DocOutline } from "@/components/site/doc-outline";
 import { isLiveHref } from "@/lib/content-types";
-import { renderMarkdown, stripInlineMarkdown } from "@/lib/markdown";
+import { extractHeadings, renderMarkdown, stripInlineMarkdown } from "@/lib/markdown";
 import "../notes.css";
 import "./detail.css";
 
@@ -68,6 +69,7 @@ export default async function NotePage({ params }: NotePageProps) {
         <Link href="/notes"><ArrowLeft size={16} />全部笔记</Link>
       </header>
 
+      <div className="doc-shell">
       <article className="note-article">
         <p className="note-meta">{article.category} · {article.publishedAt} · 约 {minutes} 分钟</p>
         <h1>{article.title}</h1>
@@ -84,6 +86,8 @@ export default async function NotePage({ params }: NotePageProps) {
           ? <div className="note-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(article.body) }} />
           : <p className="note-body note-body--empty">这篇笔记还没有正文。</p>}
       </article>
+        <DocOutline headings={extractHeadings(article.body)} label="本篇目录" />
+      </div>
 
       {(previous || next) && (
         <nav className="note-pager" aria-label="上一篇 / 下一篇">
