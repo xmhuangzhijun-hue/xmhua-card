@@ -58,11 +58,11 @@ export function HomePage({ content }: { content: SiteContent }) {
           </div>
         </section>
 
-        <section className="landing-section landing-section--split" id="articles">
+        <section className="landing-section landing-section--split" id="articles" data-reveal>
           <Heading {...sections.articles} />
-          <div className="article-list article-list--compact">
+          <div className="article-list article-list--compact" data-reveal-stagger>
             {articles.map(article => (
-              <Link className="article-row" href={`/notes/${article.slug}`} key={article.id}>
+              <Link className="article-row mo-spot mo-lift" href={`/notes/${article.slug}`} key={article.id}>
                 <span className="article-row__category">{article.category}</span>
                 <span className="article-row__title">{article.title}</span>
                 <span className="article-row__excerpt">{stripInlineMarkdown(article.excerpt)}</span>
@@ -72,11 +72,11 @@ export function HomePage({ content }: { content: SiteContent }) {
           </div>
         </section>
 
-        <section className="landing-section home-products-section" id="products">
+        <section className="landing-section home-products-section" id="products" data-reveal>
           <Heading {...sections.products} />
           <div className="product-grid product-grid--catalog product-grid--home">
             {products.map(product => (
-              <article className="product-card" key={product.id}>
+              <article className="product-card mo-spot mo-lift" key={product.id}>
                 <div className="product-card__top">
                   <span className="product-icon product-icon--md">
                     {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight, Megaphone } from "lucide-react";
 import { isLiveHref, type SiteContent } from "@/lib/content-types";
 import { ThemeToggle } from "./theme-toggle";
+import { CommandTrigger } from "./command-palette";
 
 /**
  * Header and footer shared by every public page.
@@ -54,6 +55,7 @@ export function SiteHeader({ content }: { content: SiteContent }) {
             )}
           </nav>
           <div className="site-header__actions">
+            <CommandTrigger />
             <ThemeToggle />
           </div>
         </div>

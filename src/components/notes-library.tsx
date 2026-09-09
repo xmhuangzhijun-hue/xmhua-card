@@ -3,10 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight, Search, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Article, SiteContent, TaxonomyGroup } from "@/lib/content-types";
 import { stripInlineMarkdown } from "@/lib/markdown";
 import { ThemeToggle } from "@/components/site/theme-toggle";
+import { CommandTrigger } from "@/components/site/command-palette";
+import { CountUp } from "@/components/site/count-up";
+import { useFlip } from "@/lib/flip";
 
 /** Sentinel for "no category filter"; not a real category name. */
 const ALL = "";
@@ -56,6 +59,19 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
   const [category, setCategory] = useState(ALL);
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [query, setQuery] = useState("");
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Deep links from the command palette (/notes?category=… or ?tag=…). Read from
+  // the URL after mount rather than through useSearchParams, which would opt this
+  // statically rendered page into dynamic rendering for a query string that only
+  // sets initial UI state.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const wanted = params.get("category");
+    const tag = params.get("tag");
+    if (wanted) setCategory(wanted);
+    if (tag) setActiveTags([tag]);
+  }, []);
 
   const sections = useMemo(
     () => buildSections(content.articles, content.taxonomy ?? []),
@@ -102,6 +118,9 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
     });
   }, [activeTags, inCategory, query]);
 
+  // Re-runs the FLIP pass whenever the visible set changes identity or order.
+  useFlip(listRef, visibleArticles.map(article => article.id).join(","));
+
   const filtered = category !== ALL || activeTags.length > 0 || query.trim() !== "";
 
   function pickCategory(next: string) {
@@ -131,6 +150,7 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
         <nav aria-label="笔记页导航">
           <Link href="/">首页</Link>
           <Link href="/work">案例</Link>
+          <CommandTrigger />
           <ThemeToggle />
         </nav>
       </header>
@@ -143,8 +163,8 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
           <span>{content.sections.articles.description}</span>
         </div>
         <dl>
-          <div><dt>{content.articles.length}</dt><dd>篇公开记录</dd></div>
-          <div><dt>{categoryCount}</dt><dd>个主题分类</dd></div>
+          <div><dt><CountUp value={content.articles.length} /></dt><dd>篇公开记录</dd></div>
+          <div><dt><CountUp value={categoryCount} /></dt><dd>个主题分类</dd></div>
         </dl>
       </section>
 
@@ -220,11 +240,17 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
             </div>
           )}
 
-          <div className="notes-list" aria-live="polite">
+          <div className="notes-list" aria-live="polite" ref={listRef}>
             {visibleArticles.map((article, index) => {
               const number = String(content.articles.length - content.articles.indexOf(article)).padStart(2, "0");
               return (
-                <Link className="notes-row" href={`/notes/${article.slug}`} key={article.id} data-visible-index={index}>
+                <Link
+                  className="notes-row mo-spot"
+                  href={`/notes/${article.slug}`}
+                  key={article.id}
+                  data-visible-index={index}
+                  data-flip-id={String(article.id)}
+                >
                   <span className="notes-number">{number}</span>
                   <span className="notes-copy">
                     <small>{article.category}</small>

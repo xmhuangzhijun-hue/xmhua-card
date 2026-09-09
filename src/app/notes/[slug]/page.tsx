@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, ArrowUpRight, ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ContentUnavailableError, getSiteContent } from "@/lib/api-client";
+import { ReadingProgress } from "@/components/site/reading-progress";
 import { isLiveHref } from "@/lib/content-types";
 import { renderMarkdown, stripInlineMarkdown } from "@/lib/markdown";
 import "../notes.css";
@@ -61,6 +62,7 @@ export default async function NotePage({ params }: NotePageProps) {
 
   return (
     <main className="notes-page note-detail">
+      <ReadingProgress />
       <header className="notes-nav">
         <Link className="notes-brand" href="/">{content.site.brandName}</Link>
         <Link href="/notes"><ArrowLeft size={16} />全部笔记</Link>

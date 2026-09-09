@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { themeBootstrapScript } from "@/components/site/browser-store";
+import { CommandPalette } from "@/components/site/command-palette";
+import { MotionRoot } from "@/components/site/motion-root";
 import "./globals.css";
 import "./hooosberg-source.css";
+import "./motion.css";
 
 export const metadata: Metadata = {
   title: { default: "黄智军", template: "%s" },
@@ -15,7 +18,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {/* Applies the stored theme before first paint so dark mode does not flash light. */}
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Mounted once at the root: the palette is reachable from every page,
+            and the motion layer wires reveal + spotlight for whatever renders. */}
+        <MotionRoot />
+        <CommandPalette />
+      </body>
     </html>
   );
 }

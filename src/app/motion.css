@@ -1,0 +1,343 @@
+/*
+ * Site-wide interaction layer.
+ *
+ * Three rules this file never breaks:
+ *   1. Content is readable with zero JavaScript. Anything that hides an element
+ *      to animate it in is gated behind a class JS adds, so a failed bundle
+ *      leaves the page fully visible instead of blank.
+ *   2. Only `transform` and `opacity` animate. No layout property is ever
+ *      transitioned, so nothing here can cause reflow or shift text under a
+ *      reader's eye.
+ *   3. Everything is inside `prefers-reduced-motion: no-preference`. Readers who
+ *      ask for stillness get a completely static site, not a slower one.
+ */
+
+:root {
+  --mo-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --mo-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --mo-spot: 120 140 255;
+  --mo-surface: 255 255 255;
+  --mo-ink: 17 24 36;
+  --mo-line: 216 222 232;
+}
+
+:root[data-theme="dark"] {
+  --mo-spot: 130 160 255;
+  --mo-surface: 17 23 34;
+  --mo-ink: 243 246 251;
+  --mo-line: 40 49 66;
+}
+
+/* ---------------------------------------------------------------- reveal --
+ * Sections rise as they enter the viewport. The native scroll-driven timeline
+ * runs entirely off the main thread; browsers without it fall back to an
+ * IntersectionObserver that toggles `.is-in`.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    [data-reveal] {
+      animation: mo-rise both linear;
+      animation-timeline: view();
+      /* Finishes well before the element reaches the middle of the screen, so
+         text is settled by the time it is comfortable to read. */
+      animation-range: entry 0% entry 48%;
+    }
+  }
+
+  @supports not (animation-timeline: view()) {
+    :root.mo-js [data-reveal] {
+      opacity: 0;
+      transform: translate3d(0, 16px, 0);
+      transition: opacity 0.65s var(--mo-ease-out), transform 0.65s var(--mo-ease-out);
+    }
+    :root.mo-js [data-reveal].is-in {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@keyframes mo-rise {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Staggers children of a revealed group without needing per-item JS. */
+@media (prefers-reduced-motion: no-preference) {
+  :root.mo-js [data-reveal-stagger] > * {
+    transition-delay: calc(var(--mo-i, 0) * 45ms);
+  }
+}
+
+/* ------------------------------------------------------------- spotlight --
+ * One delegated pointermove listener writes --mo-x/--mo-y on the hovered
+ * surface. Pure paint, no layout, and it never appears on touch devices
+ * (where `hover: hover` is false) because a sticky highlight there is noise.
+ */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .mo-spot {
+    position: relative;
+    isolation: isolate;
+  }
+  .mo-spot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    opacity: 0;
+    background: radial-gradient(
+      var(--mo-spot-size, 280px) circle at var(--mo-x, 50%) var(--mo-y, 50%),
+      rgb(var(--mo-spot) / 14%),
+      transparent 68%
+    );
+    transition: opacity 0.4s var(--mo-ease);
+    pointer-events: none;
+  }
+  .mo-spot:hover::after { opacity: 1; }
+}
+
+/* ------------------------------------------------------------------ lift --
+ * A restrained hover for clickable cards and rows: it moves 2px, never scales
+ * text, and snaps back instantly under reduced motion.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .mo-lift {
+    transition: transform 0.35s var(--mo-ease), box-shadow 0.35s var(--mo-ease);
+    will-change: transform;
+  }
+  .mo-lift:hover {
+    transform: translate3d(0, -2px, 0);
+  }
+  .mo-lift:active {
+    transform: translate3d(0, 0, 0);
+    transition-duration: 0.08s;
+  }
+}
+
+/* ------------------------------------------------------------------ flip --
+ * Applied by JS for one frame while filtered list items travel to their new
+ * positions. `will-change` is set only during the move and removed after, so
+ * idle rows keep no compositor layers.
+ */
+.mo-flip {
+  will-change: transform, opacity;
+}
+.mo-flip-enter {
+  animation: mo-flip-in 0.42s var(--mo-ease-out) both;
+}
+@keyframes mo-flip-in {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mo-flip-enter { animation: none; }
+}
+
+/* -------------------------------------------------------------- progress --
+ * Reading progress for long notes. Driven by the native scroll timeline where
+ * available so it tracks the scrollbar exactly with no listener at all.
+ */
+.mo-progress {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 60;
+  height: 2px;
+  background: rgb(var(--mo-spot) / 90%);
+  transform-origin: 0 50%;
+  transform: scaleX(var(--mo-progress, 0));
+  pointer-events: none;
+}
+@supports (animation-timeline: scroll()) {
+  .mo-progress {
+    transform: scaleX(0);
+    animation: mo-scale-x linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+@keyframes mo-scale-x {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ----------------------------------------------------------------- focus --
+ * A single visible focus ring across every surface. Keyboard users get a ring
+ * that is legible on both themes; pointer users never see it.
+ */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid rgb(var(--mo-spot));
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ------------------------------------------------------------- typography --
+ * Cheap wins that make long Chinese/Latin mixed text read better.
+ */
+h1, h2, h3 { text-wrap: balance; }
+p, li { text-wrap: pretty; }
+
+/* ------------------------------------------------------- command palette -- */
+.mo-cmdk {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  padding: clamp(56px, 12vh, 140px) 16px 24px;
+  background: rgb(8 11 18 / 46%);
+  backdrop-filter: blur(6px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mo-cmdk { animation: mo-fade 0.18s var(--mo-ease) both; }
+  .mo-cmdk__panel { animation: mo-pop 0.24s var(--mo-ease-out) both; }
+}
+@keyframes mo-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mo-pop {
+  from { opacity: 0; transform: translate3d(0, -8px, 0) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+.mo-cmdk__panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(660px, 100%);
+  max-height: min(62vh, 560px);
+  overflow: hidden;
+  border: 1px solid rgb(var(--mo-line));
+  border-radius: 14px;
+  background: rgb(var(--mo-surface));
+  color: rgb(var(--mo-ink));
+  box-shadow: 0 24px 70px rgb(8 11 18 / 28%);
+  font-family: Inter, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+.mo-cmdk__search {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 0 15px;
+  border-bottom: 1px solid rgb(var(--mo-line));
+}
+.mo-cmdk__search input {
+  width: 100%;
+  height: 52px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 15px;
+}
+.mo-cmdk__search kbd {
+  flex: none;
+  padding: 2px 6px;
+  border: 1px solid rgb(var(--mo-line));
+  border-radius: 5px;
+  color: rgb(var(--mo-ink) / 55%);
+  font: 650 10px ui-monospace, Consolas, monospace;
+}
+
+.mo-cmdk__list {
+  padding: 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.mo-cmdk__group {
+  padding: 10px 10px 4px;
+  color: rgb(var(--mo-ink) / 45%);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.mo-cmdk__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 12px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.mo-cmdk__item strong {
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mo-cmdk__item span {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  color: rgb(var(--mo-ink) / 55%);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mo-cmdk__item em {
+  color: rgb(var(--mo-spot));
+  font: 650 10px ui-monospace, Consolas, monospace;
+  font-style: normal;
+}
+.mo-cmdk__item[aria-selected="true"] {
+  background: rgb(var(--mo-spot) / 12%);
+}
+.mo-cmdk__item mark {
+  background: rgb(var(--mo-spot) / 22%);
+  color: inherit;
+  border-radius: 3px;
+}
+.mo-cmdk__empty {
+  padding: 34px 12px;
+  color: rgb(var(--mo-ink) / 55%);
+  font-size: 13px;
+  text-align: center;
+}
+.mo-cmdk__foot {
+  display: flex;
+  gap: 14px;
+  padding: 9px 14px;
+  border-top: 1px solid rgb(var(--mo-line));
+  color: rgb(var(--mo-ink) / 50%);
+  font-size: 11px;
+}
+.mo-cmdk__foot b { font-weight: 750; }
+
+/* The launcher sits in the header; on touch it is the only way in. */
+.mo-cmdk-trigger {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid rgb(var(--mo-line));
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(var(--mo-ink) / 62%);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mo-cmdk-trigger { transition: border-color 0.25s var(--mo-ease), color 0.25s var(--mo-ease); }
+}
+.mo-cmdk-trigger:hover { border-color: rgb(var(--mo-spot)); color: rgb(var(--mo-ink)); }
+.mo-cmdk-trigger kbd {
+  padding: 1px 5px;
+  border: 1px solid rgb(var(--mo-line));
+  border-radius: 4px;
+  font: 650 10px ui-monospace, Consolas, monospace;
+}
+@media (max-width: 640px) {
+  .mo-cmdk-trigger kbd { display: none; }
+}
+
+/* --------------------------------------------------------------- counter -- */
+.mo-count {
+  font-variant-numeric: tabular-nums;
+}
