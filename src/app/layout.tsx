@@ -5,6 +5,7 @@ import { MotionRoot } from "@/components/site/motion-root";
 import "./globals.css";
 import "./hooosberg-source.css";
 import "./motion.css";
+import "./design.css";
 
 export const metadata: Metadata = {
   title: { default: "黄智军", template: "%s" },

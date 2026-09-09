@@ -14,6 +14,8 @@ import { useFlip } from "@/lib/flip";
 /** Sentinel for "no category filter"; not a real category name. */
 const ALL = "";
 const UNGROUPED = "其他";
+/** Tags shown before the reader asks for the rest. */
+const TAG_PREVIEW = 10;
 
 type Section = { label: string; description: string; items: { name: string; count: number }[] };
 
@@ -59,6 +61,7 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
   const [category, setCategory] = useState(ALL);
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [query, setQuery] = useState("");
+  const [tagsOpen, setTagsOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   // Deep links from the command palette (/notes?category=… or ?tag=…). Read from
@@ -221,7 +224,9 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
 
           {availableTags.length > 0 && (
             <div className="notes-tags" aria-label="按标签筛选">
-              {availableTags.map(tag => (
+              {/* Eighteen pills wrapped over two rows out-shouted the notes they
+                  were meant to filter; the rest stay one click away. */}
+              {(tagsOpen ? availableTags : availableTags.slice(0, TAG_PREVIEW)).map(tag => (
                 <button
                   type="button"
                   key={tag.name}
@@ -232,6 +237,11 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
                   {tag.name}<span>{tag.count}</span>
                 </button>
               ))}
+              {availableTags.length > TAG_PREVIEW && (
+                <button type="button" className="notes-tags__more" onClick={() => setTagsOpen(v => !v)}>
+                  {tagsOpen ? "收起标签" : `更多标签 +${availableTags.length - TAG_PREVIEW}`}
+                </button>
+              )}
               {filtered && (
                 <button type="button" className="notes-tags__clear" onClick={clearAll}>
                   <X size={13} aria-hidden="true" />清除筛选
