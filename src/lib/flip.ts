@@ -73,7 +73,13 @@ export function useFlip(container: React.RefObject<HTMLElement | null>, key: str
         [{ transform: `translate3d(${dx}px, ${dy}px, 0)` }, { transform: "translate3d(0, 0, 0)" }],
         { duration: 420, easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
       );
-      animation.addEventListener("finish", () => row.classList.remove("mo-flip"), { once: true });
+      // `will-change` must come off however the animation ends. A cancel (the
+      // effect re-running because the filter changed again mid-flight) fires no
+      // `finish`, so listening only for that would strand a compositor layer on
+      // every row the reader filtered through.
+      const settle = () => row.classList.remove("mo-flip");
+      animation.addEventListener("finish", settle, { once: true });
+      animation.addEventListener("cancel", settle, { once: true });
       animations.push(animation);
     }
 

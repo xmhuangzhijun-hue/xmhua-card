@@ -225,7 +225,9 @@ export function CommandPalette() {
             <p className="mo-cmdk__empty">{entries ? "没有匹配的内容。" : "正在载入索引……"}</p>
           )}
           {results.map((entry, index) => {
-            const heading = entry.kind !== lastKind ? entry.kind : null;
+            // With a query the list is ranked by relevance, so kinds interleave and
+            // section headers would repeat; each row already carries its own badge.
+            const heading = !query.trim() && entry.kind !== lastKind ? entry.kind : null;
             lastKind = entry.kind;
             return (
               <div key={`${entry.kind}:${entry.href}:${entry.label}`}>

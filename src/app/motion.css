@@ -311,9 +311,11 @@ p, li { text-wrap: pretty; }
 /* The launcher sits in the header; on touch it is the only way in. */
 .mo-cmdk-trigger {
   display: inline-flex;
+  flex: none;
   gap: 8px;
   align-items: center;
   height: 34px;
+  white-space: nowrap;
   padding: 0 10px;
   border: 1px solid rgb(var(--mo-line));
   border-radius: 999px;
