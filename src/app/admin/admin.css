@@ -691,3 +691,63 @@ textarea { resize: vertical; }
   font-size: 11.5px;
   line-height: 1.6;
 }
+
+/* ---- 标签输入（type: "tags"）---- */
+.ac-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  padding: 6px 8px;
+  border: 1px solid var(--ac-line);
+  border-radius: 8px;
+  background: var(--ac-surface);
+}
+.ac-tags:focus-within { border-color: var(--ac-blue); }
+.ac-tags__chip {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  padding: 3px 6px 3px 9px;
+  border-radius: 999px;
+  background: var(--ac-bg);
+  color: var(--ac-ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+.ac-tags__chip button {
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--ac-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.ac-tags__chip button:hover { color: var(--ac-danger); }
+.ac-tags__input {
+  flex: 1;
+  min-width: 120px;
+  padding: 4px 2px;
+  border: 0 !important;
+  outline: 0;
+  background: transparent;
+  font-size: 13px;
+}
+
+/* ---- 笔记分类树 ---- */
+.ac-taxonomy {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--ac-line);
+  border-radius: 10px;
+  background: var(--ac-surface);
+}
+.ac-taxonomy__head { display: flex; gap: 6px; }
+.ac-taxonomy__head input { flex: 1; min-width: 0; font-weight: 700; }
+.ac-taxonomy textarea { width: 100%; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+.ac-taxonomy .ac-row__remove:disabled { opacity: .35; cursor: not-allowed; }

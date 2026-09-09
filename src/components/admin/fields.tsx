@@ -9,7 +9,7 @@ import { SlugField } from "./slug-field";
 export type FieldSpec = {
   name: string;
   label: string;
-  type: "text" | "textarea" | "markdown" | "url" | "date" | "boolean" | "select" | "image" | "slug";
+  type: "text" | "textarea" | "markdown" | "url" | "date" | "boolean" | "select" | "image" | "slug" | "tags";
   help?: string;
   placeholder?: string;
   options?: { value: string; label: string }[];
@@ -19,14 +19,24 @@ export type FieldSpec = {
   visibleWhen?: (draft: FieldValues) => boolean;
 };
 
-export type FieldValues = Record<string, string | boolean>;
+export type FieldValue = string | boolean | string[];
 
-export function Field({ spec, value, onChange }: {
+export type FieldValues = Record<string, FieldValue>;
+
+export function Field({ spec, value, onChange, suggestions }: {
   spec: FieldSpec;
-  value: string | boolean;
-  onChange: (next: string | boolean) => void;
+  value: FieldValue;
+  onChange: (next: FieldValue) => void;
+  /** Existing values across the collection, offered so tags stay consistent. */
+  suggestions?: string[];
 }) {
   const id = useId();
+
+  if (spec.type === "tags") {
+    return <TagsField label={spec.label} help={spec.help} placeholder={spec.placeholder}
+      value={Array.isArray(value) ? value : []} suggestions={suggestions ?? []}
+      onChange={next => onChange(next)} />;
+  }
 
   if (spec.type === "slug") {
     return <SlugField value={String(value ?? "")} prefix={spec.prefix ?? "/"} onChange={next => onChange(next)} />;
@@ -116,6 +126,71 @@ function MarkdownField({ id, value, placeholder, onChange }: {
       <small className="ac-hint">
         支持 Markdown：## 小标题、**加粗**、- 列表、&gt; 引用、`代码`、[文字](链接)。空一行分段。
       </small>
+    </div>
+  );
+}
+
+/**
+ * Chips editor for a string[] field. Enter, comma or a blur commits the buffer;
+ * suggestions come from what the rest of the collection already uses, which is
+ * what keeps "Agent" and "agent " from becoming two different tags.
+ */
+function TagsField({ label, help, placeholder, value, suggestions, onChange }: {
+  label: string;
+  help?: string;
+  placeholder?: string;
+  value: string[];
+  suggestions: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const id = useId();
+  const listId = `${id}-list`;
+  const [buffer, setBuffer] = useState("");
+
+  const commit = (raw: string) => {
+    const parts = raw.split(/[,，]/).map(part => part.trim()).filter(Boolean);
+    if (parts.length === 0) return;
+    const next = [...value];
+    for (const part of parts) if (!next.includes(part)) next.push(part);
+    onChange(next);
+    setBuffer("");
+  };
+
+  const unused = suggestions.filter(tag => !value.includes(tag));
+
+  return (
+    <div className="ac-field">
+      <label className="ac-field__label" htmlFor={id}>{label}</label>
+      {help && <small>{help}</small>}
+      <div className="ac-tags">
+        {value.map(tag => (
+          <span className="ac-tags__chip" key={tag}>
+            {tag}
+            <button type="button" aria-label={`移除标签 ${tag}`}
+              onClick={() => onChange(value.filter(item => item !== tag))}>×</button>
+          </span>
+        ))}
+        <input
+          id={id}
+          list={listId}
+          className="ac-tags__input"
+          value={buffer}
+          placeholder={value.length === 0 ? (placeholder ?? "输入后回车") : ""}
+          onChange={event => {
+            // Picking from the datalist fires change with the whole value at once.
+            const next = event.target.value;
+            if (suggestions.includes(next)) commit(next); else setBuffer(next);
+          }}
+          onKeyDown={event => {
+            if (event.key === "Enter" || event.key === ",") { event.preventDefault(); commit(buffer); }
+            if (event.key === "Backspace" && buffer === "" && value.length > 0) onChange(value.slice(0, -1));
+          }}
+          onBlur={() => commit(buffer)}
+        />
+        <datalist id={listId}>
+          {unused.map(tag => <option value={tag} key={tag} />)}
+        </datalist>
+      </div>
     </div>
   );
 }

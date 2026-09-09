@@ -49,6 +49,17 @@ export const siteSettingsSchema = z.object({
     secondaryAction: linkSchema,
   }),
   author: z.object({ kicker: shortText, title: shortText, paragraphs: z.array(longText).max(20) }),
+  /**
+   * Two-level browse tree for the notes page. Each group is a top-level domain and
+   * its `categories` are the second-level names that articles actually carry, so a
+   * note is placed by its existing `category` string and never needs a foreign key.
+   * Categories missing from every group still show up, under an "其他" fallback.
+   */
+  taxonomy: z.array(z.object({
+    label: shortText.min(1),
+    description: longText.default(""),
+    categories: z.array(shortText.min(1)).max(60),
+  })).max(30).default([]),
   footer: z.object({
     description: longText,
     legalLinks: z.array(linkSchema).max(30),
@@ -87,6 +98,7 @@ export const articleInputSchema = z.object({
   published: z.boolean(),
   sourceUrl: href.default(""),
   sourceLabel: shortText.default(""),
+  tags: z.array(shortText.min(1)).max(20).default([]),
 });
 
 export const productInputSchema = z.object({
@@ -142,6 +154,7 @@ export const publicContentSchema = siteSettingsSchema.omit({ directory: true }).
     published: z.boolean(),
     sourceUrl: href,
     sourceLabel: shortText,
+    tags: z.array(shortText),
   })),
   products: z.array(z.object({
     id: itemId,

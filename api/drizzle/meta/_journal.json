@@ -50,6 +50,13 @@
       "when": 1788273884594,
       "tag": "0006_aberrant_shinko_yamashiro",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788959345856,
+      "tag": "0007_safe_genesis",
+      "breakpoints": true
     }
   ]
 }

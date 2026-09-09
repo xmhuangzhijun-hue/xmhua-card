@@ -2,35 +2,124 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight, Search } from "lucide-react";
+import { ArrowUpRight, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { SiteContent } from "@/lib/content-types";
+import type { Article, SiteContent, TaxonomyGroup } from "@/lib/content-types";
 import { stripInlineMarkdown } from "@/lib/markdown";
 import { ThemeToggle } from "@/components/site/theme-toggle";
 
-const allCategory = "全部";
+/** Sentinel for "no category filter"; not a real category name. */
+const ALL = "";
+const UNGROUPED = "其他";
+
+type Section = { label: string; description: string; items: { name: string; count: number }[] };
 
 /**
- * The list arrives already rendered from the server; only filtering and search
- * run in the browser, so the notes index is readable without JavaScript.
+ * Builds the browse tree actually shown in the sidebar.
+ *
+ * The console-editable taxonomy decides order and grouping, but it is never the
+ * source of truth for what exists: a category is listed only if some article
+ * carries it, and any category missing from the taxonomy still appears under
+ * "其他". That way a note can never become unreachable by editing the tree.
  */
+function buildSections(articles: Article[], taxonomy: TaxonomyGroup[]): Section[] {
+  const counts = new Map<string, number>();
+  for (const article of articles) {
+    counts.set(article.category, (counts.get(article.category) ?? 0) + 1);
+  }
+
+  const placed = new Set<string>();
+  const sections: Section[] = [];
+
+  for (const group of taxonomy) {
+    const items = group.categories
+      .filter(name => counts.has(name))
+      .map(name => {
+        placed.add(name);
+        return { name, count: counts.get(name) ?? 0 };
+      });
+    if (items.length > 0) sections.push({ label: group.label, description: group.description, items });
+  }
+
+  const orphans = [...counts.keys()].filter(name => !placed.has(name)).sort();
+  if (orphans.length > 0) {
+    sections.push({
+      label: UNGROUPED,
+      description: "还没有归入上面任何一组的分类。",
+      items: orphans.map(name => ({ name, count: counts.get(name) ?? 0 })),
+    });
+  }
+  return sections;
+}
+
 export function NotesLibrary({ content }: { content: SiteContent }) {
-  const [category, setCategory] = useState(allCategory);
+  const [category, setCategory] = useState(ALL);
+  const [activeTags, setActiveTags] = useState<string[]>([]);
   const [query, setQuery] = useState("");
 
-  const categories = useMemo(
-    () => [allCategory, ...Array.from(new Set(content.articles.map(article => article.category)))],
+  const sections = useMemo(
+    () => buildSections(content.articles, content.taxonomy ?? []),
+    [content.articles, content.taxonomy],
+  );
+
+  const categoryCount = useMemo(
+    () => new Set(content.articles.map(article => article.category)).size,
     [content.articles],
   );
 
+  /** Which top-level group the current category sits in, for the breadcrumb. */
+  const groupOfCategory = useMemo(() => {
+    if (category === ALL) return "";
+    return sections.find(section => section.items.some(item => item.name === category))?.label ?? "";
+  }, [category, sections]);
+
+  const inCategory = useMemo(
+    () => (category === ALL ? content.articles : content.articles.filter(a => a.category === category)),
+    [category, content.articles],
+  );
+
+  /** Tags offered are those inside the current category, so the facet never dead-ends. */
+  const availableTags = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const article of inCategory) {
+      for (const tag of article.tags ?? []) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh-CN"))
+      .map(([name, count]) => ({ name, count }));
+  }, [inCategory]);
+
   const visibleArticles = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase("zh-CN");
-    return content.articles.filter(article => {
-      const matchesCategory = category === allCategory || article.category === category;
-      const haystack = `${article.title} ${article.excerpt} ${article.category}`.toLocaleLowerCase("zh-CN");
-      return matchesCategory && (!normalizedQuery || haystack.includes(normalizedQuery));
+    const needle = query.trim().toLocaleLowerCase("zh-CN");
+    return inCategory.filter(article => {
+      const tags = article.tags ?? [];
+      // Several tags narrow rather than widen: picking two means "has both".
+      if (activeTags.length > 0 && !activeTags.every(tag => tags.includes(tag))) return false;
+      if (!needle) return true;
+      const haystack = `${article.title} ${article.excerpt} ${article.category} ${tags.join(" ")}`
+        .toLocaleLowerCase("zh-CN");
+      return haystack.includes(needle);
     });
-  }, [category, content.articles, query]);
+  }, [activeTags, inCategory, query]);
+
+  const filtered = category !== ALL || activeTags.length > 0 || query.trim() !== "";
+
+  function pickCategory(next: string) {
+    setCategory(next);
+    // Tags belong to the category that was on screen when they were picked.
+    setActiveTags([]);
+  }
+
+  function toggleTag(tag: string) {
+    setActiveTags(current =>
+      current.includes(tag) ? current.filter(item => item !== tag) : [...current, tag]);
+  }
+
+  function clearAll() {
+    setCategory(ALL);
+    setActiveTags([]);
+    setQuery("");
+  }
 
   return (
     <main className="notes-page">
@@ -55,50 +144,110 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
         </div>
         <dl>
           <div><dt>{content.articles.length}</dt><dd>篇公开记录</dd></div>
-          <div><dt>{categories.length - 1}</dt><dd>个主题分类</dd></div>
+          <div><dt>{categoryCount}</dt><dd>个主题分类</dd></div>
         </dl>
       </section>
 
-      <section className="notes-catalog" aria-label="笔记目录">
-        <div className="notes-toolbar">
-          <div className="notes-filters" aria-label="按分类筛选">
-            {categories.map(item => (
-              <button type="button" className={item === category ? "is-active" : ""} onClick={() => setCategory(item)} key={item}>
-                {item}
-              </button>
-            ))}
-          </div>
-          <label className="notes-search">
-            <Search size={16} aria-hidden="true" />
-            <span className="sr-only">搜索笔记</span>
-            <input value={query} onChange={event => setQuery(event.target.value)} placeholder="搜索标题或摘要" />
-          </label>
-        </div>
+      <div className="notes-browse">
+        <aside className="notes-side" aria-label="笔记分类导航">
+          <button
+            type="button"
+            className={`notes-side__all${category === ALL ? " is-active" : ""}`}
+            onClick={() => pickCategory(ALL)}
+            aria-current={category === ALL ? "true" : undefined}
+          >
+            全部笔记<span>{content.articles.length}</span>
+          </button>
 
-        <div className="notes-list" aria-live="polite">
-          {visibleArticles.map((article, index) => {
-            const number = String(content.articles.length - content.articles.indexOf(article)).padStart(2, "0");
-            return (
-              <Link className="notes-row" href={`/notes/${article.slug}`} key={article.id} data-visible-index={index}>
-                <span className="notes-number">{number}</span>
-                <span className="notes-copy">
-                  <small>{article.category}</small>
-                  <strong>{article.title}</strong>
-                  <span>{stripInlineMarkdown(article.excerpt)}</span>
-                </span>
-                <time dateTime={article.publishedAt}>{article.publishedAt}</time>
-                <ArrowUpRight size={18} aria-hidden="true" />
-              </Link>
-            );
-          })}
-          {visibleArticles.length === 0 && (
-            <div className="notes-empty">
-              <strong>没有匹配的笔记</strong>
-              <span>换一个分类或搜索词试试。</span>
+          {sections.map(section => (
+            <section className="notes-side__group" key={section.label}>
+              <h2>{section.label}</h2>
+              <ul>
+                {section.items.map(item => (
+                  <li key={item.name}>
+                    <button
+                      type="button"
+                      className={item.name === category ? "is-active" : ""}
+                      onClick={() => pickCategory(item.name)}
+                      aria-current={item.name === category ? "true" : undefined}
+                    >
+                      {item.name}<span>{item.count}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </aside>
+
+        <section className="notes-catalog" aria-label="笔记目录">
+          <div className="notes-toolbar">
+            <p className="notes-crumb" aria-live="polite">
+              {category === ALL
+                ? <span>全部笔记</span>
+                : <><span>{groupOfCategory || UNGROUPED}</span><i aria-hidden="true">/</i><strong>{category}</strong></>}
+              <em>{visibleArticles.length} 篇</em>
+            </p>
+            <label className="notes-search">
+              <Search size={16} aria-hidden="true" />
+              <span className="sr-only">搜索笔记</span>
+              <input
+                value={query}
+                onChange={event => setQuery(event.target.value)}
+                placeholder="搜索标题、摘要或标签"
+              />
+            </label>
+          </div>
+
+          {availableTags.length > 0 && (
+            <div className="notes-tags" aria-label="按标签筛选">
+              {availableTags.map(tag => (
+                <button
+                  type="button"
+                  key={tag.name}
+                  className={activeTags.includes(tag.name) ? "is-active" : ""}
+                  aria-pressed={activeTags.includes(tag.name)}
+                  onClick={() => toggleTag(tag.name)}
+                >
+                  {tag.name}<span>{tag.count}</span>
+                </button>
+              ))}
+              {filtered && (
+                <button type="button" className="notes-tags__clear" onClick={clearAll}>
+                  <X size={13} aria-hidden="true" />清除筛选
+                </button>
+              )}
             </div>
           )}
-        </div>
-      </section>
+
+          <div className="notes-list" aria-live="polite">
+            {visibleArticles.map((article, index) => {
+              const number = String(content.articles.length - content.articles.indexOf(article)).padStart(2, "0");
+              return (
+                <Link className="notes-row" href={`/notes/${article.slug}`} key={article.id} data-visible-index={index}>
+                  <span className="notes-number">{number}</span>
+                  <span className="notes-copy">
+                    <small>{article.category}</small>
+                    <strong>{article.title}</strong>
+                    <span>{stripInlineMarkdown(article.excerpt)}</span>
+                  </span>
+                  <time dateTime={article.publishedAt}>{article.publishedAt}</time>
+                  <ArrowUpRight size={18} aria-hidden="true" />
+                </Link>
+              );
+            })}
+            {visibleArticles.length === 0 && (
+              <div className="notes-empty">
+                <strong>没有匹配的笔记</strong>
+                <span>换一个分类、去掉一个标签，或者换个搜索词。</span>
+                {filtered && (
+                  <button type="button" onClick={clearAll}>清除全部筛选</button>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
 
       <footer className="notes-footer">
         <span>持续整理真实构建过程，不把测试通过当作用户结果。</span>

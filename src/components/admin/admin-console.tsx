@@ -27,12 +27,20 @@ const articles: CollectionConfig = {
   blank: {
     category: "", title: "", excerpt: "",
     publishedAt: new Date().toISOString().slice(0, 10),
-    slug: "", body: "", published: false, sourceUrl: "", sourceLabel: "",
+    slug: "", body: "", published: false, sourceUrl: "", sourceLabel: "", tags: [],
   },
   fields: [
     { name: "title", label: "标题", type: "text", placeholder: "这篇笔记讲什么" },
     { name: "slug", label: "网址后缀", type: "slug", prefix: "/notes/" },
-    { name: "category", label: "分类", type: "text", help: "分类会自动成为笔记页的筛选项。", placeholder: "工程方法" },
+    {
+      name: "category", label: "分类", type: "text", placeholder: "Harness 与运行时",
+      help: "二级分类。在「站点设置 → 笔记分类树」里把它挂到某个一级分组下；没挂的会归到「其他」。",
+    },
+    {
+      name: "tags", label: "标签", type: "tags",
+      help: "跨分类的横向筛选项，一篇可以有多个。回车或逗号确认，输入时会提示已用过的标签。",
+      placeholder: "例如 Claude Code",
+    },
     { name: "publishedAt", label: "发布日期", type: "date" },
     { name: "excerpt", label: "摘要", type: "textarea", help: "列表和搜索结果里显示的一两句话。" },
     {

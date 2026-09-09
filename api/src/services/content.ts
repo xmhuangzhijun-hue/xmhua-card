@@ -70,6 +70,7 @@ export async function getPublicContent(tenant: TenantRow): Promise<PublicContent
       published: row.published,
       sourceUrl: row.sourceUrl,
       sourceLabel: row.sourceLabel,
+      tags: row.tags,
     })),
     products: productRows.map(row => ({
       id: row.id,

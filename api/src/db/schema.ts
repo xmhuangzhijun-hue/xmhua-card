@@ -41,6 +41,8 @@ export const articles = pgTable("articles", {
   /** Optional link to the material a note is about (a paper, article or repo). */
   sourceUrl: text("source_url").notNull().default(""),
   sourceLabel: text("source_label").notNull().default(""),
+  /** Free-form tags, orthogonal to the single category a note lives under. */
+  tags: text("tags").array().notNull().default([]),
   sortOrder: integer("sort_order").notNull(),
   published: boolean("published").default(true).notNull(),
 }, table => [

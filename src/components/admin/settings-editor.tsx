@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Check, LoaderCircle, Plus, Save, TriangleAlert, X } from "lucide-react";
 import { adminApi, describeError } from "./admin-api";
-import { Field, type FieldSpec } from "./fields";
+import { Field, type FieldSpec, type FieldValue } from "./fields";
 
 type Settings = Record<string, unknown>;
 type Link = { label: string; href: string };
+type TaxonomyGroup = { label: string; description: string; categories: string[] };
 
 /** Reads and writes a nested value by dot path, e.g. "hero.primaryAction.label". */
 function readPath(source: Settings, path: string): string | boolean {
@@ -15,7 +16,7 @@ function readPath(source: Settings, path: string): string | boolean {
   return typeof value === "boolean" ? value : typeof value === "string" ? value : "";
 }
 
-function writePath(source: Settings, path: string, value: string | boolean): Settings {
+function writePath(source: Settings, path: string, value: unknown): Settings {
   const [head, ...rest] = path.split(".");
   if (!head) return source;
   if (rest.length === 0) return { ...source, [head]: value };
@@ -133,12 +134,11 @@ export function SettingsEditor({ onChanged }: { onChanged?: () => void }) {
 
   if (!settings) return <div className="ac-form__placeholder"><p>正在读取站点设置……</p></div>;
 
-  const update = (path: string, value: string | boolean) =>
+  const update = (path: string, value: FieldValue) =>
     setSettings(current => (current ? writePath(current, path, value) : current));
 
   const updateList = (path: string, value: unknown[]) =>
-    setSettings(current => (current ? (writePath as unknown as
-      (s: Settings, p: string, v: unknown) => Settings)(current, path, value) : current));
+    setSettings(current => (current ? writePath(current, path, value) : current));
 
   async function save() {
     setBusy(true);
@@ -169,6 +169,18 @@ export function SettingsEditor({ onChanged }: { onChanged?: () => void }) {
           <LinkListEditor
             items={readList<Link>(settings, "site.navigation")}
             onChange={items => updateList("site.navigation", items)}
+          />
+        </section>
+
+        <section className="ac-group">
+          <h3>笔记分类树</h3>
+          <p className="ac-group__help">
+            一级分组的名字，加上它包含的二级分类。二级分类要和笔记里填的「分类」完全一致；
+            没写进这里的分类不会丢，会显示在「其他」下面。
+          </p>
+          <TaxonomyEditor
+            items={readList<TaxonomyGroup>(settings, "taxonomy")}
+            onChange={items => updateList("taxonomy", items)}
           />
         </section>
 
@@ -265,6 +277,68 @@ function TextListEditor({ items, placeholder, multiline = false, onChange }: {
       ))}
       <button type="button" className="ac-button" onClick={() => onChange([...items, ""])}>
         <Plus size={14} />添加一项
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Edits the two-level browse tree. Second-level names are typed one per line
+ * because they must match the `category` string on each note exactly, and a
+ * textarea makes a long list far easier to paste and reorder than N inputs.
+ */
+function TaxonomyEditor({ items, onChange }: {
+  items: TaxonomyGroup[];
+  onChange: (items: TaxonomyGroup[]) => void;
+}) {
+  const patch = (index: number, next: Partial<TaxonomyGroup>) =>
+    onChange(items.map((row, i) => (i === index ? { ...row, ...next } : row)));
+
+  const move = (index: number, delta: number) => {
+    const target = index + delta;
+    if (target < 0 || target >= items.length) return;
+    const next = [...items];
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange(next);
+  };
+
+  return (
+    <div className="ac-rows">
+      {items.map((item, index) => (
+        <div className="ac-taxonomy" key={index}>
+          <div className="ac-taxonomy__head">
+            <input
+              value={item.label}
+              placeholder="一级分组名，例如 AI 与 Agent 工程"
+              onChange={event => patch(index, { label: event.target.value })}
+            />
+            <button type="button" className="ac-row__remove" aria-label="上移" disabled={index === 0}
+              onClick={() => move(index, -1)}>↑</button>
+            <button type="button" className="ac-row__remove" aria-label="下移" disabled={index === items.length - 1}
+              onClick={() => move(index, 1)}>↓</button>
+            <button type="button" className="ac-row__remove" aria-label="删除这一组"
+              onClick={() => onChange(items.filter((_, i) => i !== index))}>
+              <X size={14} />
+            </button>
+          </div>
+          <input
+            value={item.description ?? ""}
+            placeholder="这一组的说明（可留空）"
+            onChange={event => patch(index, { description: event.target.value })}
+          />
+          <textarea
+            rows={Math.min(10, Math.max(3, (item.categories?.length ?? 0) + 1))}
+            value={(item.categories ?? []).join("\n")}
+            placeholder={"二级分类，一行一个\nHarness 与运行时\nSkill 与能力治理"}
+            onChange={event => patch(index, {
+              categories: event.target.value.split("\n").map(line => line.trim()).filter(Boolean),
+            })}
+          />
+        </div>
+      ))}
+      <button type="button" className="ac-button"
+        onClick={() => onChange([...items, { label: "", description: "", categories: [] }])}>
+        <Plus size={14} />添加一个分组
       </button>
     </div>
   );

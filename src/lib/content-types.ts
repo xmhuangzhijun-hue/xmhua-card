@@ -29,6 +29,7 @@ export type Article = {
   /** Optional link to the material the note is about. */
   sourceUrl: string;
   sourceLabel: string;
+  tags: string[];
 };
 
 export type ArticleDetail = Omit<Article, "published"> & { readingMinutes: number };
@@ -64,6 +65,8 @@ export type SocialLink = {
   qrAsset: string;
   note: string;
 };
+
+export type TaxonomyGroup = { label: string; description: string; categories: string[] };
 
 export type PageSummary = { slug: string; title: string; description: string };
 
@@ -105,6 +108,8 @@ export type SiteContent = {
   author: { kicker: string; title: string; paragraphs: string[] };
   socials: SocialLink[];
   pages: PageSummary[];
+  /** Top-level browse groups; `categories` hold the second-level names articles carry. */
+  taxonomy: TaxonomyGroup[];
   footer: { description: string; legalLinks: Link[]; note: string; copyright: string };
   ui: {
     pageTitle: string;

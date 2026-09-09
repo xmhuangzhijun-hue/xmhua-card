@@ -268,6 +268,7 @@ export function CollectionEditor({ config, onChanged }: { config: CollectionConf
                 .map(spec => (
                   // Two variants of one field (same name, different kind) can coexist.
                   <Field key={`${spec.name}:${spec.label}`} spec={spec} value={draft[spec.name] ?? ""}
+                    suggestions={spec.type === "tags" ? tagSuggestions(rows, spec.name) : undefined}
                     onChange={next => setDraft(current => ({ ...current, [spec.name]: next }))} />
                 ))}
             </div>
@@ -284,5 +285,21 @@ export function CollectionEditor({ config, onChanged }: { config: CollectionConf
 }
 
 function pickFields(row: FieldValues, fields: FieldSpec[]): FieldValues {
-  return Object.fromEntries(fields.map(spec => [spec.name, row[spec.name] ?? (spec.type === "boolean" ? false : "")]));
+  return Object.fromEntries(fields.map(spec => {
+    const fallback = spec.type === "boolean" ? false : spec.type === "tags" ? [] : "";
+    return [spec.name, row[spec.name] ?? fallback];
+  }));
+}
+
+/** Every value the collection already uses for a tags field, most common first. */
+function tagSuggestions(rows: FieldValues[], name: string): string[] {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const value = row[name];
+    if (!Array.isArray(value)) continue;
+    for (const tag of value) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh-CN"))
+    .map(([tag]) => tag);
 }
