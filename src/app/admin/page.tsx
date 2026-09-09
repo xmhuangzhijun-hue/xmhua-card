@@ -3,7 +3,7 @@ import { AdminConsole } from "@/components/admin/admin-console";
 import "./admin.css";
 
 export const metadata: Metadata = {
-  title: "内容后台 · XMHUA",
+  title: "内容后台 · 黄智军",
   // The console must never be indexed or previewed by crawlers.
   robots: { index: false, follow: false },
 };

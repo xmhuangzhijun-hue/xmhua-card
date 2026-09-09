@@ -30,7 +30,7 @@ export function LoginForm({ onSignedIn }: { onSignedIn: (username: string) => vo
     <main className="ac-login">
       <form className="ac-login__card" onSubmit={submit}>
         <div className="ac-login__brand">
-          <Link href="/">XMHUA</Link>
+          <Link href="/">黄智军</Link>
           <span>内容后台</span>
         </div>
         <h1>登录</h1>

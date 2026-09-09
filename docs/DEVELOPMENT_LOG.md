@@ -2,6 +2,45 @@
 
 This file is the durable engineering trail for each iteration. User-facing release summaries belong in [`CHANGELOG.md`](../CHANGELOG.md).
 
+## 2026-09-09 — Site-wide brand unification and ICP footer
+
+### Source feedback and scope
+
+- ICP filing 闽ICP备2026035561号-1 passed; the homepage footer gained the filing number on
+  2026-09-09 (a data change in the console) and the public display name moved from `XMHUA` to
+  黄智军 (also console data).
+- Those two homepage changes exposed a code-side inconsistency: `/notes`, note detail,
+  `/privacy`/`/terms`-style standalone pages and `/work` still hard-coded `XMHUA` in visible
+  chrome, page titles and screen-reader labels, and only the homepage footer carried the filing
+  number. Scope for this iteration: unify the remaining public chrome and add the ICP line to
+  every subpage footer, without touching the DB-driven homepage footer or the `XMHUA Card`
+  product name.
+
+### Changes
+
+- `/work` header brand and footer copyright now read 黄智军; the footer gained the ICP line as
+  an inline link (`闽ICP备2026035561号-1` → `beian.miit.gov.cn`).
+- Standalone pages (`/privacy`, `/terms`, `/cookies`) header brand and all page/note metadata
+  titles moved from `XMHUA` to 黄智军; these pages had no footer at all, so a slim legal footer
+  row with copyright and the ICP link was added.
+- `/notes` and note detail footers gained the same copyright + ICP row under the existing dark
+  band (new `.notes-footer__icp` rule); note metadata titles updated.
+- Root layout default title and the `/admin` chrome (login card, console masthead, page title)
+  follow the rename. Kept: `XMHUA Card` product naming, GitHub handle, `xmhua-mark.svg` asset
+  path, and the `demo@xmhua.dev` public demo credential.
+- A no-op "sync" commit first folded the deployed production tree (releases 832e5d7 → 4e9c5ed →
+  5ec0e9e, live as `current`) back into `master`, which had stopped at `b7c7609`; the real delta
+  was the admin list tabs/search work, the shared notes-library intro copy and the homepage
+  article cap.
+
+### Verification
+
+- `npm run check` (ESLint, TypeScript, Next.js production build) passed in the frontend; API
+  unchanged and untouched by this iteration.
+- Public-page checks after release (SSR HTML from the ECS service, then over the public domain
+  after ISR expiry): `XMHUA` count drops to zero on `/notes`, note detail, `/work`, `/privacy`
+  and `/terms`; every page footer contains the ICP link; homepage content unchanged.
+
 ## 2026-09-01 — Public notes library
 
 ### Source feedback and scope
