@@ -2,6 +2,8 @@
 
 ## 2026-09-11 — Personal identity and search discovery
 
+Published frontend release 20260911T1220Z-95c85b5. Live HTTP verification passed all 75 sitemap pages, profile content and JSON-LD, author links and admin noindex. Prior release 2bbe58e was restarted on an isolated port and homepage/note reads passed before switching. Existing API and adjacent services remain active. First candidate probe found a pre-existing process on port 39219; it was preserved and the probe moved to a verified free port. Final receipt formatting hit Python 3.6 incompatibility after a successful switch; read-only verification confirmed the release, no deployment retry was performed.
+
 User requested that searches for 黄智军 identify the author and link to the personal blog. Added canonical URLs, CMS-backed ProfilePage/Person markup, BlogPosting authors with visible profile links, a homepage profile link, and a sitemap derived only from public content. JSON-LD escapes HTML delimiters; modification dates are not fabricated. The about page is managed by the existing content API, not hard-coded into the frontend. SITE_URL configures the canonical origin.
 
 Validation: targeted ESLint, TypeScript and production build passed. All 75 sitemap destinations returned matching canonical URLs in the standalone preview; profile identity, article author links, robots and admin noindex passed. Full lint remains blocked by two pre-existing set-state-in-effect errors in notes-library and reading-progress, unchanged from baseline 2bbe58e. Browser automation is unavailable. GitHub profile update was rejected for missing user scope; no permissions were expanded. Search Console submission and actual AI search visibility remain unverified.
