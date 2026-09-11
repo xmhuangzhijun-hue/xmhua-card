@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ArrowUpRight, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ContentUnavailableError, getSiteContent } from "@/lib/api-client";
+import { SiteHeader, SiteFooter } from "@/components/site/site-chrome";
+import { ReadingTools } from "@/components/site/reading-tools";
 import { ReadingProgress } from "@/components/site/reading-progress";
 import { DocOutline } from "@/components/site/doc-outline";
 import { isLiveHref } from "@/lib/content-types";
@@ -76,10 +78,8 @@ export default async function NotePage({ params }: NotePageProps) {
         author: personSchema(content),
       }) }} />
       <ReadingProgress />
-      <header className="notes-nav">
-        <Link className="notes-brand" href="/">{content.site.brandName}</Link>
-        <Link href="/notes"><ArrowLeft size={16} />全部笔记</Link>
-      </header>
+      <SiteHeader content={content} compact />
+      <div className="reading-topbar"><Link href="/notes"><ArrowLeft size={15} />全部笔记</Link><ReadingTools /></div>
 
       <div className="doc-shell">
       <article className="note-article">
@@ -119,14 +119,7 @@ export default async function NotePage({ params }: NotePageProps) {
         </nav>
       )}
 
-      <footer className="notes-footer">
-        <span>记录真实问题、判断和复盘。</span>
-        <Link href="/notes">返回公开笔记 <ArrowUpRight size={15} /></Link>
-        <span className="notes-footer__icp">
-          © 2026 黄智军 ·{" "}
-          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener">闽ICP备2026035561号-1</a>
-        </span>
-      </footer>
+      <SiteFooter content={content} />
     </main>
   );
 }

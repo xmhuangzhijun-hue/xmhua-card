@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowUpRight, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Article, SiteContent, TaxonomyGroup } from "@/lib/content-types";
 import { stripInlineMarkdown } from "@/lib/markdown";
-import { ThemeToggle } from "@/components/site/theme-toggle";
-import { CommandTrigger } from "@/components/site/command-palette";
+import { SiteHeader, SiteFooter } from "@/components/site/site-chrome";
+import { DecryptedText } from "@/components/react-bits/DecryptedText";
 import { CountUp } from "@/components/site/count-up";
 import { useFlip } from "@/lib/flip";
 import { Waves } from "@/components/react-bits/Waves";
@@ -148,23 +147,12 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
 
   return (
     <main className="notes-page">
-      <header className="notes-nav">
-        <Link className="notes-brand" href="/" aria-label="返回黄智军首页">
-          <Image src={content.site.brandImage} alt="" width={29} height={29} priority />
-          <strong>{content.site.brandName}</strong>
-        </Link>
-        <nav aria-label="笔记页导航">
-          <Link href="/">首页</Link>
-          <Link href="/work">案例</Link>
-          <CommandTrigger />
-          <ThemeToggle />
-        </nav>
-      </header>
+      <SiteHeader content={content} compact />
 
       <section className="notes-intro" aria-labelledby="notes-title">
         <Waves className="notes-waves" lineColor="rgba(76,124,220,.2)" xGap={26} waveSpeedX={.02} />
         <div>
-          <div className="notes-intro-eyebrow"><p>PUBLIC WORKING NOTES</p><EffectsToggle /></div>
+          <div className="notes-intro-eyebrow"><p><DecryptedText text="PUBLIC WORKING NOTES" /></p><EffectsToggle /></div>
           <h1 id="notes-title"><GradientText>{content.sections.articles.eyebrow}</GradientText></h1>
           {/* Shared with the homepage section so one edit in the console updates both. */}
           <span>{content.sections.articles.description}</span>
@@ -289,14 +277,7 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
         </section>
       </div>
 
-      <footer className="notes-footer">
-        <span>持续整理真实构建过程，不把测试通过当作用户结果。</span>
-        <Link href="/work">查看公开案例 <ArrowUpRight size={15} /></Link>
-        <span className="notes-footer__icp">
-          © 2026 黄智军 ·{" "}
-          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener">闽ICP备2026035561号-1</a>
-        </span>
-      </footer>
+      <SiteFooter content={content} />
     </main>
   );
 }

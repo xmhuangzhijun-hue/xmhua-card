@@ -473,3 +473,15 @@ This file is the durable engineering trail for each iteration. User-facing relea
 
 - Paste-a-share-blob extraction for Douyin/Kuaishou/Xiaohongshu links, and camera QR scanning to
   fill an address, were discussed but not built in this iteration.
+
+## 2026-09-11 — Whole-site visual redesign (in progress)
+
+Unified public navigation/footer, project identities, compact social cards, reading tools and expandable case evidence. Added React Bits SpotlightCard, GlareHover, AnimatedContent and DecryptedText adaptations with retained licensing and no dependency installation. TypeScript passed; browser visual acceptance and deployment remain pending. Existing reading-progress and notes-library effect lint findings are not evidence of a successful full lint run.
+
+Linux production build passed (81 generated pages). Complete standalone artifact prepared; browser tooling remains unavailable, so visual/mobile acceptance and deployment are pending.
+
+## 2026-09-12 — Knowledge observatory
+
+Replaced split hero with a full-width interactive knowledge scene and four real navigation destinations. Unified public project identities, shared navigation, reading tools and case details. Mobile/desktop browser verification found CSS integration issues (reveal pause, cover width, TOC order, inherited pointer-events); fixed at the responsible selectors. See reports/2026-09-12-observatory-release.md for deployment and acceptance evidence.
+
+Released 20260911T1735Z-observatory; browser and 75-page public checks passed after full refresh. Previous-release tabs can retain stale module state; refresh required if a client navigation fails. Rollback release retained and restart-tested.

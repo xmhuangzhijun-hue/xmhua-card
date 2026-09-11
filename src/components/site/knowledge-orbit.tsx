@@ -6,7 +6,7 @@ import { ArrowUpRight } from "lucide-react";
 import { EffectsToggle, useMotionPaused } from "./effects-toggle";
 
 /** A small Canvas scene, independent of content and usable without animation. */
-export function KnowledgeOrbit({ notes, projects }: { notes: number; projects: number }) {
+export function KnowledgeOrbit({ notes, projects, decorative = false }: { notes: number; projects: number; decorative?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const paused = useMotionPaused();
 
@@ -96,7 +96,7 @@ export function KnowledgeOrbit({ notes, projects }: { notes: number; projects: n
 
   return (
     <div className="knowledge-orbit" data-paused={paused}>
-      <div className="orbit-caption"><span>FIELD NOTES / LIVE INDEX</span><span aria-hidden="true">✳</span></div>
+      {!decorative && <div className="orbit-caption"><span>FIELD NOTES / LIVE INDEX</span><span aria-hidden="true">✳</span></div>}
       <canvas ref={canvasRef} aria-hidden="true" />
       <svg className="orbit-fallback" viewBox="0 0 500 500" aria-hidden="true">
         {Array.from({ length: 480 }, (_, index) => {
@@ -109,10 +109,10 @@ export function KnowledgeOrbit({ notes, projects }: { notes: number; projects: n
       </svg>
       <div className="orbit-ring orbit-ring--one" aria-hidden="true" />
       <div className="orbit-ring orbit-ring--two" aria-hidden="true" />
-      <Link href="/notes" className="orbit-node orbit-node--notes"><span>01 / 阅读与思考</span><strong>{notes} 篇公开笔记 <ArrowUpRight size={16} /></strong></Link>
+      {!decorative && <><Link href="/notes" className="orbit-node orbit-node--notes"><span>01 / 阅读与思考</span><strong>{notes} 篇公开笔记 <ArrowUpRight size={16} /></strong></Link>
       <Link href="/work" className="orbit-node orbit-node--work"><span>02 / 从想法到交付</span><strong>探索实践案例 <ArrowUpRight size={16} /></strong></Link>
       <a href="#products" className="orbit-node orbit-node--products"><span>03 / 持续构建</span><strong>{projects} 个公开项目 <ArrowUpRight size={16} /></strong></a>
-      <div className="orbit-bottom"><span>连接知识，让想法发生。</span><EffectsToggle /></div>
+      <div className="orbit-bottom"><span>连接知识，让想法发生。</span><EffectsToggle /></div></>}
     </div>
   );
 }

@@ -1,15 +1,17 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, CodeXml, Layers, Search, ShieldCheck } from "lucide-react";
+import { ArrowRight, CodeXml, Layers, Search, ShieldCheck } from "lucide-react";
 import { isLiveHref, type SectionHeading, type SiteContent } from "@/lib/content-types";
 import { stripInlineMarkdown } from "@/lib/markdown";
 import { AnalyticsConsent } from "./analytics-consent";
 import { SocialGrid } from "./social-grid";
 import { SiteFooter, SiteHeader } from "./site-chrome";
-import { KnowledgeOrbit } from "./knowledge-orbit";
+import { KnowledgeScene } from "./knowledge-scene";
 import { NoteDiscovery } from "./note-discovery";
-import { Waves } from "../react-bits/Waves";
-import { GradientText } from "../react-bits/GradientText";
-import { StarBorder } from "../react-bits/StarBorder";
+import { SpotlightCard } from "../react-bits/SpotlightCard";
+import { GlareHover } from "../react-bits/GlareHover";
+import { AnimatedContent } from "../react-bits/AnimatedContent";
+import { ProjectIdentity } from "./project-identity";
+import { ProjectDescription } from "./project-description";
 
 const directoryIcons = { search: Search, code: CodeXml, layers: Layers, shield: ShieldCheck };
 
@@ -34,55 +36,26 @@ export function HomePage({ content }: { content: SiteContent }) {
     <>
       <SiteHeader content={content} />
       <main className="studio-home">
-        <section className="landing-hero">
-          <Waves lineColor="rgba(105,178,240,.3)" xGap={22} waveAmpX={45} waveAmpY={28} waveSpeedX={.025} waveSpeedY={.015} />
-          <div className="hero-grid" />
-          <div className="hero-content">
-            <p className="hero-kicker">{hero.kicker}</p>
-            <h1><GradientText>{hero.title}</GradientText></h1>
-            <p className="hero-subtitle">
-              {hero.description.split("\n").map((line, index) => (
-                <span key={line}>{index > 0 && <br />}{line}</span>
-              ))}
-            </p>
-            <div className="hero-actions">
-              {isLiveHref(hero.primaryAction.href) && (
-                <StarBorder className="hero-star-action" href={hero.primaryAction.href}>
-                  <BookOpen size={18} />{hero.primaryAction.label}
-                </StarBorder>
-              )}
-              {isLiveHref(hero.secondaryAction.href) && (
-                <a className="button button--secondary button--xl" href={hero.secondaryAction.href}>
-                  <Search size={18} />{hero.secondaryAction.label}
-                </a>
-              )}
-            </div>
-            <div className="hero-proof">{hero.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
-          </div>
-          <KnowledgeOrbit notes={content.articles.length} projects={products.length} />
-        </section>
+        <KnowledgeScene notes={content.articles.length} projects={products.length} name={site.brandName} title={hero.title} description={hero.description} />
 
-        <section className="landing-section landing-section--split" id="articles" data-reveal>
+        <section className="landing-section landing-section--split" id="articles">
           <Heading {...sections.articles} />
           <NoteDiscovery articles={previews} />
         </section>
 
-        <section className="landing-section home-products-section" id="products" data-reveal>
+        <section className="landing-section home-products-section" id="products">
           <Heading {...sections.products} />
           <div className="product-grid product-grid--catalog product-grid--home">
             {products.map(product => (
-              <article className="product-card mo-spot mo-lift" key={product.id}>
+              <AnimatedContent className="product-reveal" key={product.id}><SpotlightCard className="product-card">
+                <GlareHover><ProjectIdentity product={product} /></GlareHover>
                 <div className="product-card__top">
-                  <span className="product-icon product-icon--md">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={product.image} alt="" />
-                  </span>
                   <div>
                     <h3>{product.name}</h3>
                     <p>{product.subtitle}</p>
                   </div>
                 </div>
-                <p className="product-card__summary">{product.summary}</p>
+                <ProjectDescription text={product.summary} />
                 <div className="product-card__meta"><span>{product.platform}</span></div>
                 {/* A product without a destination shows its description only, never a link to nowhere. */}
                 {isLiveHref(product.href) && (
@@ -92,7 +65,7 @@ export function HomePage({ content }: { content: SiteContent }) {
                     </a>
                   </div>
                 )}
-              </article>
+              </SpotlightCard></AnimatedContent>
             ))}
           </div>
         </section>
@@ -130,8 +103,8 @@ export function HomePage({ content }: { content: SiteContent }) {
                   </>
                 );
                 return isLiveHref(link.href)
-                  ? <a className="home-directory-card" href={link.href} key={link.id}>{body}</a>
-                  : <div className="home-directory-card" key={link.id}>{body}</div>;
+                  ? <SpotlightCard className="capability-tile" key={link.id}><a className="home-directory-card" href={link.href}>{body}</a></SpotlightCard>
+                  : <SpotlightCard className="capability-tile" key={link.id}><div className="home-directory-card">{body}</div></SpotlightCard>;
               })}
             </div>
           </div>

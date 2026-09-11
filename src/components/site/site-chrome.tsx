@@ -3,6 +3,7 @@ import { ArrowUpRight, Megaphone } from "lucide-react";
 import { isLiveHref, type SiteContent } from "@/lib/content-types";
 import { ThemeToggle } from "./theme-toggle";
 import { CommandTrigger } from "./command-palette";
+import { NavLink } from "./nav-link";
 
 /**
  * Header and footer shared by every public page.
@@ -10,14 +11,14 @@ import { CommandTrigger } from "./command-palette";
  * Placeholder destinations are never rendered as links: an entry the owner has
  * not filled in yet is dropped instead of shipping as a link that goes nowhere.
  */
-export function SiteHeader({ content }: { content: SiteContent }) {
+export function SiteHeader({ content, compact = false }: { content: SiteContent; compact?: boolean }) {
   const { site, ui } = content;
   const navigation = site.navigation.filter(link => isLiveHref(link.href));
   const moreLinks = ui.moreLinks.filter(link => isLiveHref(link.href));
 
   return (
     <header className="site-header">
-      {site.announcement && (
+      {!compact && site.announcement && (
         <aside className="site-announcement">
           <div className="site-announcement__inner">
             <Megaphone size={16} />
@@ -41,9 +42,9 @@ export function SiteHeader({ content }: { content: SiteContent }) {
           <strong>{site.brandName}</strong>
         </Link>
         <div className="site-header__right">
-          <nav className="nav-links">
+          <nav className="nav-links" aria-label="全站导航">
             {navigation.map(link => (
-              <a href={link.href} key={`${link.label}-${link.href}`}>{link.label}</a>
+              <NavLink href={(link.href === "/#about" || link.href === "#about") && content.pages.some(page => page.slug === "about") ? "/about" : link.href.startsWith("#") ? `/${link.href}` : link.href} label={link.label} key={`${link.label}-${link.href}`} />
             ))}
             {moreLinks.length > 0 && (
               <details className="nav-more">
@@ -81,7 +82,7 @@ export function SiteFooter({ content }: { content: SiteContent }) {
           {socials.filter(social => isLiveHref(social.href)).map(social => (
             <a href={social.href} key={social.id} target="_blank" rel="noreferrer noopener">{social.label}</a>
           ))}
-          {socials.some(social => social.kind === "qrcode") && <a href="#about">微信 / 扫码</a>}
+          {socials.some(social => social.kind === "qrcode") && <Link href="/#about">微信 / 扫码</Link>}
           {isLiveHref(ui.emailLink.href) && <a href={ui.emailLink.href}>{ui.emailLink.label}</a>}
         </nav>
         <nav className="site-footer__legal">

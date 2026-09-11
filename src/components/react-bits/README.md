@@ -7,3 +7,7 @@ Source: https://github.com/DavidHDev/react-bits, fetched 2026-09-11. Copyright D
 - Animations/StarBorder: upstream moving radial gradients and keyframes, specialized to typed anchor. CSS tokens replace inline props and any.
 
 No new npm dependencies. Retain license in modifications and deployments.
+
+- SpotlightCard and GlareHover: upstream pointer spotlight and sweeping glare CSS, integrated into project and capability cards.
+- AnimatedContent: scroll-entry behavior adapted to native IntersectionObserver and Web Animations, without GSAP.
+- DecryptedText: shuffled-character reveal adapted to native timers, with accessible static text and reduced-motion support.

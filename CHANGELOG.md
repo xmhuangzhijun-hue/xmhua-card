@@ -225,3 +225,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.2.0]: https://github.com/JCodesMore/ai-website-cloner-template/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/JCodesMore/ai-website-cloner-template/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/JCodesMore/ai-website-cloner-template/releases/tag/v0.1.0
+
+## 2026-09-12 — Public-site visual redesign
+
+- Knowledge observatory homepage with animated links, pointer response and motion pause.
+- Distinct project covers and expandable descriptions; consistent public chrome, case details and reading tools.
+- Responsive phone layouts, keyboard navigation and reduced-motion support.

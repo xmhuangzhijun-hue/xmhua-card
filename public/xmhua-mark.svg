@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="XMHUA">
-  <rect width="64" height="64" rx="14" fill="#111111"/>
-  <path d="M15 16h10l7 10 7-10h10L37 32l12 16H39l-7-10-7 10H15l12-16z" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="黄智军">
+  <defs><linearGradient id="ink" x2="1" y2="1"><stop stop-color="#253d65"/><stop offset="1" stop-color="#101d32"/></linearGradient><linearGradient id="signal" x2="1" y2="1"><stop stop-color="#b0f7ed"/><stop offset="1" stop-color="#94a9ff"/></linearGradient></defs>
+  <rect width="64" height="64" rx="19" fill="url(#ink)"/>
+  <path d="M17 19v26m0-13h13V19m0 13v13m8-26h10v18c0 7-5 10-10 6" fill="none" stroke="url(#signal)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="49" cy="13" r="3" fill="#b0f7ed"/>
 </svg>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Copy, ExternalLink, QrCode, X } from "lucide-react";
+import { Check, Copy, ExternalLink, GitFork, MessageCircle, QrCode, X } from "lucide-react";
 import type { SocialLink } from "@/lib/content-types";
 
 /**
@@ -16,16 +16,14 @@ export function SocialGrid({ socials }: { socials: SocialLink[] }) {
       <div className="social-card-grid">
         {socials.map(social => social.kind === "qrcode" ? (
           <button className="social-card" key={social.id} type="button" onClick={() => setActive(social)}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="social-card__icon" src={social.icon} alt="" />
+            <span className="social-card__identity"><MessageCircle size={25} /></span>
             <span>{social.label}</span>
             <strong>{social.handle}</strong>
             <QrCode className="social-card__external" size={14} />
           </button>
         ) : (
           <a className="social-card" href={social.href} key={social.id} target="_blank" rel="noreferrer noopener">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="social-card__icon" src={social.icon} alt="" />
+            <span className="social-card__identity">{social.href.includes("github.com") ? <GitFork size={25} /> : <ExternalLink size={25} />}</span>
             <span>{social.label}</span>
             <strong>{social.handle}</strong>
             <ExternalLink className="social-card__external" size={14} />
