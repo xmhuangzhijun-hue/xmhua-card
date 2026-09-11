@@ -7,6 +7,7 @@ import { extractHeadings, renderMarkdown } from "@/lib/markdown";
 import { DocOutline } from "@/components/site/doc-outline";
 import "../notes/notes.css";
 import "../notes/[slug]/detail.css";
+import { absoluteUrl, pageMetadata, personSchema, serializeJsonLd } from "@/lib/seo";
 
 export const revalidate = 300;
 
@@ -37,7 +38,7 @@ async function loadPage(slug: string) {
 export async function generateMetadata({ params }: StandalonePageProps): Promise<Metadata> {
   const page = await loadPage((await params).slug);
   if (!page) return { title: "页面未找到 | 黄智军" };
-  return { title: `${page.title} | 黄智军`, description: page.description };
+  return pageMetadata(`${page.title} | 黄智军`, page.description, `/${page.slug}`);
 }
 
 export default async function StandalonePage({ params }: StandalonePageProps) {
@@ -45,9 +46,15 @@ export default async function StandalonePage({ params }: StandalonePageProps) {
   if (!page) notFound();
 
   const headings = extractHeadings(page.body);
+  const content = page.slug === "about" ? await getSiteContent() : null;
 
   return (
     <main className="notes-page note-detail doc-page">
+      {content && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd({
+        "@context": "https://schema.org", "@type": "ProfilePage",
+        url: absoluteUrl("/about"), name: page.title,
+        mainEntity: personSchema(content),
+      }) }} />}
       <header className="notes-nav">
         <Link className="notes-brand" href="/">黄智军</Link>
         <Link href="/"><ArrowLeft size={16} />返回首页</Link>
@@ -56,7 +63,7 @@ export default async function StandalonePage({ params }: StandalonePageProps) {
           the reader. Below 1080px the outline collapses above the text. */}
       <div className="doc-shell">
         <article className="note-article">
-          <p className="doc-eyebrow">站点说明</p>
+          <p className="doc-eyebrow">{content ? "个人介绍" : "站点说明"}</p>
           <h1>{page.title}</h1>
           {page.description && <p className="note-lead">{page.description}</p>}
           <div className="note-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(page.body) }} />

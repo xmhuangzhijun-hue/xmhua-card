@@ -153,6 +153,9 @@ export function HomePage({ content }: { content: SiteContent }) {
               <h2>{author.title}</h2>
               <div className="author-card__copy">
                 {author.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+                {content.pages.some(page => page.slug === "about") && (
+                  <p><Link href="/about">关于{site.brandName}与这个博客 <ArrowRight size={15} /></Link></p>
+                )}
               </div>
             </div>
           </div>

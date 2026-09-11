@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { WorkShowcase } from "@/components/work-showcase";
 import "./work.css";
+import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  alternates: { canonical: absoluteUrl("/work") },
   title: "AI 实战案例 | 黄智军",
   description: "Hermes、Obsidian、AI 编程协作、广告数据产品与个人博客平台的真实工程案例。",
 };

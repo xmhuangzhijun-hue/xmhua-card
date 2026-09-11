@@ -1,0 +1,44 @@
+{
+  "base": "http://127.0.0.1:3037",
+  "checks": [
+    {
+      "path": "/",
+      "canonical": "https://huangzhijun.online/",
+      "schemas": [
+        "WebSite"
+      ]
+    },
+    {
+      "path": "/about",
+      "canonical": "https://huangzhijun.online/about",
+      "schemas": [
+        "ProfilePage"
+      ]
+    },
+    {
+      "path": "/notes",
+      "canonical": "https://huangzhijun.online/notes",
+      "schemas": []
+    },
+    {
+      "path": "/work",
+      "canonical": "https://huangzhijun.online/work",
+      "schemas": []
+    },
+    {
+      "path": "/privacy",
+      "canonical": "https://huangzhijun.online/privacy",
+      "schemas": []
+    },
+    {
+      "path": "/notes/agent-harness",
+      "canonical": "https://huangzhijun.online/notes/agent-harness",
+      "schemas": [
+        "BlogPosting"
+      ]
+    }
+  ],
+  "sitemap_urls": 75,
+  "all_sitemap_pages_ok": 75,
+  "admin_noindex": true
+}

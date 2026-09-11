@@ -1,5 +1,11 @@
 # Development log
 
+## 2026-09-11 — Personal identity and search discovery
+
+User requested that searches for 黄智军 identify the author and link to the personal blog. Added canonical URLs, CMS-backed ProfilePage/Person markup, BlogPosting authors with visible profile links, a homepage profile link, and a sitemap derived only from public content. JSON-LD escapes HTML delimiters; modification dates are not fabricated. The about page is managed by the existing content API, not hard-coded into the frontend. SITE_URL configures the canonical origin.
+
+Validation: targeted ESLint, TypeScript and production build passed. All 75 sitemap destinations returned matching canonical URLs in the standalone preview; profile identity, article author links, robots and admin noindex passed. Full lint remains blocked by two pre-existing set-state-in-effect errors in notes-library and reading-progress, unchanged from baseline 2bbe58e. Browser automation is unavailable. GitHub profile update was rejected for missing user scope; no permissions were expanded. Search Console submission and actual AI search visibility remain unverified.
+
 This file is the durable engineering trail for each iteration. User-facing release summaries belong in [`CHANGELOG.md`](../CHANGELOG.md).
 
 ## 2026-09-09 — Site-wide brand unification and ICP footer

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 新增
 
+- 个人搜索基础：可编辑的个人介绍页支持 ProfilePage/Person 标记，文章增加作者链接，公开页面增加 canonical，新增自动更新的 sitemap.xml 与 robots.txt。
+
 - 社交条目支持二维码类型，微信等没有可跳转主页的平台可以在后台上传二维码，访客点击后弹出扫码窗口。
 - 后台支持图片上传（PNG / JPG / WebP，按文件头校验，拒绝 SVG），图片经 `/api/media/` 提供。
 - 笔记新增可选的「原文链接」，显示在正文上方。

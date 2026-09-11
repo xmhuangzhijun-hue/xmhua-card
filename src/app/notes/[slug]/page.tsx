@@ -9,6 +9,7 @@ import { isLiveHref } from "@/lib/content-types";
 import { extractHeadings, renderMarkdown, stripInlineMarkdown } from "@/lib/markdown";
 import "../notes.css";
 import "./detail.css";
+import { absoluteUrl, personSchema, serializeJsonLd } from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -43,10 +44,13 @@ export async function generateMetadata({ params }: NotePageProps): Promise<Metad
     return {
       title: `${loaded.article.title} | 黄智军`,
       description: stripInlineMarkdown(loaded.article.excerpt),
+      alternates: { canonical: absoluteUrl(`/notes/${loaded.article.slug}`) },
+      authors: [{ name: loaded.content.site.brandName, url: absoluteUrl("/about") }],
       openGraph: {
         title: loaded.article.title,
         description: stripInlineMarkdown(loaded.article.excerpt),
         type: "article",
+        url: absoluteUrl(`/notes/${loaded.article.slug}`),
       },
     };
   } catch (error) {
@@ -63,6 +67,14 @@ export default async function NotePage({ params }: NotePageProps) {
 
   return (
     <main className="notes-page note-detail">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd({
+        "@context": "https://schema.org", "@type": "BlogPosting",
+        headline: article.title, description: stripInlineMarkdown(article.excerpt),
+        url: absoluteUrl(`/notes/${article.slug}`),
+        mainEntityOfPage: absoluteUrl(`/notes/${article.slug}`),
+        datePublished: article.publishedAt, inLanguage: "zh-CN",
+        author: personSchema(content),
+      }) }} />
       <ReadingProgress />
       <header className="notes-nav">
         <Link className="notes-brand" href="/">{content.site.brandName}</Link>
@@ -73,6 +85,7 @@ export default async function NotePage({ params }: NotePageProps) {
       <article className="note-article">
         <p className="note-meta">{article.category} · {article.publishedAt} · 约 {minutes} 分钟</p>
         <h1>{article.title}</h1>
+        <p className="note-meta">作者：<Link href="/about" rel="author">{content.site.brandName}</Link> · <Link href="/">个人博客</Link></p>
         <p className="note-lead">{stripInlineMarkdown(article.excerpt)}</p>
         {isLiveHref(article.sourceUrl) && (
           <p className="note-source">
