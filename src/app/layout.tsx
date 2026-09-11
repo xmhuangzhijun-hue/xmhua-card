@@ -6,6 +6,7 @@ import "./globals.css";
 import "./hooosberg-source.css";
 import "./motion.css";
 import "./design.css";
+import "./studio.css";
 
 export const metadata: Metadata = {
   title: { default: "黄智军", template: "%s" },

@@ -1,5 +1,26 @@
 # Development log
 
+## 2026-09-11 — React Bits production release
+
+User explicitly requested deployment. Released 20260911T1440Z-reactbits after old/new isolated startup probes. The initial candidate did not start: copying the previous Turbopack-traced runtime omitted a webpack app-page runtime file. Production stayed on the prior release throughout diagnosis; rebuilt the package with its own complete standalone node_modules, then candidate/rollback probes passed. Separate probe ports avoid immediate reuse after shutdown. Public verification: all 75 sitemap pages and referenced assets on five routes pass. Browser confirmed initialized Canvas, pause/resume, RAG filter (four cards), and notes search dialog; search trigger measures 106px with no page overflow at 952px viewport. Mobile visual acceptance remains unverified. Receipt: reports/2026-09-11-reactbits-production.json.
+
+
+## 2026-09-11 — React Bits follow-up (not released)
+
+User rejected the static preview and requested actual React Bits effects, plus a fix for the notes-page search button collision. Integrated upstream Waves, GradientText and StarBorder into the homepage and notes introduction. Their source, modifications and complete license are under `src/components/react-bits`. Waves supplies the actual Perlin field and cursor deformation; gradient text and traveling border use the upstream CSS animation path. Shared pause controls stop CSS and Canvas effects; reduced motion and hidden/offscreen checks remain in place. No dependency installation.
+
+The search collision came from `.notes-nav nav button` forcing the text search trigger into a 40px circle. Scoped sizing now gives the search label and shortcut their own width, with a compact mobile layout. The canonical content, author/schema and publishing API remain unchanged.
+
+Targeted component lint and type checking passed. Local production preview startup was again rejected by automatic policy. Browser opening of the portable `file:` preview was separately rejected by URL security policy. Neither restriction was bypassed. A 440KB dynamic HTML bundles the actual React components, a public CMS metadata snapshot, and explicit Next navigation adapters; it offers homepage/notes switching and interactive filtering without a server. It is a design preview, not production route/backend acceptance. Browser visual/interaction/mobile acceptance and release remain pending. The earlier static preview should no longer be used to assess motion.
+
+## 2026-09-11 — Interactive personal studio (not released)
+
+User requested a more expressive blog with visual effects and useful interactions, referencing https://reactbits.dev/get-started/index. Implemented a dark split hero with a pointer-responsive particle globe, navigable content landmarks, pause control, visibility/reduced-motion handling and a server-rendered SVG fallback. Added homepage topic filtering and cycling through previews, spotlight note cards, subtle pointer tilt on project cards, and shared navigation/theme refinements. Note previews and counts come from the existing CMS; no article body or API writes. React Bits TiltedCard and DotGrid informed the interaction direction; implementation uses native Canvas/CSS and existing React, without adding packages or copying library source.
+
+Isolated branch `feat/blog-visual-20260911` starts at `33028f2`, preserving the SEO release and unrelated admin work. Targeted ESLint, TypeScript and a Linux production build passed; 68 generated note pages retain BlogPosting and the about page retains ProfilePage. Full lint reproduces two unchanged baseline set-state-in-effect errors in notes-library and reading-progress.
+
+Desktop SSR layout inspected in the browser. Development preview did not run interactive scripts; starting a production preview was rejected by automatic policy (`blocked by policy`). No workaround service or deployment was attempted. Functional, mobile and reduced-motion browser acceptance remain pending. Build receipt and static visual review are in the task's outputs directory. Production is unchanged. Resume by obtaining authorization to start the local production preview, complete browser acceptance, then follow the existing guarded frontend deployment process.
+
 ## 2026-09-11 — Personal identity and search discovery
 
 Published frontend release 20260911T1220Z-95c85b5. Live HTTP verification passed all 75 sitemap pages, profile content and JSON-LD, author links and admin noindex. Prior release 2bbe58e was restarted on an isolated port and homepage/note reads passed before switching. Existing API and adjacent services remain active. First candidate probe found a pre-existing process on port 39219; it was preserved and the probe moved to a verified free port. Final receipt formatting hit Python 3.6 incompatibility after a successful switch; read-only verification confirmed the release, no deployment retry was performed.

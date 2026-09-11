@@ -1,0 +1,23 @@
+{
+  "release": "20260911T1440Z-reactbits",
+  "previous": "20260911T1220Z-95c85b5",
+  "url": "https://huangzhijun.online",
+  "artifact_sha256": "42d5a76ec8d31392403fee88ab1f460931c666dd3304feedfe3f01c857ffda9f",
+  "candidate_probe": "passed",
+  "rollback_probe": "passed",
+  "services": [
+    "web active",
+    "api active",
+    "nginx active",
+    "qinghe gateway active"
+  ],
+  "seo_sitemap_pages": 75,
+  "assets": "5 routes: all referenced JS/CSS return 200",
+  "browser": {
+    "canvas_initialized": true,
+    "pause_resume": "passed",
+    "category_filter": "knowledge/RAG returns four matching cards",
+    "notes_search": "dialog opens; trigger width 106px at viewport 952px; no page overflow"
+  },
+  "mobile": "not verified"
+}

@@ -54,14 +54,18 @@ export function MotionRoot() {
     // frame. Writing custom properties only repaints; it never triggers layout.
     if (window.matchMedia("(hover: hover)").matches) {
       let frame = 0;
-      let pending: { el: HTMLElement; x: number; y: number } | null = null;
+      let pending: { el: HTMLElement; x: number; y: number; width: number; height: number } | null = null;
 
       const flush = () => {
         frame = 0;
         if (!pending) return;
-        const { el, x, y } = pending;
+        const { el, x, y, width, height } = pending;
         el.style.setProperty("--mo-x", `${x}px`);
         el.style.setProperty("--mo-y", `${y}px`);
+        if (el.matches(".studio-home .product-card")) {
+          el.style.setProperty("--studio-rx", `${(y / height - .5) * -5}deg`);
+          el.style.setProperty("--studio-ry", `${(x / width - .5) * 5}deg`);
+        }
         pending = null;
       };
 
@@ -69,7 +73,7 @@ export function MotionRoot() {
         const target = (event.target as Element | null)?.closest<HTMLElement>(".mo-spot");
         if (!target) return;
         const box = target.getBoundingClientRect();
-        pending = { el: target, x: event.clientX - box.left, y: event.clientY - box.top };
+        pending = { el: target, x: event.clientX - box.left, y: event.clientY - box.top, width: box.width, height: box.height };
         if (!frame) frame = requestAnimationFrame(flush);
       };
 

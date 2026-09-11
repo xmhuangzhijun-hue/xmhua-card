@@ -10,6 +10,9 @@ import { ThemeToggle } from "@/components/site/theme-toggle";
 import { CommandTrigger } from "@/components/site/command-palette";
 import { CountUp } from "@/components/site/count-up";
 import { useFlip } from "@/lib/flip";
+import { Waves } from "@/components/react-bits/Waves";
+import { GradientText } from "@/components/react-bits/GradientText";
+import { EffectsToggle } from "@/components/site/effects-toggle";
 
 /** Sentinel for "no category filter"; not a real category name. */
 const ALL = "";
@@ -159,9 +162,10 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
       </header>
 
       <section className="notes-intro" aria-labelledby="notes-title">
+        <Waves className="notes-waves" lineColor="rgba(76,124,220,.2)" xGap={26} waveSpeedX={.02} />
         <div>
-          <p>PUBLIC WORKING NOTES</p>
-          <h1 id="notes-title">{content.sections.articles.eyebrow}</h1>
+          <div className="notes-intro-eyebrow"><p>PUBLIC WORKING NOTES</p><EffectsToggle /></div>
+          <h1 id="notes-title"><GradientText>{content.sections.articles.eyebrow}</GradientText></h1>
           {/* Shared with the homepage section so one edit in the console updates both. */}
           <span>{content.sections.articles.description}</span>
         </div>

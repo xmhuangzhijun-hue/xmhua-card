@@ -5,9 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2026-09-11 — React Bits 视觉改版已发布
+
+- Waves 波纹、渐变文字、游走光边、知识球体与笔记探索上线。
+- 修正笔记页搜索入口宽度；保留既有正文、CMS 与 SEO。
+
 ## 未发布
 
 ### 新增
+
+- React Bits 动效（待验收、未上线）：Waves 流动波纹、GradientText 渐变文字、StarBorder 游走光边；修正笔记导航搜索按钮宽度与间距。
+
+- 博客视觉升级（待验收、未上线）：交互粒子球体、知识入口、暂停动效、首页主题筛选和换组阅读，配套聚光卡片与项目倾斜效果。
 
 - 个人搜索基础：可编辑的个人介绍页支持 ProfilePage/Person 标记，文章增加作者链接，公开页面增加 canonical，新增自动更新的 sitemap.xml 与 robots.txt。
 

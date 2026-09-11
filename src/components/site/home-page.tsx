@@ -5,6 +5,11 @@ import { stripInlineMarkdown } from "@/lib/markdown";
 import { AnalyticsConsent } from "./analytics-consent";
 import { SocialGrid } from "./social-grid";
 import { SiteFooter, SiteHeader } from "./site-chrome";
+import { KnowledgeOrbit } from "./knowledge-orbit";
+import { NoteDiscovery } from "./note-discovery";
+import { Waves } from "../react-bits/Waves";
+import { GradientText } from "../react-bits/GradientText";
+import { StarBorder } from "../react-bits/StarBorder";
 
 const directoryIcons = { search: Search, code: CodeXml, layers: Layers, shield: ShieldCheck };
 
@@ -21,22 +26,20 @@ function Heading({ eyebrow, title, description, action, center = false }: Sectio
   );
 }
 
-/** The homepage teases the newest notes; the full index lives at /notes. */
-const HOMEPAGE_ARTICLE_LIMIT = 6;
-
 export function HomePage({ content }: { content: SiteContent }) {
   const { hero, sections, products, directory, author, socials, site, ui } = content;
-  const articles = content.articles.slice(0, HOMEPAGE_ARTICLE_LIMIT);
+  const previews = content.articles.map(({ id, category, title, excerpt, publishedAt, slug }) => ({ id, category, title, excerpt: stripInlineMarkdown(excerpt), publishedAt, slug }));
 
   return (
     <>
       <SiteHeader content={content} />
-      <main>
+      <main className="studio-home">
         <section className="landing-hero">
+          <Waves lineColor="rgba(105,178,240,.3)" xGap={22} waveAmpX={45} waveAmpY={28} waveSpeedX={.025} waveSpeedY={.015} />
           <div className="hero-grid" />
           <div className="hero-content">
             <p className="hero-kicker">{hero.kicker}</p>
-            <h1>{hero.title}</h1>
+            <h1><GradientText>{hero.title}</GradientText></h1>
             <p className="hero-subtitle">
               {hero.description.split("\n").map((line, index) => (
                 <span key={line}>{index > 0 && <br />}{line}</span>
@@ -44,9 +47,9 @@ export function HomePage({ content }: { content: SiteContent }) {
             </p>
             <div className="hero-actions">
               {isLiveHref(hero.primaryAction.href) && (
-                <a className="button button--primary button--xl" href={hero.primaryAction.href}>
+                <StarBorder className="hero-star-action" href={hero.primaryAction.href}>
                   <BookOpen size={18} />{hero.primaryAction.label}
-                </a>
+                </StarBorder>
               )}
               {isLiveHref(hero.secondaryAction.href) && (
                 <a className="button button--secondary button--xl" href={hero.secondaryAction.href}>
@@ -56,20 +59,12 @@ export function HomePage({ content }: { content: SiteContent }) {
             </div>
             <div className="hero-proof">{hero.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
           </div>
+          <KnowledgeOrbit notes={content.articles.length} projects={products.length} />
         </section>
 
         <section className="landing-section landing-section--split" id="articles" data-reveal>
           <Heading {...sections.articles} />
-          <div className="article-list article-list--compact" data-reveal-stagger>
-            {articles.map(article => (
-              <Link className="article-row mo-spot mo-lift" href={`/notes/${article.slug}`} key={article.id}>
-                <span className="article-row__category">{article.category}</span>
-                <span className="article-row__title">{article.title}</span>
-                <span className="article-row__excerpt">{stripInlineMarkdown(article.excerpt)}</span>
-                <span className="article-row__date">{article.publishedAt}</span>
-              </Link>
-            ))}
-          </div>
+          <NoteDiscovery articles={previews} />
         </section>
 
         <section className="landing-section home-products-section" id="products" data-reveal>
