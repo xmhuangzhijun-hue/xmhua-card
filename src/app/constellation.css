@@ -64,3 +64,69 @@
  .scene-stage { height:450px; margin:4px auto 0; }.scene-core { width:250px; height:250px; top:45%; }.scene-paths { inset:40px -20%; width:140%; height:80%; }.scene-destination { width:125px; gap:9px; }.scene-sphere { width:58px; height:58px; }.scene-sphere svg { width:21px; }.scene-destination strong { font-size:12px; padding:4px 8px; }.scene-node-detail { font-size:9px; }.scene-destination--notes { left:0; top:9%; }.scene-destination--projects { right:0; top:9%; }.scene-destination--about { left:0; bottom:8%; }.scene-destination--work { right:0; bottom:8%; }.scene-core-label { bottom:2%; font-size:8px; }.scene-footer { gap:10px; }.scene-footer p { max-width:210px; font-size:11px; }.scene-footer .effects-toggle { white-space:nowrap; font-size:10px; }.scene-coordinate { font-size:8px; }
 }
 @media (prefers-reduced-motion:reduce) { .knowledge-scene *,.project-identity__orbit,.page-transition { animation:none!important; transition:none!important; } }
+
+/* Frosted surfaces sit above soft light fields. Reading paper stays opaque. */
+:root {
+  --glass-fill:rgba(255,255,255,.74);
+  --glass-line:rgba(255,255,255,.88);
+  --glass-edge:rgba(116,144,176,.24);
+  --glass-shadow:0 14px 42px rgba(37,61,98,.07),inset 0 1px 0 rgba(255,255,255,.95);
+  --glass-glow:rgba(116,188,220,.14);
+  --glass-violet:rgba(155,137,221,.12);
+}
+:root[data-theme=dark] {
+  --glass-fill:rgba(20,36,54,.73);
+  --glass-line:rgba(179,217,237,.19);
+  --glass-edge:rgba(101,151,183,.22);
+  --glass-shadow:0 18px 50px rgba(0,5,14,.22),inset 0 1px 0 rgba(198,229,246,.12);
+  --glass-glow:rgba(59,143,173,.13);
+  --glass-violet:rgba(106,90,173,.12);
+}
+.studio-home.studio-home {
+  background-color:var(--bg);
+  background-image:radial-gradient(ellipse 75% 700px at 5% 35%,var(--glass-glow),transparent 75%),radial-gradient(ellipse 75% 900px at 100% 62%,var(--glass-violet),transparent 70%),radial-gradient(ellipse 65% 650px at 15% 95%,var(--glass-glow),transparent 75%);
+}
+.notes-page.notes-page,.work-page.work-page {
+  background-image:radial-gradient(ellipse 70% 650px at 100% 0,var(--glass-violet),transparent 75%),radial-gradient(ellipse 70% 800px at 0 750px,var(--glass-glow),transparent 75%);
+}
+.studio-home .product-card.product-card,.studio-home .author-card,.social-card.social-card,.work-page .system-case {
+  border:1px solid var(--glass-edge);
+  border-top-color:var(--glass-line);
+  box-shadow:var(--glass-shadow);
+}
+.studio-home .product-card.product-card:hover,.social-card.social-card:hover {
+  border-color:color-mix(in srgb,var(--accent) 38%,var(--glass-edge));
+  box-shadow:0 20px 50px color-mix(in srgb,var(--accent) 10%,transparent),inset 0 1px 0 var(--glass-line);
+}
+.product-card .project-identity {
+  background-image:radial-gradient(ellipse at 20% 0,color-mix(in srgb,var(--identity) 20%,transparent),transparent 70%);
+  border-bottom:1px solid color-mix(in srgb,var(--identity) 20%,transparent);
+}
+.project-identity .project-identity__symbol { box-shadow:inset 0 1px 0 #ffffff36,0 12px 32px #0003; }
+.scene-destination strong { border-top-color:#bedcea42; box-shadow:0 6px 18px #0002,inset 0 1px 0 #ffffff0b; }
+.knowledge-scene::before { background:radial-gradient(ellipse at 50% 66%,#37759540,transparent 48%),radial-gradient(ellipse at 88% 15%,#8070b625,transparent 55%); }
+@supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)) {
+  .site-header.site-header {
+    background:color-mix(in srgb,var(--bg-strong) 73%,transparent);
+    backdrop-filter:blur(22px) saturate(135%);
+    -webkit-backdrop-filter:blur(22px) saturate(135%);
+    border-bottom-color:var(--glass-edge);
+    box-shadow:0 5px 25px #15283e05,inset 0 -1px 0 var(--glass-line);
+  }
+  .studio-home .product-card.product-card,.studio-home .author-card,.social-card.social-card,.work-page .system-case {
+    background:linear-gradient(135deg,color-mix(in srgb,var(--surface-solid) 86%,transparent),var(--glass-fill));
+    backdrop-filter:blur(16px) saturate(115%);
+    -webkit-backdrop-filter:blur(16px) saturate(115%);
+  }
+  .scene-destination strong { background:#15223970; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+  .project-identity .project-identity__symbol { background:color-mix(in srgb,var(--identity) 8%,transparent); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+}
+.note-detail .doc-shell .note-article { background:var(--surface-solid); backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:0 10px 35px #15283e06; }
+@media (max-width:720px) {
+  .studio-home .product-card.product-card,.studio-home .author-card,.social-card.social-card,.work-page .system-case { backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+}
+@media (prefers-reduced-transparency:reduce) {
+  .site-header.site-header,.studio-home .product-card.product-card,.studio-home .author-card,.social-card.social-card,.work-page .system-case { background:var(--surface-solid); backdrop-filter:none; -webkit-backdrop-filter:none; }
+  .scene-destination strong { background:#152239; backdrop-filter:none; -webkit-backdrop-filter:none; }
+  .project-identity .project-identity__symbol { background:#142137; backdrop-filter:none; -webkit-backdrop-filter:none; }
+}

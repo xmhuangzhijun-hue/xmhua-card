@@ -231,3 +231,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Knowledge observatory homepage with animated links, pointer response and motion pause.
 - Distinct project covers and expandable descriptions; consistent public chrome, case details and reading tools.
 - Responsive phone layouts, keyboard navigation and reduced-motion support.
+
+### Frosted material refinement
+
+Navigation and showcase cards gain translucent surfaces and soft light; reading pages preserve opaque paper. Existing layout and content unchanged.

@@ -485,3 +485,9 @@ Linux production build passed (81 generated pages). Complete standalone artifact
 Replaced split hero with a full-width interactive knowledge scene and four real navigation destinations. Unified public project identities, shared navigation, reading tools and case details. Mobile/desktop browser verification found CSS integration issues (reveal pause, cover width, TOC order, inherited pointer-events); fixed at the responsible selectors. See reports/2026-09-12-observatory-release.md for deployment and acceptance evidence.
 
 Released 20260911T1735Z-observatory; browser and 75-page public checks passed after full refresh. Previous-release tabs can retain stale module state; refresh required if a client navigation fails. Rollback release retained and restart-tested.
+
+## 2026-09-12 — Frosted surfaces
+
+User accepted the observatory layout and requested the proposed material refinement. Added theme-aware frosted navigation, project/social/case surfaces, soft background light fields and glass edge highlights. Reading paper stays opaque. Mobile uses lower blur; unsupported blur and reduced-transparency retain solid surfaces. No new assets or dependencies. Build and browser validation pending. Change: CHG-20260912-001.
+
+Released 20260911T1845Z-glass. Production build, dark/light and mobile checks, opaque reading paper, public CSS readback and project expansion passed. Prior release restart-tested and retained. Evidence: reports/2026-09-12-glass-release.md.
