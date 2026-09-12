@@ -1,73 +1,34 @@
-# 部署
+# 自行部署
 
-两个进程：`xmhua-api`（后端）和 `xmhua-card`（前端）。它们各自独立启动、独立重启、独立回滚。
+前端和 API 是两个独立进程。下列路径、服务名和端口都是示例；替换为自己的服务器配置，不包含作者的主机地址、运维账号或凭据。
 
-## 目标机现状
+## 构建与配置
 
-博客与清禾等服务共用一台阿里云 ECS。该机内存 1.8 GiB，**在机器上跑 Next.js 构建会被内核 OOM kill**，所以构建必须在本地或 WSL 的 Linux x86_64 环境完成，只上传产物。
+在与目标服务器兼容的 Linux 环境构建。资源有限的服务器建议只运行产物，不在服务器上执行 Next.js 构建。
 
-目录约定：
-
-```
-/opt/xmhua-card/
-├── releases/<时间戳>-<提交>/     每次发布一个只读目录
-│   ├── api/                      后端产物
-│   └── web/                      前端 standalone 产物
-└── current -> releases/…         原子切换的软链接
+```bash
+npm ci
+npm ci --prefix api
+npm run build --prefix api
+API_INTERNAL_BASE_URL=http://127.0.0.1:39300 npm run build
 ```
 
-## 一次发布
+前端构建需要可访问的内容 API。前端产物为 `.next/standalone`，另将 `public` 和 `.next/static` 分别复制到产物的 `public`、`.next/static`；保留该次构建自己的完整依赖。API 产物为 `api/dist`、运行依赖、`package.json` 和迁移目录。
 
-1. **本地构建两份产物**（Linux x86_64）
+- 前端环境：`SITE_URL`、`API_INTERNAL_BASE_URL`。不要给前端配置数据库密码。
+- 后端环境：`DATABASE_URL`、`API_PORT`、`DEFAULT_TENANT_SLUG`、会话配置与持久上传目录。
+- 环境文件存放在发布目录之外，仅服务管理员和运行身份可读取。不要提交实际配置到 Git。
+- PostgreSQL 和 API 仅监听回环或受控私网；公网通过 HTTPS 反向代理进入。
 
-   ```bash
-   npm ci --prefix api && npm run build --prefix api
-   npm ci && API_INTERNAL_BASE_URL=http://127.0.0.1:39300 npm run build
-   ```
+## 初始化
 
-   前端构建期间需要能连上一个后端来预渲染笔记和独立页面。可以临时连到生产后端的只读接口，或在本地起一份指向生产库副本的后端。
+首次部署先备份数据库，再执行已审查的迁移。用 `npm run db:migrate --prefix api` 应用迁移；`db:seed` 仅用于初始化演示内容，不要对已有生产内容盲目重跑。通过 `admin:create` 创建管理员，密码由受保护的环境提供，避免写进命令历史。
 
-2. **上传并校验哈希**，在服务器上核对 `sha256sum` 与本地一致后再解包到新的 `releases/` 目录。
+HTTPS 生产站点使用安全 Cookie；`ADMIN_COOKIE_SECURE=false` 只用于明文 HTTP 的本地开发。上传文件和 PostgreSQL 数据必须独立于代码发布目录持久化。
 
-3. **先迁移数据库**（本次新增三张表，全部是 `CREATE TABLE`，不改动既有表）：
+## 反向代理与服务
 
-   ```bash
-   DATABASE_URL=... node --experimental-strip-types api/src/db/migrate.ts
-   ```
-
-4. **创建后台账号**（只需一次；换密码时重复执行会重置并吊销全部会话）：
-
-   ```bash
-   DATABASE_URL=... ADMIN_USERNAME=... ADMIN_PASSWORD=... npm run admin:create --prefix api
-   ```
-
-   密码从 `XiaomoSecrets` 取，不写进任何文件、命令历史或日志。
-
-5. **切换软链接并按顺序重启**：先 `xmhua-api`，等它的 `/api/health` 返回 200，再重启 `xmhua-card`。反过来会让前端在后端就绪前对外返回错误页。
-
-6. **每次重启后做有界的就绪轮询再探活**。上一次回滚演练中观察到重启后有两次 502，直接探活会误判为失败。
-
-## systemd
-
-后端 `xmhua-api.service`：
-
-```ini
-[Service]
-User=xmhua-card
-WorkingDirectory=/opt/xmhua-card/current/api
-Environment=NODE_ENV=production
-EnvironmentFile=/etc/xmhua-card/api.env
-ExecStart=/opt/xmhua-card/runtime/bin/node dist/index.js
-Restart=on-failure
-```
-
-`api.env` 至少包含 `DATABASE_URL`、`API_PORT=39300`、`ADMIN_SESSION_TTL_HOURS`。文件权限 `0600`，属主为运行用户。
-
-前端沿用现有的 `xmhua-card.service`，追加 `Environment=API_INTERNAL_BASE_URL=http://127.0.0.1:39300`。
-
-## Nginx
-
-`/api/` 直接转发给后端，其余给 Next.js。这样后台会话 Cookie 是同源的，不需要 CORS，也不用让 API 流量多绕一层 Next。
+反向代理将 `/api/` 转给 API，其余路径转给 Next.js：
 
 ```nginx
 location /api/ {
@@ -76,28 +37,24 @@ location /api/ {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 }
-
 location / {
-    proxy_pass http://127.0.0.1:39218;
+    proxy_pass http://127.0.0.1:3000;
     proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
 }
 ```
 
-改完先 `nginx -t` 再 `reload`，不要 restart，避免影响同机其他 vhost。
+API 启动命令为 `node dist/index.js`，前端 standalone 为 `node server.js`。用进程管理器分别管理，以便独立重启和回滚。`TRUST_PROXY_HEADERS` 仅在确认可信代理覆盖转发头之后启用。
 
-## 回滚
+## GitHub 自动同步
 
-把 `current` 指回上一个 release 目录，然后按同样顺序重启两个服务。数据库迁移是纯新增表，旧版本代码不读这三张表，因此回滚不需要回退数据库。
+按照 [GITHUB_SYNC.md](GITHUB_SYNC.md) 修改公开仓库、作者及租户映射。只保留一个启用调度的 API 进程，其余实例设置 `GITHUB_SYNC_DISABLED=true`。当前实现使用公开 API，不需要 GitHub Token；限流时保留旧快照。用 `/api/github` 和项目卡片上的成功时间核对实际结果。
 
-## 验收标准
+## 发布与回滚
 
-只有下面几条同时成立才算发布完成：
+1. 将前后端产物放入新的版本目录，校验上传前后的 SHA-256。
+2. 在独立回环端口启动候选，禁用候选同步调度；验证健康、公开正文、管理鉴权与快照读取。
+3. 实际启动一次旧版本，确认回滚可运行；再切换指向新版本的链接或进程配置。
+4. 分别重启 API、前端，并进行有界就绪轮询，避免把启动瞬间的 502 当成永久失败。
+5. 在公网验证业务路径。失败则恢复旧版本。数据库迁移是否兼容旧代码必须逐次评估，不能默认所有迁移均可逆。
 
-- 公网 `/`、`/notes`、任意一篇 `/notes/<slug>`、`/work`、`/privacy` 均返回 200 并渲染出内容
-- 在浏览器里用真实账号登录 `/admin`，改一条内容并保存，一分钟内在公开页面上看到这条改动
-- `xmhua-api`、`xmhua-card`、`nginx` 与同机的清禾网关均为 active
-- 首页不存在 `href="#"` 的链接
-
-进程 active、端口可连、接口 200，都只是证据，不是完成。
+最低验收：公开首页/笔记/正文可读，登录及保存回读成功，未登录管理接口拒绝访问，移动端无溢出，GitHub 同步显示真实时间，原有服务没有受影响。

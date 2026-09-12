@@ -495,3 +495,9 @@ Released 20260911T1845Z-glass. Production build, dark/light and mobile checks, o
 ## 2026-09-12 — GitHub automatic project facts
 
 User requested automatic GitHub status. Added Octokit public reads, hourly durable snapshots with stale fallback, an explicit Hermes adoption mapping, and homepage contribution details. No credentials or schema migration. See docs/GITHUB_SYNC.md and reports/2026-09-12-github-sync.md for verification and release boundaries.
+
+## 2026-09-12 — Open-source documentation and publication review
+
+Updated README for the shipped publishing, motion, reading and GitHub snapshot features, with explicit editorial and source-configured boundaries. Replaced personal deployment narrative with generic setup/rollback guidance, changed the sample domain to example.com, and expanded private runtime exclusions. Current tracked-text review found no real token/private-key signatures or local/private host paths; public demo/example identities remain intentional. Scope and history limitations are in docs/OPEN_SOURCE.md.
+
+Resolved the two baseline lint blockers: reading progress no longer stores an unused fallback flag; note deep links use an external URL store with reader overrides instead of synchronous effect state writes. Added the existing snapshot regressions to CI. No auth, database schema or production runtime settings changed by this publication cleanup.

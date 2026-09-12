@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 /**
  * A hairline bar showing how far through a note the reader is.
@@ -10,11 +10,8 @@ import { useEffect, useState } from "react";
  * Older browsers get a passive, rAF-coalesced scroll listener instead.
  */
 export function ReadingProgress() {
-  const [needsFallback, setNeedsFallback] = useState(false);
-
   useEffect(() => {
     if (CSS.supports("animation-timeline", "scroll()")) return;
-    setNeedsFallback(true);
 
     let frame = 0;
     const update = () => {
@@ -37,5 +34,5 @@ export function ReadingProgress() {
     };
   }, []);
 
-  return <div className="mo-progress" aria-hidden="true" data-fallback={needsFallback || undefined} />;
+  return <div className="mo-progress" aria-hidden="true" />;
 }

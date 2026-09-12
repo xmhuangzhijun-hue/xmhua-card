@@ -241,3 +241,9 @@ Navigation and showcase cards gain translucent surfaces and soft light; reading 
 - Hourly GitHub repository and contribution facts with persisted last-good snapshots.
 - Separate original PR states and verified adoption via another PR.
 - Expandable evidence links and successful-sync timestamps on project cards.
+
+## 2026-09-12 — Open-source publishing update
+
+- Document current visual, reading and automatic GitHub features; provide generic deployment and privacy guidance.
+- Exclude private runtime artifacts and use a neutral example domain.
+- Fix baseline lint blockers without disabling rules; include GitHub snapshot regressions in CI.

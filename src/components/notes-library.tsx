@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowUpRight, Search, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { Article, SiteContent, TaxonomyGroup } from "@/lib/content-types";
 import { stripInlineMarkdown } from "@/lib/markdown";
 import { SiteHeader, SiteFooter } from "@/components/site/site-chrome";
@@ -59,24 +59,28 @@ function buildSections(articles: Article[], taxonomy: TaxonomyGroup[]): Section[
   return sections;
 }
 
+function subscribeLocation(notify: () => void) {
+  window.addEventListener("popstate", notify);
+  return () => window.removeEventListener("popstate", notify);
+}
+const readSearch = () => window.location.search;
+const serverSearch = () => "";
+
 export function NotesLibrary({ content }: { content: SiteContent }) {
-  const [category, setCategory] = useState(ALL);
-  const [activeTags, setActiveTags] = useState<string[]>([]);
+  const search = useSyncExternalStore(subscribeLocation, readSearch, serverSearch);
+  const initial = useMemo(() => {
+    const params = new URLSearchParams(search);
+    return { category: params.get("category") ?? ALL, tags: params.get("tag") ? [params.get("tag")!] : [] };
+  }, [search]);
+  const [selectedCategory, setCategory] = useState<string>();
+  const [selectedTags, setActiveTags] = useState<string[]>();
+  const category = selectedCategory ?? initial.category;
+  const activeTags = selectedTags ?? initial.tags;
   const [query, setQuery] = useState("");
   const [tagsOpen, setTagsOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Deep links from the command palette (/notes?category=… or ?tag=…). Read from
-  // the URL after mount rather than through useSearchParams, which would opt this
-  // statically rendered page into dynamic rendering for a query string that only
-  // sets initial UI state.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const wanted = params.get("category");
-    const tag = params.get("tag");
-    if (wanted) setCategory(wanted);
-    if (tag) setActiveTags([tag]);
-  }, []);
+  // The URL is an external store; explicit reader choices override its defaults.
 
   const sections = useMemo(
     () => buildSections(content.articles, content.taxonomy ?? []),
@@ -135,8 +139,10 @@ export function NotesLibrary({ content }: { content: SiteContent }) {
   }
 
   function toggleTag(tag: string) {
-    setActiveTags(current =>
-      current.includes(tag) ? current.filter(item => item !== tag) : [...current, tag]);
+    setActiveTags(current => {
+      const tags = current ?? initial.tags;
+      return tags.includes(tag) ? tags.filter(item => item !== tag) : [...tags, tag];
+    });
   }
 
   function clearAll() {
