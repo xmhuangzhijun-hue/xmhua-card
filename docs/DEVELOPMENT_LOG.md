@@ -491,3 +491,7 @@ Released 20260911T1735Z-observatory; browser and 75-page public checks passed af
 User accepted the observatory layout and requested the proposed material refinement. Added theme-aware frosted navigation, project/social/case surfaces, soft background light fields and glass edge highlights. Reading paper stays opaque. Mobile uses lower blur; unsupported blur and reduced-transparency retain solid surfaces. No new assets or dependencies. Build and browser validation pending. Change: CHG-20260912-001.
 
 Released 20260911T1845Z-glass. Production build, dark/light and mobile checks, opaque reading paper, public CSS readback and project expansion passed. Prior release restart-tested and retained. Evidence: reports/2026-09-12-glass-release.md.
+
+## 2026-09-12 — GitHub automatic project facts
+
+User requested automatic GitHub status. Added Octokit public reads, hourly durable snapshots with stale fallback, an explicit Hermes adoption mapping, and homepage contribution details. No credentials or schema migration. See docs/GITHUB_SYNC.md and reports/2026-09-12-github-sync.md for verification and release boundaries.

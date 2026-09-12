@@ -2,10 +2,16 @@ import { Hono } from "hono";
 import { getArticleBySlug, getPageBySlug, getPublicContent } from "../services/content.js";
 import { requireTenant } from "../services/tenant.js";
 import { readImage } from "../lib/uploads.js";
+import { publicGithubSnapshot } from "../services/github.js";
 
 export const publicRoutes = new Hono();
 
 const cacheHeaders = { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" };
+
+publicRoutes.get("/github", async context => {
+  const tenant = await requireTenant(context.req.query("tenant"));
+  return context.json({ data: await publicGithubSnapshot(tenant.id) }, 200, cacheHeaders);
+});
 
 publicRoutes.get("/content", async context => {
   const tenant = await requireTenant(context.req.query("tenant"));

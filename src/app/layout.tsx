@@ -9,6 +9,7 @@ import "./design.css";
 import "./studio.css";
 import "./experience.css";
 import "./constellation.css";
+import "./github-status.css";
 
 export const metadata: Metadata = {
   title: { default: "黄智军", template: "%s" },

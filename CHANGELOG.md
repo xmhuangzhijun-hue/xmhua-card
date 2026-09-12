@@ -235,3 +235,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Frosted material refinement
 
 Navigation and showcase cards gain translucent surfaces and soft light; reading pages preserve opaque paper. Existing layout and content unchanged.
+
+## 2026-09-12 — GitHub project status
+
+- Hourly GitHub repository and contribution facts with persisted last-good snapshots.
+- Separate original PR states and verified adoption via another PR.
+- Expandable evidence links and successful-sync timestamps on project cards.

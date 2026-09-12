@@ -7,6 +7,7 @@ import { adminRoutes } from "./routes/admin.js";
 import { authRoutes } from "./routes/auth.js";
 import { publicRoutes } from "./routes/public.js";
 import { tenantRoutes } from "./routes/tenant.js";
+import { startGithubSync } from "./services/github.js";
 
 export const apiVersion = "2.0.0";
 
@@ -54,6 +55,7 @@ function applyCors(origin: string | undefined, header: (name: string, value: str
 }
 
 await connectDatabase();
+startGithubSync();
 
 serve({ fetch: app.fetch, hostname: env.host, port: env.port }, info => {
   console.log(`xmhua-api ${apiVersion} listening on http://${info.address}:${info.port}`);
