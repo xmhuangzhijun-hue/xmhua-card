@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2026-09-12 — WeChat Local Toolkit 项目上线
+
+- 新增已脱敏的微信聊天本地整理工具卡片，说明已有导出处理、AI 候选审核及历史上游来源边界。
+- 将公开仓库加入 GitHub 每小时同步名单；保留现有项目与贡献关系。
+
 ## 2026-09-11 — React Bits 视觉改版已发布
 
 - Waves 波纹、渐变文字、游走光边、知识球体与笔记探索上线。

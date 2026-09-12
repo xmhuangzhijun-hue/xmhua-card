@@ -27,7 +27,7 @@ are live facts. Project descriptions are editorial CMS content and are never
 rewritten by the scheduler. Count-bearing descriptions should be edited into
 durable descriptions when enabling the live panel.
 
-The five configured repositories need roughly 18 unauthenticated GitHub requests
+The six configured repositories need roughly 20 unauthenticated GitHub requests
 per successful hour at current PR volume, below the usual 60/hour allowance.
 That allowance is shared by IP; rate limiting preserves the snapshot. Large PR
 results exceeding one page deliberately fail closed instead of truncating totals.

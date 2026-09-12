@@ -8,6 +8,7 @@ const key = "github-public-snapshot-v1";
 // Explicit, reviewed contribution provenance; never infer adoption from a closed PR.
 export const projectSources = [
   { repo: "xmhuangzhijun-hue/xmhua-card" },
+  { repo: "xmhuangzhijun-hue/wechat-local-toolkit" },
   { repo: "NousResearch/hermes-agent", author: "xmhuangzhijun-hue", adoptions: [{ original: 97572, mergedVia: 101570 }] },
   { repo: "xmhuangzhijun-hue/ruoxi-shell" },
   { repo: "xmhuangzhijun-hue/organic-agent-os" },
