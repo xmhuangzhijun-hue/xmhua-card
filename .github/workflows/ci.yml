@@ -61,6 +61,11 @@ jobs:
       - name: Security regression (API)
         run: npm run security:check --prefix api
 
+      - name: GitHub snapshot regressions
+        run: |
+          node api/node_modules/tsx/dist/cli.mjs api/src/scripts/github-regression.ts
+          node api/node_modules/tsx/dist/cli.mjs api/src/scripts/github-storage-regression.ts
+
       - name: Dependency audit (frontend)
         run: npm audit --audit-level=moderate
 

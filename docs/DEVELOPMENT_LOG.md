@@ -491,3 +491,19 @@ Released 20260911T1735Z-observatory; browser and 75-page public checks passed af
 User accepted the observatory layout and requested the proposed material refinement. Added theme-aware frosted navigation, project/social/case surfaces, soft background light fields and glass edge highlights. Reading paper stays opaque. Mobile uses lower blur; unsupported blur and reduced-transparency retain solid surfaces. No new assets or dependencies. Build and browser validation pending. Change: CHG-20260912-001.
 
 Released 20260911T1845Z-glass. Production build, dark/light and mobile checks, opaque reading paper, public CSS readback and project expansion passed. Prior release restart-tested and retained. Evidence: reports/2026-09-12-glass-release.md.
+
+## 2026-09-12 — GitHub automatic project facts
+
+User requested automatic GitHub status. Added Octokit public reads, hourly durable snapshots with stale fallback, an explicit Hermes adoption mapping, and homepage contribution details. No credentials or schema migration. See docs/GITHUB_SYNC.md and reports/2026-09-12-github-sync.md for verification and release boundaries.
+
+## 2026-09-12 — Open-source documentation and publication review
+
+Updated README for the shipped publishing, motion, reading and GitHub snapshot features, with explicit editorial and source-configured boundaries. Replaced personal deployment narrative with generic setup/rollback guidance, changed the sample domain to example.com, and expanded private runtime exclusions. Current tracked-text review found no real token/private-key signatures or local/private host paths; public demo/example identities remain intentional. Scope and history limitations are in docs/OPEN_SOURCE.md.
+
+Resolved the two baseline lint blockers: reading progress no longer stores an unused fallback flag; note deep links use an external URL store with reader overrides instead of synchronous effect state writes. Added the existing snapshot regressions to CI. No auth, database schema or production runtime settings changed by this publication cleanup.
+
+## 2026-09-12 — Security dependency refresh
+
+With user approval, upgraded Next.js and eslint-config-next from 16.3.0 to 16.3.5 and refreshed compatible transitive patches with npm audit fix (no force). Installation used an isolated directory; the shared checkout dependencies were preserved. Both frontend and API audits report zero vulnerabilities; API lockfile remained unchanged. Lint, both typechecks, security regressions and GitHub snapshot/storage regressions passed. Production build, browser acceptance and required GitHub checks are tracked in reports/2026-09-12-security-release.md before deployment.
+
+The first upgraded CI run (34689842204) passed both dependency audits and all regressions, then revealed malformed pre-existing Waves CSS (`var()` without a custom-property name) under Turbopack. Restored `--x` / `--y` with fallbacks to match the component's existing mouse-coordinate updates. The previous local webpack build did not catch the parse error; subsequent validation uses the default CI bundler.

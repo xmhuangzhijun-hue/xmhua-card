@@ -235,3 +235,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Frosted material refinement
 
 Navigation and showcase cards gain translucent surfaces and soft light; reading pages preserve opaque paper. Existing layout and content unchanged.
+
+## 2026-09-12 — GitHub project status
+
+- Hourly GitHub repository and contribution facts with persisted last-good snapshots.
+- Separate original PR states and verified adoption via another PR.
+- Expandable evidence links and successful-sync timestamps on project cards.
+
+## 2026-09-12 — Open-source publishing update
+
+- Document current visual, reading and automatic GitHub features; provide generic deployment and privacy guidance.
+- Exclude private runtime artifacts and use a neutral example domain.
+- Fix baseline lint blockers without disabling rules; include GitHub snapshot regressions in CI.
+
+## 2026-09-12 — 安全依赖更新
+
+- Next.js 与 eslint-config-next 更新至 16.3.5，并更新兼容范围内的传递依赖补丁。
+- 前后端 npm audit 均为 0 项漏洞；保留现有内容、数据库和鉴权设置。

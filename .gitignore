@@ -52,3 +52,16 @@ temp/
 api/dist/
 api/node_modules/
 api/.dev-postgres/
+
+# Private runtime data and credentials
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.sqlite
+*.sqlite3
+*.db
+uploads/
+api/uploads/
+backups/

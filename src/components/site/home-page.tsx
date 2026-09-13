@@ -12,6 +12,7 @@ import { GlareHover } from "../react-bits/GlareHover";
 import { AnimatedContent } from "../react-bits/AnimatedContent";
 import { ProjectIdentity } from "./project-identity";
 import { ProjectDescription } from "./project-description";
+import { GithubStatus, GithubStatusProvider } from "./github-status";
 
 const directoryIcons = { search: Search, code: CodeXml, layers: Layers, shield: ShieldCheck };
 
@@ -45,7 +46,7 @@ export function HomePage({ content }: { content: SiteContent }) {
 
         <section className="landing-section home-products-section" id="products">
           <Heading {...sections.products} />
-          <div className="product-grid product-grid--catalog product-grid--home">
+          <GithubStatusProvider><div className="product-grid product-grid--catalog product-grid--home">
             {products.map(product => (
               <AnimatedContent className="product-reveal" key={product.id}><SpotlightCard className="product-card">
                 <GlareHover><ProjectIdentity product={product} /></GlareHover>
@@ -57,6 +58,7 @@ export function HomePage({ content }: { content: SiteContent }) {
                 </div>
                 <ProjectDescription text={product.summary} />
                 <div className="product-card__meta"><span>{product.platform}</span></div>
+                <GithubStatus href={product.href} />
                 {/* A product without a destination shows its description only, never a link to nowhere. */}
                 {isLiveHref(product.href) && (
                   <div className="product-card__actions">
@@ -67,7 +69,7 @@ export function HomePage({ content }: { content: SiteContent }) {
                 )}
               </SpotlightCard></AnimatedContent>
             ))}
-          </div>
+          </div></GithubStatusProvider>
         </section>
 
         <section className="landing-section home-directory-section" id="ai-navigation">

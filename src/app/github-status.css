@@ -1,0 +1,16 @@
+.studio-home .product-card.card-spotlight > .github-status { pointer-events: auto; }
+.github-status { margin: 0 28px 24px; padding: 18px 0 0; border-top: 1px solid var(--border); font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+.github-status__heading, .github-status__facts { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
+.github-status__heading { justify-content: space-between; margin-bottom: 10px; }
+.github-status__heading > a { font-weight: 700; }
+.github-status__heading > span, .github-status small, .github-status--pending { opacity: .72; }
+.github-status__facts > span { border: 1px solid var(--border); border-radius: 8px; padding: 3px 9px; }
+.github-status p { margin: 8px 0; }
+.github-status a { text-underline-offset: 3px; }
+.github-status a:hover { text-decoration: underline; }
+.github-status summary { cursor: pointer; padding: 8px 0; }
+.github-status ul { list-style: none; margin: 0; padding: 0; }
+.github-status li { padding: 9px 0; border-top: 1px solid var(--border); }
+.github-status li > span { display: block; opacity: .8; }
+.github-status :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+@media (max-width: 600px) { .github-status { margin-inline: 20px; } }
