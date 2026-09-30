@@ -1,5 +1,15 @@
 # Development log
 
+## 2026-10-01 — Native admin video publishing
+
+The owner requested a multi-platform video publisher embedded in the existing blog admin. Added the 视频发布 tab, private streamed MP4 uploads, account login/check tasks and per-platform publishing receipts. The local outbound worker calls pinned upstream social-auto-upload CLI adapters for Xiaohongshu, WeChat Channels, Douyin, Bilibili and YouTube. It keeps browser credentials on the publishing computer; no cloud browser or public inbound worker port is required. First-time platform login remains necessary.
+
+The additive migration creates three tenant-scoped tables. Worker tokens are hashed on the server; private downloads require worker authentication. Idempotent submissions, serialized claims, a local pending receipt journal and restart recovery prevent automatic re-publication after uncertain outcomes. A zero CLI exit is reported as submitted pending platform verification. Preserved the already-deployed WeChat Local Toolkit GitHub mapping absent from the base branch.
+
+API security/type/build checks, publishing regression, frontend lint/typecheck and Linux production build passed. Candidate and retained old-release startup checks passed before the authorized production switch. Browser verification confirmed the new tab, online local worker, all five actual check receipts, existing overview counts (56/117 notes, 7 projects), and a 390px layout without page overflow. See reports/2026-10-01-video-publishing.md. Upstream requires an additional isolated playwright dependency omitted from its package metadata; installed Chrome works, so the optional slow bundled-browser download was cancelled.
+
+No platform is logged in and no video has been published to a social platform. Login completion and real publication remain unverified. Article syndication, backlink retrieval, scheduling and custom covers are outside this iteration. Source changes remain subject to PR review; deployment does not imply default-branch merge.
+
 ## 2026-09-11 — React Bits production release
 
 User explicitly requested deployment. Released 20260911T1440Z-reactbits after old/new isolated startup probes. The initial candidate did not start: copying the previous Turbopack-traced runtime omitted a webpack app-page runtime file. Production stayed on the prior release throughout diagnosis; rebuilt the package with its own complete standalone node_modules, then candidate/rollback probes passed. Separate probe ports avoid immediate reuse after shutdown. Public verification: all 75 sitemap pages and referenced assets on five routes pass. Browser confirmed initialized Canvas, pause/resume, RAG filter (four cards), and notes search dialog; search trigger measures 106px with no page overflow at 952px viewport. Mobile visual acceptance remains unverified. Receipt: reports/2026-09-11-reactbits-production.json.

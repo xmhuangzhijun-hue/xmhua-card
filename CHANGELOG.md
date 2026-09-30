@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-01 — 博客后台视频发布入口已部署
+
+- 原后台新增「视频发布」：视频上传、平台选择、账号登录检查及任务记录。
+- 本机执行器接入 social-auto-upload，覆盖小红书、视频号、抖音、B站和 YouTube 的 CLI；首次仍需各平台登录。
+- 私有视频存储、设备鉴权和任务防重已验证；五个平台检查回传正常，真实平台发布尚待登录后验收。
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
