@@ -18,6 +18,8 @@ API code archive SHA-256: `5e614f1f8f651824e8446dc02201b2237e267630c7b4c1e3c9837
 
 ## Limits and rollback
 
+PR #9 CI reached frontend dependency audit and failed with three existing lockfile advisories: brace-expansion (high), fast-uri and ip-address (moderate). No package manifest or lockfile was changed in this feature. Governance passed; earlier CI type/lint/security/publishing regression steps passed. Local production build passed separately. The draft remains unmerged; do not bypass review or the audit gate. Dependency remediation is a separate outstanding change.
+
 Actual platform authentication, video upload/publication and moderation outcomes require the owner's accounts and chosen video. Upstream browser automation can break when platform pages change. A successful CLI return means submitted, not verified public. No automatic retry after uncertain publication.
 
 Only three new tables were migrated; existing content tables remain compatible with the retained frontend/API releases. Roll back by restoring each service's previous release link and the backed-up Nginx configuration, then restart and verify. Keep the old API dependency release while the new release links its unchanged dependencies. Stop or revoke the local worker before rollback. Queued publication must be reviewed explicitly on forward recovery.

@@ -10,6 +10,8 @@ API security/type/build checks, publishing regression, frontend lint/typecheck a
 
 No platform is logged in and no video has been published to a social platform. Login completion and real publication remain unverified. Article syndication, backlink retrieval, scheduling and custom covers are outside this iteration. Source changes remain subject to PR review; deployment does not imply default-branch merge.
 
+Follow-up verification: production browser uploaded a generated MP4, worker download matched its bytes, anonymous download was denied, and only that QA file/row was removed. Draft PR #9 links Issue #8 and milestone Video publishing v0.6.0. CI governance passes; quality fails on three existing frontend dependency advisories (one high, two moderate), with dependency files unchanged. Dependency remediation and PR approval remain outstanding.
+
 ## 2026-09-11 — React Bits production release
 
 User explicitly requested deployment. Released 20260911T1440Z-reactbits after old/new isolated startup probes. The initial candidate did not start: copying the previous Turbopack-traced runtime omitted a webpack app-page runtime file. Production stayed on the prior release throughout diagnosis; rebuilt the package with its own complete standalone node_modules, then candidate/rollback probes passed. Separate probe ports avoid immediate reuse after shutdown. Public verification: all 75 sitemap pages and referenced assets on five routes pass. Browser confirmed initialized Canvas, pause/resume, RAG filter (four cards), and notes search dialog; search trigger measures 106px with no page overflow at 952px viewport. Mobile visual acceptance remains unverified. Receipt: reports/2026-09-11-reactbits-production.json.
