@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID, createHash } from "node:crypto";
-import { and, eq, desc, sql } from "drizzle-orm";
+import { and, eq, desc, sql, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { getDatabase } from "../db/client.js";
 import { publishWorkers, publishJobs, publishAssets } from "../db/schema.js";
@@ -61,10 +61,18 @@ export async function enqueue(tenantId: number, input: z.infer<typeof jobInput>)
       if (!account?.authenticated || Date.now() - Date.parse(account.checkedAt) > 86400000) throw conflict("ACCOUNT_CHECK_REQUIRED");
     }
   }
-  await db.insert(publishJobs).values([...new Set(input.platforms)].map(platform => ({
-    id: randomUUID(), tenantId, workerId: worker.id, requestId: input.requestId,
-    platform, kind: input.kind, payload: { ...input, platforms: undefined },
-  }))).onConflictDoNothing();
+  await db.transaction(async tx => {
+    // Serialize account-task submissions on the same worker, including separate tabs.
+    await tx.update(publishWorkers).set({ id: worker.id }).where(eq(publishWorkers.id, worker.id));
+    const pending = input.kind === "publish" ? [] : await tx.select({ platform: publishJobs.platform }).from(publishJobs).where(and(
+      eq(publishJobs.workerId, worker.id), inArray(publishJobs.kind, ["login", "check"]), inArray(publishJobs.state, ["queued", "running"]),
+    ));
+    const targets = [...new Set(input.platforms)].filter(platform => !pending.some(job => job.platform === platform));
+    if (targets.length) await tx.insert(publishJobs).values(targets.map(platform => ({
+      id: randomUUID(), tenantId, workerId: worker.id, requestId: input.requestId,
+      platform, kind: input.kind, payload: { ...input, platforms: undefined },
+    }))).onConflictDoNothing();
+  });
   return overview(tenantId);
 }
 

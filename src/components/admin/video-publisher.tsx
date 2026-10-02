@@ -7,7 +7,7 @@ import { apiUrl } from "@/lib/api-client";
 const platforms = [{ id: "xiaohongshu", name: "小红书" }, { id: "tencent", name: "视频号" }, { id: "douyin", name: "抖音" }, { id: "bilibili", name: "B站" }, { id: "youtube", name: "YouTube" }];
 type Worker = { id: string; name: string; lastSeen: string | null; active: boolean; accounts: Record<string, { authenticated: boolean; checkedAt: string }> };
 type Asset = { id: string; name: string; size: number };
-type Job = { id: string; platform: string; kind: string; state: string; message: string; createdAt: string; updatedAt: string; payload: { title?: string } };
+type Job = { id: string; workerId: string; platform: string; kind: string; state: string; message: string; createdAt: string; updatedAt: string; payload: { title?: string } };
 type Overview = { workers: Worker[]; assets: Asset[]; jobs: Job[] };
 const messages: Record<string, string> = {
   WORKER_OFFLINE: "这台电脑已离线，请先启动本地发布助手。", ACCOUNT_CHECK_REQUIRED: "请先登录所选平台并检查登录状态。",
@@ -46,15 +46,16 @@ export function VideoPublisher() {
   const online = Boolean(worker?.lastSeen && Date.now() - Date.parse(worker.lastSeen) < 45000);
   const ready = (id: string) => Boolean(worker?.accounts[id]?.authenticated && Date.now() - Date.parse(worker.accounts[id].checkedAt) < 86400000);
   const asset = data?.assets.find(a => a.id === assetId);
+  const pendingAccount = (id: string) => data?.jobs.find(job => job.workerId === worker?.id && job.platform === id && ["login", "check"].includes(job.kind) && ["queued", "running"].includes(job.state));
 
   async function run(kind: string, targets: string[]) {
     if (!worker || busy) return;
     setBusy(true); setError(""); setNotice("");
     requestId.current ??= crypto.randomUUID();
     try {
-      await call("/jobs", { requestId: requestId.current, workerId: worker.id, kind, platforms: targets, ...(assetId ? { assetId } : {}), title, description, tags: tags.split(/[,，]/).map(t => t.trim()).filter(Boolean), category, original });
+      setData(await call<Overview>("/jobs", { requestId: requestId.current, workerId: worker.id, kind, platforms: targets, ...(assetId ? { assetId } : {}), title, description, tags: tags.split(/[,，]/).map(t => t.trim()).filter(Boolean), category, original }));
       requestId.current = null; setConfirm(false);
-      setNotice(kind === "login" ? "登录任务已发送，请在本机弹出的窗口里完成登录。" : kind === "publish" ? "发布任务已创建，可以在下方跟踪各平台结果。" : "正在检查登录状态……");
+      setNotice(kind === "login" ? "登录任务已发送。扫码后还需保存并校验会话，请等账号显示「已登录」，不必重复点击。" : kind === "publish" ? "发布任务已创建，可以在下方跟踪各平台结果。" : "账号检查任务已提交，结果会自动更新。");
       await reload();
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   }
@@ -86,8 +87,9 @@ export function VideoPublisher() {
       <label>简介<textarea rows={4} maxLength={1000} value={description} onChange={e => { setDescription(e.target.value); resetRequest(); }} placeholder="补充视频介绍" /></label>
       <label>话题<input value={tags} onChange={e => { setTags(e.target.value); resetRequest(); }} placeholder="用逗号分隔，如 AI,产品,创作" /></label>
     </div><div className="vp-card"><h2>2. 发布到哪些平台</h2><p className="vp-muted">首次分别登录，后续复用登录状态。登录窗口会在发布电脑上打开。</p>
-      <div className="vp-platforms">{platforms.map(p => <div key={p.id} className="vp-platform"><label><input type="checkbox" checked={selected.includes(p.id)} onChange={e => { setSelected(e.target.checked ? [...selected, p.id] : selected.filter(id => id !== p.id)); resetRequest(); }} /><strong>{p.name}</strong><span>{ready(p.id) ? "已登录" : "待登录 / 检查"}</span></label><button className="ac-button" disabled={!online || busy} onClick={() => { resetRequest(); void run("login", [p.id]); }}>登录</button></div>)}</div>
-      <button className="ac-button" disabled={!online || busy} onClick={() => { resetRequest(); void run("check", platforms.map(p => p.id)); }}><RefreshCw size={14} />检查全部账号</button>
+      <div className="vp-platforms">{platforms.map(p => { const pending = pendingAccount(p.id); return <div key={p.id} className="vp-platform"><label><input type="checkbox" checked={selected.includes(p.id)} onChange={e => { setSelected(e.target.checked ? [...selected, p.id] : selected.filter(id => id !== p.id)); resetRequest(); }} /><strong>{p.name}</strong><span aria-live="polite">{pending ? pending.state === "queued" ? "已排队" : pending.kind === "login" ? "登录 / 校验中" : "检查中" : ready(p.id) ? "已登录" : "待登录 / 检查"}</span></label><button className="ac-button" disabled={!online || busy || !!pending} onClick={() => { resetRequest(); void run("login", [p.id]); }}>{pending ? "处理中" : ready(p.id) ? "重新登录" : "登录"}</button></div>; })}</div>
+      <button className="ac-button" disabled={!online || busy || platforms.some(p => !!pendingAccount(p.id))} onClick={() => { resetRequest(); void run("check", platforms.map(p => p.id)); }}><RefreshCw size={14} />检查全部账号</button>
+      <p className="vp-muted">扫码进入平台后，还需自动保存并校验登录状态；显示「已登录」才算连接完成。任务依次执行，其他平台可能需要排队。</p>
       {selected.includes("bilibili") && <label>B站分区 ID<input type="number" min={1} max={9999} value={category} onChange={e => { setCategory(Number(e.target.value)); resetRequest(); }} /><small>默认 249；请按视频内容填写创作中心对应分区。</small></label>}
       <label className="vp-original"><input type="checkbox" checked={original} onChange={e => { setOriginal(e.target.checked); resetRequest(); }} />这是我制作并拥有发布权的视频</label>
       <div className="vp-submit"><p>{selected.length ? `已选 ${selected.length} 个平台` : "选择至少一个平台"}</p><button className="ac-button ac-button--primary" disabled={!online || busy || !asset || !title.trim() || !original || !selected.length || selected.some(id => !ready(id)) || progress !== null} onClick={() => setConfirm(true)}><Send size={15} />准备发布</button></div>

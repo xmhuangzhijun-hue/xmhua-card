@@ -1,5 +1,13 @@
 # Development log
 
+## 2026-10-02 — Make account login progress visible and deduplicate queued requests
+
+The owner saw the platform's authenticated creator page while the admin still said pending login. Read-only diagnosis found saved Xiaohongshu state and successful server receipts: opening the creator home precedes session validation/reporting, but the UI gave no intermediate feedback and accepted several repeated login clicks. Added queued/running labels, disabled repeat login/check actions while pending, and immediately applied the enqueue response. The API locks the worker row inside a transaction and suppresses pending login/check duplicates for each platform, including different request IDs and browser tabs.
+
+API checks, security regression, concurrent-account-task regression, frontend lint/typecheck and the production build passed. The first candidate health probe ran too early (3 seconds versus observed 9-second startup); production remained unchanged. Read-only service logs confirmed successful startup, then bounded readiness checks and sequential API/web probes passed before switching to release 20261002T1035Z-login-progress. Production browser verified the new queued/running disabled controls and authenticated WeChat Channels. Xiaohongshu authentication was independently present in the API; one still-queued duplicate login was cancelled after rechecking its state, while already-running tasks were preserved. No content was published. See reports/2026-10-02-publishing-login-progress.md for final acceptance.
+
+The cloud-only request remains open: the existing host lacks suitable spare disk/RAM for browser execution and its YouTube connection failed inspection. Resource expansion or another host is still undecided; this release fixes the current local execution flow and does not claim migration.
+
 ## 2026-10-02 — Recover offline publishing helper and missing login browser
 
 The owner reported that every platform login button did nothing. Live inspection found no local worker process and a stale server heartbeat; the disabled button condition therefore prevented task creation. Restarting the existing helper restored all five buttons. The owner explicitly requested Windows login autostart, so a current-user Startup shortcut now calls the existing guarded launcher; a second launch correctly detected the running process.

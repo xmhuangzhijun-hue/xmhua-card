@@ -33,12 +33,16 @@ await db.update(publishWorkers).set({ lastSeen: new Date() }).where(eq(publishWo
 const input = service.jobInput.parse({ requestId: randomUUID(), workerId: worker.id, kind: "check", platforms: ["douyin", "youtube"] });
 await service.enqueue(1, input); await service.enqueue(1, input);
 assert.equal((await service.overview(1)).jobs.length, 2, "idempotent multi-platform submission");
+await Promise.all(["login", "check"].map(kind => service.enqueue(1, { ...input, requestId: randomUUID(), kind: kind as "login" | "check" })));
+assert.equal((await service.overview(1)).jobs.length, 2, "different requests/tabs cannot duplicate pending account tasks");
 assert.equal((await service.overview(2)).jobs.length, 0, "tenant isolation");
 assert.ok(!JSON.stringify(await service.overview(1)).includes(worker.token), "never expose credentials");
 await assert.rejects(service.enqueue(2, input), /WORKER_NOT_FOUND/);
 const first = await service.claim(worker.id);
 assert.ok(first);
 assert.equal(await service.claim(worker.id), null, "no second action while running");
+await service.enqueue(1, { ...input, requestId: randomUUID(), kind: "login" });
+assert.equal((await service.overview(1)).jobs.length, 2, "running login/check also blocks duplicate account work");
 await assert.rejects(service.report(other.id, first.id, { state: "completed", message: "" }), /JOB_NOT_RUNNING/);
 await service.report(worker.id, first.id, { state: "completed", message: "checked", authenticated: false });
 await assert.rejects(service.report(worker.id, first.id, { state: "completed", message: "" }), /JOB_NOT_RUNNING/);
