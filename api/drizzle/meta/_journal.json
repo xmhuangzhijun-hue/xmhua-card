@@ -57,6 +57,13 @@
       "when": 1788959345856,
       "tag": "0007_safe_genesis",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790784000000,
+      "tag": "0008_video_publishing",
+      "breakpoints": true
     }
   ]
 }

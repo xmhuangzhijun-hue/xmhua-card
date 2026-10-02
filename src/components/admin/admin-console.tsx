@@ -10,6 +10,7 @@ import { adminApi, describeError, type Overview } from "./admin-api";
 import { CollectionEditor, type CollectionConfig } from "./collection-editor";
 import { SettingsEditor } from "./settings-editor";
 import { LoginForm } from "./login-form";
+import { VideoPublisher } from "./video-publisher";
 
 const placeholderHref = (value: unknown) => {
   const href = String(value ?? "").trim();
@@ -166,13 +167,14 @@ const pages: CollectionConfig = {
   ],
 };
 
-type TabId = "overview" | "articles" | "products" | "socials" | "directory" | "pages" | "settings" | "account";
+type TabId = "overview" | "articles" | "products" | "socials" | "directory" | "pages" | "settings" | "account" | "videos";
 
 const tabs: { id: TabId; label: string; icon: typeof Notebook }[] = [
   { id: "overview", label: "总览", icon: LayoutGrid },
   { id: "articles", label: "笔记", icon: Notebook },
   { id: "products", label: "项目", icon: LayoutGrid },
   { id: "socials", label: "社交账号", icon: Share2 },
+  { id: "videos", label: "视频发布", icon: ArrowUpRight },
   { id: "directory", label: "能力卡片", icon: LayoutGrid },
   { id: "pages", label: "独立页面", icon: FileText },
   { id: "settings", label: "站点设置", icon: Settings },
@@ -251,6 +253,7 @@ export function AdminConsole() {
         {tab === "articles" && <CollectionEditor config={articles} onChanged={refreshOverview} />}
         {tab === "products" && <CollectionEditor config={products} onChanged={refreshOverview} />}
         {tab === "socials" && <CollectionEditor config={socialLinks} onChanged={refreshOverview} />}
+        {tab === "videos" && <VideoPublisher />}
         {tab === "directory" && <CollectionEditor config={directoryLinks} onChanged={refreshOverview} />}
         {tab === "pages" && <CollectionEditor config={pages} onChanged={refreshOverview} />}
         {tab === "settings" && <SettingsEditor onChanged={refreshOverview} />}

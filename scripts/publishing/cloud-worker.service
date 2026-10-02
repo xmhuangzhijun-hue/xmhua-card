@@ -1,0 +1,28 @@
+[Unit]
+Description=Blog cloud video publisher
+After=network-online.target xmhua-api.service xmhua-publishing-display.service
+Requires=xmhua-publishing-display.service
+
+[Service]
+User=xmhua-publisher
+Group=xmhua-publisher
+Environment=HOME=/var/lib/xmhua-publisher
+Environment=DISPLAY=:96
+Environment=PYTHONUNBUFFERED=1
+WorkingDirectory=/var/lib/xmhua-publisher
+ExecStart=/opt/xmhua-publisher/venv/bin/python /opt/xmhua-publisher/worker.py --config /var/lib/xmhua-publisher/config.json
+Restart=always
+RestartSec=5
+KillMode=control-group
+TimeoutStopSec=15
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/xmhua-publisher /tmp
+MemoryHigh=500M
+MemoryMax=700M
+TasksMax=200
+
+[Install]
+WantedBy=multi-user.target

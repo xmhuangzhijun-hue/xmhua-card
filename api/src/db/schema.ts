@@ -10,6 +10,29 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
+export const publishWorkers = pgTable("publish_workers", {
+  id: text("id").primaryKey(), tenantId: integer("tenant_id").notNull().references(() => tenants.id),
+  name: text("name").notNull(), tokenHash: text("token_hash").notNull().unique(),
+  active: boolean("active").notNull().default(true), lastSeen: timestamp("last_seen", { withTimezone: true }),
+  accounts: jsonb("accounts").$type<Record<string, { authenticated: boolean; checkedAt: string }>>().notNull().default({}),
+});
+
+export const publishAssets = pgTable("publish_assets", {
+  id: text("id").primaryKey(), tenantId: integer("tenant_id").notNull().references(() => tenants.id),
+  name: text("name").notNull(), size: integer("size").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const publishJobs = pgTable("publish_jobs", {
+  id: text("id").primaryKey(), tenantId: integer("tenant_id").notNull().references(() => tenants.id),
+  workerId: text("worker_id").notNull().references(() => publishWorkers.id),
+  requestId: text("request_id").notNull(), platform: text("platform").notNull(), kind: text("kind").notNull(),
+  state: text("state").notNull().default("queued"), message: text("message").notNull().default(""),
+  payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, table => [uniqueIndex("publish_jobs_request_platform").on(table.tenantId, table.requestId, table.platform)]);
+
 export const tenants = pgTable("tenants", {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),

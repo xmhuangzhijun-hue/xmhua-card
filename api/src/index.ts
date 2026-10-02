@@ -8,6 +8,7 @@ import { authRoutes } from "./routes/auth.js";
 import { publicRoutes } from "./routes/public.js";
 import { tenantRoutes } from "./routes/tenant.js";
 import { startGithubSync } from "./services/github.js";
+import { publishingAdminRoutes, publishingWorkerRoutes } from "./routes/publishing.js";
 
 export const apiVersion = "2.0.0";
 
@@ -29,6 +30,8 @@ app.get("/api/health", context => context.json({ status: "ok", version: apiVersi
 app.route("/api", publicRoutes);
 app.route("/api", tenantRoutes);
 app.route("/api/auth", authRoutes);
+app.route("/api/admin/publishing", publishingAdminRoutes);
+app.route("/api/publishing-worker", publishingWorkerRoutes);
 app.route("/api/admin", adminRoutes);
 
 app.notFound(context => context.json({ error: "NOT_FOUND" }, 404));
