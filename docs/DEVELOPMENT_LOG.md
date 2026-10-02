@@ -1,5 +1,11 @@
 # Development log
 
+## 2026-10-02 — Recover offline publishing helper and missing login browser
+
+The owner reported that every platform login button did nothing. Live inspection found no local worker process and a stale server heartbeat; the disabled button condition therefore prevented task creation. Restarting the existing helper restored all five buttons. The owner explicitly requested Windows login autostart, so a current-user Startup shortcut now calls the existing guarded launcher; a second launch correctly detected the running process.
+
+An actual Xiaohongshu login then exposed a separate provisioning omission: this pinned upstream login path launches `channel="chromium"` directly, ignoring the configured system Chrome. Revision 1208 was absent; the same browser launch reproduced “Executable doesn't exist.” The earlier account checks returned unauthenticated before browser launch and did not validate login readiness. Installed the matching official browser artifact after checksum/ZIP validation. A further isolated context probe reproduced a missing bundled JS file caused by relocating conf.BASE_DIR. The thin adapter now resolves only that resource-reading module against the upstream checkout, preserving the private cookie/log root. The same probe passes, and the admin's actual login action opens a visible Xiaohongshu window waiting for the owner. No cloud deployment was needed. Installation guidance and reports/2026-10-02-publishing-login-recovery.md record both causes and acceptance limits, including the policy-blocked autostart shortcut execution test.
+
 ## 2026-10-01 — Native admin video publishing
 
 The owner requested a multi-platform video publisher embedded in the existing blog admin. Added the 视频发布 tab, private streamed MP4 uploads, account login/check tasks and per-platform publishing receipts. The local outbound worker calls pinned upstream social-auto-upload CLI adapters for Xiaohongshu, WeChat Channels, Douyin, Bilibili and YouTube. It keeps browser credentials on the publishing computer; no cloud browser or public inbound worker port is required. First-time platform login remains necessary.

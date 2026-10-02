@@ -25,6 +25,10 @@ def main():
     conf.YT_PROXY = None
     sys.modules["conf"] = conf
     sys.path.insert(0, str(source))
+    # This utility reads bundled JS, not account state. Resolve its resources from
+    # the upstream checkout while conf.BASE_DIR keeps cookies/logs private.
+    import utils.base_social_media as browser_support
+    browser_support.BASE_DIR = source
     import sau_cli
     from loguru import logger
     logger.remove()  # Upstream diagnostic messages may contain session data.

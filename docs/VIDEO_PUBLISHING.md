@@ -14,7 +14,11 @@
 
 ## 安装执行器
 
-上游验证版本 `0012d2c355f88f683cc38dde2a2db209e14091bc`；使用 Python 3.12 独立环境，按其 `docs/install.md` 安装。该版本 CLI 导入旧模块还需要 `playwright==1.58.0`，主安装清单没有声明；另安装这一依赖。可通过 `chrome` 指定已安装的 Google Chrome，避免改动浏览器用户配置。没有修改上游源码。
+上游验证版本 `0012d2c355f88f683cc38dde2a2db209e14091bc`；使用 Python 3.12 独立环境，按其 `docs/install.md` 安装。该版本 CLI 导入旧模块还需要 `playwright==1.58.0`，主安装清单没有声明；另安装这一依赖。必须用同一虚拟环境运行 `python -m patchright install chromium`，下载匹配的浏览器运行包。配置 `chrome` 只影响部分上游路径，不能替代配套 Chromium：例如小红书登录和上传直接使用 `channel="chromium"`。没有修改上游源码。
+
+登录按钮全部灰色时，先检查发布电脑是否在线；启动助手并等待页面刷新。账号尚未配置时，`check` 可能直接返回未登录，不能据此认定浏览器或登录窗口已经可用。安装验收须另外验证可见登录窗口，扫码及账号认证由本人完成。
+
+用上游虚拟环境运行 `python scripts/publishing/verify_runtime.py --upstream <social-auto-upload-checkout>`，可在临时空账号目录验证实际适配器、私有路径、匹配浏览器及上游静态脚本初始化，不会登录或发布。适配器仅将读取内置 JS 的工具模块指向源码目录，Cookie 和日志仍写私有目录。
 
 在受保护的私有目录创建配置文件（不能放仓库或同步盘）：
 
