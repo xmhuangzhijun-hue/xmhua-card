@@ -1,5 +1,11 @@
 # Development log
 
+## 2026-10-02 — Restore local execution under the existing server budget
+
+The owner chose local video execution to preserve resources for existing cloud services and avoid additional server cost. Registered a fresh local worker without reactivating revoked credentials, reused the original private platform sessions, restored the existing guarded Windows launcher and login-startup entry, then revoked the cloud worker and disabled all three cloud publisher/desktop units. No website release or database migration was needed: the existing UI selects the only active worker and the API now returns no cloud worker.
+
+The actual local adapter/browser smoke check passed; five new queued checks completed locally, with Xiaohongshu and Channels authenticated and the other three honestly unauthenticated. Duplicate launcher invocation reused the running process. Cloud publisher units are inactive/disabled with no remaining service-account processes; existing blog and companion services remain active. Browser UI acceptance was blocked: automatic approval rejected starting the debugging browser, and the supported in-app browser failed to navigate. No workaround was used, no Windows reboot was performed, and no video was published. See reports/2026-10-02-local-publishing-restored.md.
+
 ## 2026-10-02 — Move publishing execution into the cloud admin
 
 The owner required publishing to work without their Windows computer. Added a tenant-bound cloud worker selection, an embedded noVNC desktop protected by the existing administrator session and exact WebSocket Origin, and systemd templates using a dedicated private account. The adapter normalizes browser channels to a pinned executable, supports an existing YouTube-only proxy, and allows 90-second navigation on constrained cloud hosts. Linux task timeouts terminate the process group; completed publishing attempts release scratch video copies.
