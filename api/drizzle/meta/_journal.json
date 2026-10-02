@@ -64,6 +64,13 @@
       "when": 1790784000000,
       "tag": "0008_video_publishing",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790955289612,
+      "tag": "0009_gomoku_rooms",
+      "breakpoints": true
     }
   ]
 }
