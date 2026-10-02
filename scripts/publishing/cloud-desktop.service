@@ -1,0 +1,19 @@
+[Unit]
+Description=Private blog publishing display
+After=network.target
+
+[Service]
+User=xmhua-publisher
+Group=xmhua-publisher
+Environment=HOME=/var/lib/xmhua-publisher
+ExecStart=/usr/bin/Xvnc :96 -localhost -rfbport 5906 -SecurityTypes None -geometry 1280x900 -depth 24 -AlwaysShared -nolisten tcp -ac
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/xmhua-publisher /tmp
+MemoryMax=100M
+
+[Install]
+WantedBy=multi-user.target

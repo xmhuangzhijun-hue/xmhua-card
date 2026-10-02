@@ -43,7 +43,8 @@ export async function overview(tenantId: number) {
     db.select().from(publishJobs).where(eq(publishJobs.tenantId, tenantId)).orderBy(desc(publishJobs.createdAt)).limit(100),
     db.select({ id: publishAssets.id, name: publishAssets.name, size: publishAssets.size, createdAt: publishAssets.createdAt }).from(publishAssets).where(eq(publishAssets.tenantId, tenantId)).orderBy(desc(publishAssets.createdAt)).limit(50),
   ]);
-  return { workers, jobs, assets };
+  const cloudWorkerId = workers.find(worker => worker.active && worker.id === process.env.PUBLISHING_CLOUD_WORKER_ID)?.id ?? null;
+  return { workers, jobs, assets, cloudWorkerId };
 }
 
 export async function enqueue(tenantId: number, input: z.infer<typeof jobInput>) {

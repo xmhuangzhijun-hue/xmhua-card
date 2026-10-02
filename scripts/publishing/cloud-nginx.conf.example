@@ -1,0 +1,29 @@
+# Include inside the blog HTTPS server. Change the Origin to your exact origin.
+location = /_publishing_desktop_auth {
+    internal;
+    proxy_pass http://127.0.0.1:39300/api/admin/publishing/cloud-authorize;
+    proxy_pass_request_body off;
+    proxy_set_header Content-Length "";
+    proxy_set_header Cookie $http_cookie;
+    proxy_set_header Host $host;
+}
+location = /admin/publishing-desktop/websockify {
+    if ($http_origin != "https://example.com") { return 403; }
+    auth_request /_publishing_desktop_auth;
+    proxy_pass http://127.0.0.1:6086/websockify;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Cookie "";
+    proxy_read_timeout 900s;
+    proxy_send_timeout 900s;
+    add_header Cache-Control "no-store" always;
+}
+location ^~ /admin/publishing-desktop/ {
+    auth_request /_publishing_desktop_auth;
+    proxy_pass http://127.0.0.1:6086/;
+    proxy_set_header Cookie "";
+    add_header Cache-Control "no-store" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Content-Security-Policy "frame-ancestors 'self'" always;
+}

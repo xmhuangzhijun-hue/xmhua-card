@@ -787,3 +787,5 @@ textarea { resize: vertical; }
 .vp-confirm>.vp-card { width:min(520px,100%); }
 .vp-actions { justify-content:flex-end; margin-top:20px; }
 @media(max-width:760px) { .vp-columns { grid-template-columns:1fr; } .vp-heading { align-items:flex-start; } .vp-card { padding:18px; } .vp-job { flex-wrap:wrap; } .vp-device { flex-wrap:wrap; } }
+
+.vp-cloud-desktop { display:block; width:100%; height:min(76vh,900px); min-height:450px; border:1px solid var(--ac-line); border-radius:10px; margin-top:16px; background:#1b1b1b; }

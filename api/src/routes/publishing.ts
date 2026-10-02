@@ -35,6 +35,11 @@ async function tenantId(c: Context) {
   return tenant.id;
 }
 publishingAdminRoutes.get("/", async c => c.json({ data: await publishing.overview(await tenantId(c)) }));
+// Nginx checks this before remote-desktop HTTP/WebSocket handshakes.
+publishingAdminRoutes.get("/cloud-authorize", async c => {
+  if (!(await publishing.overview(await tenantId(c))).cloudWorkerId) throw notFound();
+  return c.body(null, 204);
+});
 publishingAdminRoutes.post("/workers", async c => {
   const body = await parseBody(c, z.object({ name: z.string().trim().min(1).max(60) }));
   return c.json({ data: await publishing.createWorker(await tenantId(c), body.name) }, 201);

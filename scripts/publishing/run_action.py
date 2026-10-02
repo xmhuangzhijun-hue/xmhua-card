@@ -35,6 +35,26 @@ def main():
     platform, kind = task["platform"], task["kind"]
     if platform not in {"xiaohongshu", "tencent", "douyin", "bilibili", "youtube"}:
         return 2
+    if os.environ.get("SAU_CLOUD") == "1":
+        # Normalize upstream channel names to one pinned cloud browser binary.
+        from patchright.async_api import BrowserType
+        launch = BrowserType.launch
+        async def cloud_launch(browser_type, **options):
+            options.pop("channel", None)
+            options["executable_path"] = os.environ["SAU_CHROME"]
+            options["args"] = [*options.get("args", []), "--disable-dev-shm-usage", "--window-size=1280,900"]
+            if platform == "youtube" and os.environ.get("SAU_YOUTUBE_PROXY"):
+                options["proxy"] = {"server": os.environ["SAU_YOUTUBE_PROXY"]}
+            browser = await launch(browser_type, **options)
+            new_context = browser.new_context
+            async def cloud_context(**context_options):
+                context = await new_context(**context_options)
+                # A cold browser on a small cloud host can exceed upstream's 30s navigation limit.
+                context.set_default_navigation_timeout(90000)
+                return context
+            browser.new_context = cloud_context
+            return browser
+        BrowserType.launch = cloud_launch
     args = [platform, "upload-video" if kind == "publish" else kind, "--account", "blog"]
     if kind == "login" and platform != "bilibili":
         args += ["--headed"]

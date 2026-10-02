@@ -1,0 +1,20 @@
+[Unit]
+Description=Blog private login desktop WebSocket
+After=xmhua-publishing-display.service
+Requires=xmhua-publishing-display.service
+
+[Service]
+User=xmhua-publisher
+Group=xmhua-publisher
+Environment=HOME=/var/lib/xmhua-publisher
+ExecStart=/opt/xmhua-publisher/venv/bin/websockify --web /opt/xmhua-publisher/novnc 127.0.0.1:6086 127.0.0.1:5906
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+MemoryMax=100M
+
+[Install]
+WantedBy=multi-user.target

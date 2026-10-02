@@ -1,5 +1,11 @@
 # Development log
 
+## 2026-10-02 — Move publishing execution into the cloud admin
+
+The owner required publishing to work without their Windows computer. Added a tenant-bound cloud worker selection, an embedded noVNC desktop protected by the existing administrator session and exact WebSocket Origin, and systemd templates using a dedicated private account. The adapter normalizes browser channels to a pinned executable, supports an existing YouTube-only proxy, and allows 90-second navigation on constrained cloud hosts. Linux task timeouts terminate the process group; completed publishing attempts release scratch video copies.
+
+The authorized deployment reused pinned social-auto-upload, noVNC, websockify, TigerVNC and Chromium. Existing Channels and Xiaohongshu sessions were transferred only after explicit consent. Channels validated immediately; Xiaohongshu first exceeded the upstream navigation budget, while a read-only browser probe reached its authenticated upload page. The bounded cloud navigation change then passed the real admin queue/worker/receipt path with the local helper stopped. An actual noVNC connection exposed a doubled relative WebSocket path; the deployed root-relative URL now connects. The local worker was revoked and its startup shortcut disabled. No social content was published. See reports/2026-10-02-cloud-publishing.md for evidence and remaining acceptance limits.
+
 ## 2026-10-02 — Make account login progress visible and deduplicate queued requests
 
 The owner saw the platform's authenticated creator page while the admin still said pending login. Read-only diagnosis found saved Xiaohongshu state and successful server receipts: opening the creator home precedes session validation/reporting, but the UI gave no intermediate feedback and accepted several repeated login clicks. Added queued/running labels, disabled repeat login/check actions while pending, and immediately applied the enqueue response. The API locks the worker row inside a transaction and suppresses pending login/check duplicates for each platform, including different request IDs and browser tabs.
