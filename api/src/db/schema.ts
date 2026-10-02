@@ -10,6 +10,32 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
+export type GomokuColor = 1 | 2;
+export type GomokuState = {
+  board: (0 | GomokuColor)[];
+  players: { black: { name: string }; white: { name: string } | null };
+  status: "waiting" | "playing" | "finished";
+  turn: GomokuColor;
+  winner: 0 | GomokuColor | null;
+  winningLine: number[];
+  moveCount: number;
+  lastMove: number | null;
+  round: number;
+  rematch: GomokuColor[];
+};
+
+/** Anonymous two-player rooms. Seat credentials are only persisted as hashes. */
+export const gomokuRooms = pgTable("gomoku_rooms", {
+  code: text("code").primaryKey(),
+  state: jsonb("state").$type<GomokuState>().notNull(),
+  version: integer("version").notNull().default(1),
+  /** Stable creation identity survives swapping the two playing colors. */
+  creatorTokenHash: text("creator_token_hash").notNull().unique(),
+  blackTokenHash: text("black_token_hash").notNull(),
+  whiteTokenHash: text("white_token_hash"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+}, table => [index("gomoku_rooms_expiry_idx").on(table.expiresAt)]);
+
 export const publishWorkers = pgTable("publish_workers", {
   id: text("id").primaryKey(), tenantId: integer("tenant_id").notNull().references(() => tenants.id),
   name: text("name").notNull(), tokenHash: text("token_hash").notNull().unique(),

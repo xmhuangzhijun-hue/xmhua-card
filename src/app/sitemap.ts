@@ -8,7 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const content = await getSiteContent();
   const reserved = new Set(["admin", "api", "internal", "preview"]);
   const paths = new Set([
-    "/", "/notes", "/work",
+    "/", "/notes", "/work", "/play/gomoku",
     ...content.pages.filter(page => !reserved.has(page.slug)).map(page => `/${encodeURIComponent(page.slug)}`),
     ...content.articles.filter(article => article.published).map(article => `/notes/${encodeURIComponent(article.slug)}`),
   ]);
