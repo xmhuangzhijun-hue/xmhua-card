@@ -1,0 +1,13 @@
+# Local publishing login handoff
+
+Read-only diagnosis confirmed that the administrator component had no QR surface, the adapter omitted supported upstream QR callbacks, and Biliup's interactive menu selected SMS by default. A running task therefore did not establish any visible scan opportunity. The previously queued tasks ended without successful Douyin/Bilibili/YouTube authentication.
+
+Added an authenticated, tenant-bound, memory-only login view with a 30-second delivery lease and a 64-view size cap. Worker QR images have a maximum age of two minutes, exclude earlier tasks, are restricted to PNG and a private source directory, and never enter persistent job history. Completion and inactive/offline workers suppress the view. The browser renders images directly, without Next image optimization. The worker still owns sessions and browser/upload execution locally; no cloud browser is enabled.
+
+Xiaohongshu, Channels and Douyin reuse upstream QR callbacks. Bilibili retains the existing upstream CLI and explicitly instructs the user to select QR login; its newly generated qrcode.png is displayed in the same panel. Google login and additional security verification remain in the local browser. Viewing progress cannot enqueue another task. No social content is published during verification.
+
+Verification: Python stale-image and callback tests pass. API tenant/ownership/expiry/completion checks, security regressions, Gomoku regressions, frontend lint/typecheck and the 70-page production build pass. The initial typecheck caught a possibly-undefined test lookup; it was corrected before release.
+
+The new web/API release was deployed after sequential candidate probes; the previously running Gomoku release remains the rollback target and was healthy immediately before the switch. Public admin and Gomoku returned HTTP 200. The idle local worker was restarted, and one Douyin login was initiated through the real authenticated administrator API. Its actual local browser supplied a 512x512 PNG through the upstream callback, the worker relay and the administrator response; OpenCV detected its QR pattern. No image or decoded challenge was logged or saved as a test artifact. Cloud execution remains disabled.
+
+User-confirmed authentication remains pending. Chrome extension access and the in-app browser both failed during GUI acceptance, so rendered layout, clicking the deployed panel, and mobile interaction are unverified. Bilibili still requires the owner to choose QR login in the existing local CLI window; this update does not claim one-click Bilibili authentication. No content was published. The source incorporates the existing Gomoku release rather than replacing it with the older video branch.

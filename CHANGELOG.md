@@ -286,3 +286,6 @@ Navigation and showcase cards gain translucent surfaces and soft light; reading 
 
 - Next.js 与 eslint-config-next 更新至 16.3.5，并更新兼容范围内的传递依赖补丁。
 - 前后端 npm audit 均为 0 项漏洞；保留现有内容、数据库和鉴权设置。
+## 2026-10-03
+
+- Add a local-publisher login panel with transient QR display and explicit browser/terminal handoff, without moving execution back to the server.
