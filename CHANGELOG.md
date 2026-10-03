@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-03 — 产品区新增泡泡堂联机重绘版
+
+- 首页产品区新增「泡泡堂 · 好友联机」，进入博客内 `/play/bubble-arena/`；开始菜单下方及游戏页底部提供 [GitHub 开源代码](https://github.com/xmhuangzhijun-hue/bubble-arena)。
+- 独立静态文件沿用现有站点服务，客户端支持 2–4 人对战、双人合作和本地游玩。使用重绘素材，无需 Flash。
+- 既有 8 个产品的所有字段及相对顺序、其他公开内容保留，当前共 9 个产品；既有前后端应用版本保留。
+- 新博客地址的浏览器显示与实际跨网络联机尚未复验：验收工具超时。此前双浏览器测试通过不等于本次公网体验验收。见 `reports/2026-10-03-bubble-product.md` 和 Issue #11。
+
+## 2026-10-03 — 作品展示新增在线五子棋
+
+- 首页及作品页新增五子棋入口，可创建房间、分享链接与朋友在线对弈，并支持观战和同机练习。
+- 服务端校验落子、轮次和胜负；刷新可恢复身份与棋局，支持认输及双方同意后换色再来一局。
+- 创建或加入时预存请求身份，响应丢失后可恢复原房间或座位；并发重试、抢座和重复落子已验证。
+- 已部署 `20261002T1556Z-gomoku`，两个独立 HTTP 客户端通过 41 项公网多人协议检查；原 7 个作品、56 篇公开笔记的全部字段和相对顺序保留，新增游戏后共 8 个作品。
+- GUI、手机布局及实际触摸操作尚未验收；浏览器自动化工具当时不可用。详情见 `reports/2026-10-02-gomoku.md`。
+
 ## 2026-10-02 晚间 — 发布执行切回本机
 
 - 按站长预算要求停用云端发布与桌面服务，网站后台入口保留。
@@ -278,3 +293,6 @@ Navigation and showcase cards gain translucent surfaces and soft light; reading 
 
 - Next.js 与 eslint-config-next 更新至 16.3.5，并更新兼容范围内的传递依赖补丁。
 - 前后端 npm audit 均为 0 项漏洞；保留现有内容、数据库和鉴权设置。
+## 2026-10-03
+
+- Add a local-publisher login panel with transient QR display and explicit browser/terminal handoff, without moving execution back to the server.

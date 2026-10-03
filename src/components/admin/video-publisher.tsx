@@ -8,7 +8,8 @@ const platforms = [{ id: "xiaohongshu", name: "小红书" }, { id: "tencent", na
 type Worker = { id: string; name: string; lastSeen: string | null; active: boolean; accounts: Record<string, { authenticated: boolean; checkedAt: string }> };
 type Asset = { id: string; name: string; size: number };
 type Job = { id: string; workerId: string; platform: string; kind: string; state: string; message: string; createdAt: string; updatedAt: string; payload: { title?: string } };
-type Overview = { workers: Worker[]; assets: Asset[]; jobs: Job[]; cloudWorkerId: string | null };
+type LoginView = { stage: "opening" | "qr" | "browser" | "terminal" | "verifying"; image?: string; expiresAt: number };
+type Overview = { workers: Worker[]; assets: Asset[]; jobs: Job[]; cloudWorkerId: string | null; loginViews?: Record<string, LoginView> };
 const messages: Record<string, string> = {
   WORKER_OFFLINE: "发布服务暂时离线，请稍后刷新。", ACCOUNT_CHECK_REQUIRED: "请先登录所选平台并检查登录状态。",
   XHS_TITLE_TOO_LONG: "小红书标题最多 20 个字，请缩短标题。", MP4_REQUIRED: "请选择 MP4 视频。", VIDEO_TOO_LARGE: "视频需小于 512 MB。",
@@ -41,6 +42,7 @@ export function VideoPublisher() {
   const [confirm, setConfirm] = useState(false);
   const [desktop, setDesktop] = useState(false);
   const desktopPanel = useRef<HTMLDivElement>(null);
+  const loginPanel = useRef<HTMLDivElement>(null);
   const requestId = useRef<string | null>(null);
   const reload = useCallback(async () => { try { setData(await call<Overview>()); } catch (e) { setError((e as Error).message); } }, []);
   useEffect(() => { const start = setTimeout(() => void reload(), 0); const timer = setInterval(() => void reload(), 5000); return () => { clearTimeout(start); clearInterval(timer); }; }, [reload]);
@@ -50,6 +52,11 @@ export function VideoPublisher() {
   const ready = (id: string) => Boolean(worker?.accounts[id]?.authenticated && Date.now() - Date.parse(worker.accounts[id].checkedAt) < 86400000);
   const asset = data?.assets.find(a => a.id === assetId);
   const pendingAccount = (id: string) => data?.jobs.find(job => job.workerId === worker?.id && job.platform === id && ["login", "check"].includes(job.kind) && ["queued", "running"].includes(job.state));
+  const loginJob = data?.jobs.find(job => job.workerId === worker?.id && job.kind === "login" && job.state === "running");
+  const loginView = loginJob ? data?.loginViews?.[loginJob.id] : undefined;
+  const currentView = online && loginView && loginView.expiresAt > Date.now() ? loginView : undefined;
+  const loginName = platforms.find(p => p.id === loginJob?.platform)?.name;
+  const queuedLogins = data?.jobs.filter(job => job.workerId === worker?.id && job.kind === "login" && job.state === "queued") ?? [];
 
   async function run(kind: string, targets: string[]) {
     if (!worker || busy) return;
@@ -62,6 +69,7 @@ export function VideoPublisher() {
         setDesktop(true);
         requestAnimationFrame(() => desktopPanel.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
       }
+      if (kind === "login" && !cloud) requestAnimationFrame(() => loginPanel.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
       setNotice(kind === "login" ? "登录任务已发送。扫码后还需保存并校验会话，请等账号显示「已登录」，不必重复点击。" : kind === "publish" ? "发布任务已创建，可以在下方跟踪各平台结果。" : "账号检查任务已提交，结果会自动更新。");
       await reload();
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
@@ -88,6 +96,19 @@ export function VideoPublisher() {
     {notice && <p className="vp-message" role="status">{notice}</p>}
     <div className="vp-device"><Monitor size={20} /><div><strong>{worker?.name ?? "尚未连接发布服务"}</strong><p>{online ? cloud ? "云端在线 · 上传后关掉电脑，任务仍会继续执行" : "在线 · 登录和上传在这台电脑上执行" : cloud ? "云端服务暂时离线，正在等待恢复。" : "启动本地发布助手后，这里会自动连接。发布时请保持电脑在线。"}</p></div><span className={online ? "vp-status is-online" : "vp-status"}>{online ? "已连接" : "未连接"}</span>{(data?.workers.filter(w => w.active).length ?? 0) > 1 && <select aria-label="发布电脑" value={worker?.id ?? ""} onChange={e => { setWorkerId(e.target.value); resetRequest(); }}>{data?.workers.filter(w => w.active).map(w => <option value={w.id} key={w.id}>{w.name}</option>)}</select>}</div>
     {cloud && <div className="vp-card" ref={desktopPanel}><div className="vp-heading"><div><h2>云端登录窗口</h2><p>账号验证直接在这里完成，登录状态保存在云端。关闭窗口不会停止任务。</p></div><button className="ac-button" onClick={() => setDesktop(!desktop)}>{desktop ? "收起窗口" : "打开窗口"}</button></div>{desktop && <iframe className="vp-cloud-desktop" title="云端平台登录" src="/admin/publishing-desktop/vnc.html?autoconnect=true&resize=scale&path=/admin/publishing-desktop/websockify" />}</div>}
+    {!cloud && <div className="vp-card" ref={loginPanel} aria-label="扫码与账号鉴权">
+      <h2>扫码与账号鉴权{loginName ? ` · ${loginName}` : ""}</h2>
+      {!loginJob ? <p className="vp-muted">点击下方平台的「扫码 / 登录」开始。二维码准备好后会显示在这里；登录会话和发布执行保留在本机。</p> : <>
+        <p role="status">{!online ? "本机助手离线，二维码已隐藏。请恢复连接后再试。" : currentView?.stage === "qr" ? `用${loginName} App 扫码，并在手机上确认登录。` : currentView?.stage === "verifying" ? "正在保存并校验登录状态，请稍候。" : loginJob.platform === "bilibili" ? "请在本机弹出的 B 站登录窗口，用方向键选择「扫码登录」并按回车。生成的二维码会显示在这里。" : loginJob.platform === "youtube" ? "YouTube 使用 Google 登录。请在本机弹出的浏览器中完成账号验证，这里不提供通用扫码登录。" : "正在等待平台二维码。若本机浏览器提示短信或安全验证，请在那个窗口完成。"}</p>
+        {currentView?.stage === "qr" && currentView.image && <div className="flex justify-center py-4">
+          {/* Ephemeral authenticated image; never send login challenges through an image optimizer. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={currentView.image} alt={`${loginName}登录二维码`} width={256} height={256} className="h-64 w-64 rounded-lg bg-white object-contain p-3" />
+        </div>}
+        <p className="vp-muted">显示「已登录」才算完成。二维码未出现或已过期时，请查看本机登录窗口；本次任务结束后可重新发起。</p>
+      </>}
+      {!!queuedLogins.length && <p className="vp-muted">等待当前任务结束：{queuedLogins.map(job => platforms.find(p => p.id === job.platform)?.name).join("、")}。可在下方任务记录取消排队。</p>}
+    </div>}
     <div className="vp-columns"><div className="vp-card"><h2>1. 视频与文案</h2>
       <label className="vp-upload"><Upload size={25} /><strong>{progress !== null ? `上传中 ${progress}%` : asset?.name ?? "选择一个视频"}</strong><span>{asset ? `${(asset.size / 1024 / 1024).toFixed(1)} MB · 点击更换` : "MP4 · 最大 512 MB"}</span><input aria-label="选择视频" type="file" accept=".mp4,video/mp4" disabled={progress !== null || busy} onChange={e => { const file = e.target.files?.[0]; if (file) void upload(file); }} /></label>
       {!!data?.assets.length && <label>已上传的视频<select value={assetId} onChange={e => { setAssetId(e.target.value); resetRequest(); }}><option value="">选择视频</option>{data.assets.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></label>}
@@ -95,7 +116,7 @@ export function VideoPublisher() {
       <label>简介<textarea rows={4} maxLength={1000} value={description} onChange={e => { setDescription(e.target.value); resetRequest(); }} placeholder="补充视频介绍" /></label>
       <label>话题<input value={tags} onChange={e => { setTags(e.target.value); resetRequest(); }} placeholder="用逗号分隔，如 AI,产品,创作" /></label>
     </div><div className="vp-card"><h2>2. 发布到哪些平台</h2><p className="vp-muted">{cloud ? "首次分别登录，后续复用云端登录状态。点击登录后，在云端窗口扫码或验证。" : "首次分别登录，后续复用登录状态。登录窗口会在发布电脑上打开。"}</p>
-      <div className="vp-platforms">{platforms.map(p => { const pending = pendingAccount(p.id); return <div key={p.id} className="vp-platform"><label><input type="checkbox" checked={selected.includes(p.id)} onChange={e => { setSelected(e.target.checked ? [...selected, p.id] : selected.filter(id => id !== p.id)); resetRequest(); }} /><strong>{p.name}</strong><span aria-live="polite">{pending ? pending.state === "queued" ? "已排队" : pending.kind === "login" ? "登录 / 校验中" : "检查中" : ready(p.id) ? "已登录" : "待登录 / 检查"}</span></label><button className="ac-button" disabled={!online || busy || !!pending} onClick={() => { resetRequest(); void run("login", [p.id]); }}>{pending ? "处理中" : ready(p.id) ? "重新登录" : "登录"}</button></div>; })}</div>
+      <div className="vp-platforms">{platforms.map(p => { const pending = pendingAccount(p.id); return <div key={p.id} className="vp-platform"><label><input type="checkbox" checked={selected.includes(p.id)} onChange={e => { setSelected(e.target.checked ? [...selected, p.id] : selected.filter(id => id !== p.id)); resetRequest(); }} /><strong>{p.name}</strong><span aria-live="polite">{pending ? pending.state === "queued" ? "已排队" : pending.kind === "login" ? "等待鉴权 / 校验" : "检查中" : ready(p.id) ? "已登录" : "待登录 / 检查"}</span></label><button className="ac-button" disabled={!online || busy || (pending?.kind === "check")} onClick={() => { if (pending) { (cloud ? desktopPanel : loginPanel).current?.scrollIntoView({ behavior: "smooth", block: "center" }); if (cloud) setDesktop(true); return; } resetRequest(); void run("login", [p.id]); }}>{pending ? "查看进度" : ready(p.id) ? "重新登录" : "扫码 / 登录"}</button></div>; })}</div>
       <button className="ac-button" disabled={!online || busy || platforms.some(p => !!pendingAccount(p.id))} onClick={() => { resetRequest(); void run("check", platforms.map(p => p.id)); }}><RefreshCw size={14} />检查全部账号</button>
       <p className="vp-muted">扫码进入平台后，还需自动保存并校验登录状态；显示「已登录」才算连接完成。任务依次执行，其他平台可能需要排队。</p>
       {selected.includes("bilibili") && <label>B站分区 ID<input type="number" min={1} max={9999} value={category} onChange={e => { setCategory(Number(e.target.value)); resetRequest(); }} /><small>默认 249；请按视频内容填写创作中心对应分区。</small></label>}

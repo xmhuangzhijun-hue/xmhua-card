@@ -33,6 +33,10 @@ def main():
     from loguru import logger
     logger.remove()  # Upstream diagnostic messages may contain session data.
     platform, kind = task["platform"], task["kind"]
+    if kind == "login":
+        from login_view import install_callbacks, write_view
+        write_view(private, "terminal" if platform == "bilibili" else "browser")
+        install_callbacks(sau_cli, private)
     if platform not in {"xiaohongshu", "tencent", "douyin", "bilibili", "youtube"}:
         return 2
     if os.environ.get("SAU_CLOUD") == "1":

@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 import uuid
 
 import requests
+from login_view import read_view
 
 PLATFORMS = {"xiaohongshu", "tencent", "douyin", "bilibili", "youtube"}
 
@@ -39,8 +40,8 @@ class Worker:
         self.pending = self.state / "pending-job.json"
         self.stop = threading.Event()
 
-    def post(self, path, body=None):
-        response = requests.post(self.base + "/api/publishing-worker" + path, json=body or {}, headers=self.headers, timeout=30, allow_redirects=False)
+    def post(self, path, body=None, timeout=30):
+        response = requests.post(self.base + "/api/publishing-worker" + path, json=body or {}, headers=self.headers, timeout=timeout, allow_redirects=False)
         if response.status_code == 409 and path.endswith("/report"):
             return None  # Receipt already persisted; never repeat the action.
         response.raise_for_status()
@@ -111,9 +112,25 @@ class Worker:
         kwargs = {"creationflags": subprocess.CREATE_NEW_CONSOLE} if interactive else {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "stdin": subprocess.DEVNULL}
         if os.name != "nt":
             kwargs["start_new_session"] = True
+        started = time.time()
         process = subprocess.Popen(command, cwd=self.state, env=child_env, **kwargs)
         try:
-            code = process.wait(timeout=2400 if kind == "publish" else 600)
+            deadline = time.monotonic() + (2400 if kind == "publish" else 600)
+            last_view, last_sent = None, 0
+            while process.poll() is None:
+                if time.monotonic() >= deadline:
+                    raise subprocess.TimeoutExpired(command, 600)
+                if kind == "login":
+                    try:
+                        view = read_view(self.state, platform, started)
+                        if view != last_view or time.monotonic() - last_sent >= 12:
+                            self.post("/jobs/" + str(uuid.UUID(job["id"])) + "/login-view", view, timeout=5)
+                            last_view, last_sent = view, time.monotonic()
+                    except (requests.RequestException, ValueError, OSError):
+                        # QR delivery failure must not discard an actual login or replay it.
+                        time.sleep(2)
+                time.sleep(1)
+            code = process.returncode
         except subprocess.TimeoutExpired:
             if os.name == "nt":
                 subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

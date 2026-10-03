@@ -22,6 +22,29 @@ export const reportInput = z.object({
 });
 export const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
 
+// Ephemeral login UI only: never persist QR challenges or put them in job history.
+export const loginViewInput = z.object({
+  stage: z.enum(["opening", "qr", "browser", "terminal", "verifying"]),
+  image: z.string().max(350000).regex(/^data:image\/png;base64,[A-Za-z0-9+/]+=*$/).optional(),
+}).strict();
+type LoginView = z.infer<typeof loginViewInput> & { expiresAt: number };
+const loginViews = new Map<string, LoginView>();
+function pruneLoginViews() {
+  for (const [id, view] of loginViews) if (view.expiresAt <= Date.now()) loginViews.delete(id);
+}
+export async function updateLoginView(workerId: string, id: string, input: z.infer<typeof loginViewInput>) {
+  const [job] = await getDatabase().select().from(publishJobs).where(and(eq(publishJobs.id, id), eq(publishJobs.workerId, workerId), eq(publishJobs.kind, "login"), eq(publishJobs.state, "running")));
+  if (!job) throw notFound();
+  if (input.stage === "qr") {
+    const bytes = Buffer.from((input.image ?? "").split(",")[1] ?? "", "base64");
+    if (!bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) throw conflict("INVALID_LOGIN_IMAGE");
+  } else if (input.image) throw conflict("INVALID_LOGIN_IMAGE");
+  pruneLoginViews();
+  if (!loginViews.has(id) && loginViews.size >= 64) throw conflict("LOGIN_VIEW_BUSY");
+  loginViews.set(id, { ...input, expiresAt: Date.now() + 30000 });
+  return { ok: true };
+}
+
 export async function createWorker(tenantId: number, name: string) {
   const token = randomBytes(32).toString("hex");
   const id = randomUUID();
@@ -44,7 +67,12 @@ export async function overview(tenantId: number) {
     db.select({ id: publishAssets.id, name: publishAssets.name, size: publishAssets.size, createdAt: publishAssets.createdAt }).from(publishAssets).where(eq(publishAssets.tenantId, tenantId)).orderBy(desc(publishAssets.createdAt)).limit(50),
   ]);
   const cloudWorkerId = workers.find(worker => worker.active && worker.id === process.env.PUBLISHING_CLOUD_WORKER_ID)?.id ?? null;
-  return { workers, jobs, assets, cloudWorkerId };
+  pruneLoginViews();
+  const views = Object.fromEntries(jobs.filter(job => job.kind === "login" && job.state === "running" && workers.some(w => w.id === job.workerId && w.active && w.lastSeen && Date.now() - w.lastSeen.getTime() < 45000)).flatMap(job => {
+    const view = loginViews.get(job.id);
+    return view ? [[job.id, view]] : [];
+  }));
+  return { workers, jobs, assets, cloudWorkerId, loginViews: views };
 }
 
 export async function enqueue(tenantId: number, input: z.infer<typeof jobInput>) {
@@ -97,6 +125,7 @@ export async function report(workerId: string, id: string, result: z.infer<typeo
   return db.transaction(async tx => {
     const [job] = await tx.update(publishJobs).set({ state: result.state, message: result.message, updatedAt: new Date() }).where(and(eq(publishJobs.id, id), eq(publishJobs.workerId, workerId), eq(publishJobs.state, "running"))).returning();
     if (!job) throw conflict("JOB_NOT_RUNNING");
+    loginViews.delete(id);
     if (typeof result.authenticated === "boolean") {
       const update = JSON.stringify({ [job.platform]: { authenticated: result.authenticated, checkedAt: new Date().toISOString() } });
       await tx.update(publishWorkers).set({ accounts: sql`${publishWorkers.accounts} || ${update}::jsonb` }).where(eq(publishWorkers.id, workerId));

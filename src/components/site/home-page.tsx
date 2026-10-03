@@ -63,7 +63,7 @@ export function HomePage({ content }: { content: SiteContent }) {
                 {isLiveHref(product.href) && (
                   <div className="product-card__actions">
                     <a className="text-action product-card__button" href={product.href}>
-                      {ui.productStoreLabel} <ArrowRight size={15} />
+                      {product.href === "/play/gomoku" ? "开始对弈" : ui.productStoreLabel} <ArrowRight size={15} />
                     </a>
                   </div>
                 )}
