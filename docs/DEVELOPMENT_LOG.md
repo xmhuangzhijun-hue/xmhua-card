@@ -1,5 +1,13 @@
 # Development log
 
+## 2026-10-03 — Blog-hosted Bubble Arena and public source
+
+Issue #11, milestone Browser games portfolio. The owner requested a playable Bubble Arena entry in the homepage products and a corresponding open-source link. Published an independent static game under `/play/bubble-arena/` and appended CMS product 15; its start menu and footer link to `xmhuangzhijun-hue/bubble-arena`. Keeping this delivery static avoids another persistent process or a rebuild on the constrained host. The existing Next/Hono release, work-case page, video publishing and Gomoku remain unchanged.
+
+The clean game repository starts at root commit `8213f0f3dddfabebc62375c3253bdf6e31179f4d`, with MIT terms and the upstream Phaser/PeerJS licenses. No original SWF, extracted original assets, private history, deployment credentials or machine-specific reports were copied. The redacted secret scan and twelve game-core tests passed. CMS readback verifies every previous product field/order and all other public content. Public resource hashes are checked against the uploaded archive, and committed textual sources are compared after Windows line-ending normalization.
+
+The public content/API and game URLs are verified by HTTP. Browser inventory reported a transport failure and creating the supported in-app tab timed out; GUI display and connection across separate physical networks remain unverified. Earlier two-browser localhost gameplay evidence is retained as a narrower layer. Reversal uses the retained exact previous Nginx configuration and unpublishing only product 15; the backup bytes were checked, but an actual production rollback was not exercised. This documentation PR does not merge the protected default branch. See `reports/2026-10-03-bubble-product.md`.
+
 ## 2026-10-02 — Restore local execution under the existing server budget
 
 The owner chose local video execution to preserve resources for existing cloud services and avoid additional server cost. Registered a fresh local worker without reactivating revoked credentials, reused the original private platform sessions, restored the existing guarded Windows launcher and login-startup entry, then revoked the cloud worker and disabled all three cloud publisher/desktop units. No website release or database migration was needed: the existing UI selects the only active worker and the API now returns no cloud worker.
