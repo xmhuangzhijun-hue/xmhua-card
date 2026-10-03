@@ -157,6 +157,8 @@ class Worker:
         else:
             import fcntl
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        # Record the actual lock-holding process, including Windows venv wrappers.
+        (self.state / "worker.pid").write_text(str(os.getpid()), encoding="ascii")
         threading.Thread(target=self.heartbeat, daemon=True).start()
         print("Publishing worker started", flush=True)
         recovered = False
