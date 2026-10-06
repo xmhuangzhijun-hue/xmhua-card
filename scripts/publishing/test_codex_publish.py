@@ -6,12 +6,32 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 import codex_publish as cli
 
 
 class PublishEntryTests(unittest.TestCase):
+    def test_stale_channels_check_stops_before_asset_upload_and_job_write(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            video = root / "video.mp4"
+            video.write_bytes(b"\x00\x00\x00\x18ftypmp42")
+            plan = root / "plan.json"
+            plan.write_text(json.dumps({"requestId": str(uuid.uuid4()), "file": str(video), "platforms": ["tencent"], "title": "test", "original": True}))
+            config = root / "config.json"
+            config.write_text(json.dumps({"privateDir": d, "id": str(uuid.uuid4())}))
+            args = ["cli", "--config", str(config), "--admin-secret-file", "unused", "--username", "test", "publish", "--plan", str(plan), "--confirm-publish"]
+            with patch("sys.argv", args), patch.object(cli, "Client") as factory:
+                client = factory.return_value
+                checked = (datetime.now(timezone.utc) - timedelta(hours=9)).isoformat()
+                client.status.return_value = ({"accounts": {"tencent": {"authenticated": True, "checkedAt": checked}}}, [])
+                client.wait_online.return_value = client.status.return_value
+                with self.assertRaises(cli.AccountCheckRequired):
+                    cli.main()
+                client.session.post.assert_not_called()
+                client.api.assert_not_called()
+
     def test_preview_never_authenticates_or_publishes(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)

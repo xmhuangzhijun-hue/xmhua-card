@@ -19,6 +19,33 @@ import requests
 PLATFORMS = {"xiaohongshu", "tencent", "douyin", "bilibili", "youtube"}
 
 
+class AccountCheckRequired(ValueError):
+    def __init__(self, platform):
+        super().__init__("Account check required")
+        self.platform = platform
+
+
+def account_state(platform, account, jobs, now=None):
+    """Cached success is not proof of a live session, especially after a failed job."""
+    if not account.get("authenticated"):
+        return "not_verified"
+    now = now or datetime.now(timezone.utc)
+    try:
+        checked = datetime.fromisoformat(account["checkedAt"].replace("Z", "+00:00"))
+        age = (now - checked).total_seconds()
+        # Channels has rejected a same-day saved session. Demand a fresh check at use.
+        if not 0 <= age < (300 if platform == "tencent" else 86400):
+            return "needs_check"
+        for job in jobs:
+            if job.get("platform") == platform and job.get("state") in ("needs_attention", "failed"):
+                failed = datetime.fromisoformat(job["updatedAt"].replace("Z", "+00:00"))
+                if failed >= checked:
+                    return "needs_check"
+    except (KeyError, TypeError, ValueError):
+        return "needs_check"
+    return "ready"
+
+
 @contextmanager
 def request_lock(directory, request_id):
     """One caller per request, so concurrent agents cannot overwrite its receipt."""
@@ -170,9 +197,8 @@ def main():
             # Fail before uploading if any platform lacks a recent successful check.
             for platform in plan["platforms"]:
                 account = worker["accounts"].get(platform, {})
-                age = (datetime.now(timezone.utc) - datetime.fromisoformat(account.get("checkedAt", "1970-01-01T00:00:00+00:00").replace("Z", "+00:00"))).total_seconds()
-                if not account.get("authenticated") or age >= 86400:
-                    raise ValueError("Run account check first; authenticate only if the saved session fails")
+                if account_state(platform, account, jobs) != "ready":
+                    raise AccountCheckRequired(platform)
             if "assetId" not in record:
                 with Path(plan["file"]).open("rb") as stream:
                     response = client.session.post(client.site + "/api/admin/publishing/assets", data=stream, headers={"Content-Type": "video/mp4", "X-File-Name": quote(Path(plan["file"]).name)}, timeout=300, allow_redirects=False)
@@ -203,6 +229,10 @@ def main():
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
+    except AccountCheckRequired as error:
+        print(json.dumps({"error": "ACCOUNT_CHECK_REQUIRED", "platform": error.platform,
+                          "guidance": "Run publisher_check_accounts for this platform. Log in only if the check fails; no video was uploaded by this attempt."}))
+        raise SystemExit(2)
     except Exception as error:
         print(f"Publisher stopped ({type(error).__name__}). Inspect status before retrying; no automatic publication replay.", file=sys.stderr)
         raise SystemExit(2)

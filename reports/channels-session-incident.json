@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "incident_id": "INC-20261007-001",
+  "project": "XMHUA 对外名片",
+  "summary": "视频号重复不确定发布，当前会话被拒绝且错误原因丢失",
+  "status": "diagnosing",
+  "risk_level": "medium",
+  "actors": {
+    "diagnoser": "codex",
+    "executor": "codex",
+    "resolver": "codex",
+    "verifier": "codex"
+  },
+  "phase_separation": {
+    "diagnosis_ref": "reports/2026-10-07-channels-session.md#observed-before-changes",
+    "execution_ref": "reports/2026-10-07-channels-session.md#local-changes",
+    "verification_ref": "reports/2026-10-07-channels-session.md#verification-and-limits",
+    "verifier_read_only": true
+  },
+  "recurrence": {
+    "state": "not_seen",
+    "count": 0,
+    "user_report_after_resolution": false
+  },
+  "acceptance_contract": {
+    "original_input": "视频号发布返回上传未确认完成",
+    "observable_failure": "保存会话跳回登录页，历史检查仍显示ready，失败细节被丢弃",
+    "expected_outcome": "明确提示需要检查会话，保存脱敏阶段；恢复登录后只读核对内容；不重复提交不确定发布",
+    "required_path": [
+      "MCP",
+      "local adapter",
+      "saved session",
+      "platform receipt"
+    ],
+    "forbidden_side_effects": [
+      "duplicate publication",
+      "secret disclosure",
+      "cloud resource changes"
+    ]
+  },
+  "attempts": [],
+  "rejected_hypotheses": [],
+  "evidence": [
+    "reports/2026-10-07-channels-session.md",
+    "reports/channels-session-experience.md",
+    "reports/channels-session-guardrail.md"
+  ],
+  "trust_profile": {
+    "symptom_resolution": "low",
+    "root_cause": "medium",
+    "contract_coverage": "low",
+    "non_recurrence": "low"
+  },
+  "stop_loss": {
+    "failed_attempts": 0,
+    "threshold": 3,
+    "user_visible_recurrence": false,
+    "triggered": false
+  }
+}

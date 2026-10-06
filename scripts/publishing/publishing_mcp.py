@@ -14,7 +14,7 @@ import uuid
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
-from codex_publish import Client, PLATFORMS, request_lock, validate_plan
+from codex_publish import Client, PLATFORMS, request_lock, validate_plan, account_state
 from deletion_manager import Deletions
 
 
@@ -52,11 +52,11 @@ class Publisher:
             authenticated = account.get("authenticated", False)
             accounts[name] = {
                 "lastCheckPassed": authenticated, "checkedAt": checked,
-                "state": "ready" if authenticated and age(checked) < 86400 else "needs_check" if authenticated else "not_verified",
+                "state": account_state(name, account, jobs, now),
             }
         return {"online": worker["active"] and age(worker.get("lastSeen")) < 45,
                 "accounts": accounts, "pending": self.safe_jobs(jobs, pending_only=True),
-                "guidance": "needs_check is not expired authorization. Check saved sessions before login. Keep this computer online for execution."}
+                "guidance": "Account values are cached checks, not a live session guarantee. Channels checks must be under 5 minutes old; later failed jobs require rechecking. needs_check is not proof of expiry. Check saved sessions before login."}
 
     @staticmethod
     def safe_jobs(jobs, pending_only=False):
@@ -69,7 +69,13 @@ class Publisher:
         with self.client() as client:
             _, jobs = client.status()
         found = [j for j in jobs if not request_id or j["requestId"] == request_id]
-        return {"jobs": self.safe_jobs(found[:30]), "guidance": "submitted is not proof of public visibility. Missing or uncertain receipts must be inspected, never blindly resubmitted."}
+        result = self.safe_jobs(found[:30])
+        from action_diagnostics import read_diagnostic
+        for job in result:
+            detail = read_diagnostic(Path(self.config["privateDir"]), job["id"])
+            if detail:
+                job["diagnostic"] = detail
+        return {"jobs": result, "guidance": "submitted is not proof of public visibility. Missing or uncertain receipts must be inspected, never blindly resubmitted."}
 
     def command(self, command, *extra):
         args = [sys.executable, str(Path(__file__).with_name("codex_publish.py")),
@@ -83,13 +89,18 @@ class Publisher:
         except subprocess.TimeoutExpired:
             return {"state": "unknown", "guidance": "Inspect publisher_jobs before any retry. A timeout does not mean the request failed."}
         receipts = []
+        problem = {}
         for line in result.stdout.splitlines():
             try:
                 item = json.loads(line)
                 if isinstance(item, list):
                     receipts = item
+                elif isinstance(item, dict) and item.get("error") == "ACCOUNT_CHECK_REQUIRED" and item.get("platform") in PLATFORMS:
+                    problem = {"error": "ACCOUNT_CHECK_REQUIRED", "platform": item["platform"]}
             except ValueError:
                 pass
+        if problem:
+            return {"state": "needs_check", **problem, "guidance": "先调用 publisher_check_accounts 检查该平台；检查失败再登录。本次未上传或排队发布视频。"}
         return {"state": "completed" if result.returncode == 0 else "pending" if result.returncode == 3 else "needs_attention",
                 "jobs": receipts, "guidance": "Use publisher_jobs for final receipts. Do not create a new plan to retry an uncertain publication."}
 

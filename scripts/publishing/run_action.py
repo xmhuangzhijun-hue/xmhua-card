@@ -69,7 +69,13 @@ def main():
             args += ["--tid", str(int(payload.get("category", 249)))]
         else:
             args += ["--headed"]
-    code = sau_cli.main(args)
+    if platform == "tencent" and kind == "publish":
+        from action_diagnostics import Diagnostics
+        diagnostics = Diagnostics(private)
+        diagnostics.install_channels(sau_cli)
+        code = diagnostics.dispatch(sau_cli, args)
+    else:
+        code = sau_cli.main(args)
     if kind == "login" and code == 0:
         code = sau_cli.main([platform, "check", "--account", "blog"])
     return code

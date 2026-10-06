@@ -1,5 +1,9 @@
 # Development log
 
+## 2026-10-07 — Channels session freshness and failure diagnostics
+
+Read-only saved-session navigation redirected to login despite a cached successful check. Original publication failure phase is unknown: upstream output was discarded. Added fresh-check gating before asset upload, failure-aware cached status, actionable MCP errors and private allowlisted phase receipts. 32 regression tests pass; actual upstream wrapper installation verified. Existing uncertain requests retained without replay. Login recovery ended with a negative account check; owner authentication and platform draft/content readback remain pending. No cloud resource changes. See reports/2026-10-07-channels-session.md, including the audit-gate sequencing defect.
+
 ## 2026-10-06 — Douyin deletion tools for local MCP
 
 The owner requested deletion and selected Douyin first. Added owned-video listing, an exact-ID/account-bound deletion preview, approved deletion, and local receipt inspection. The existing private session and installed Patchright runtime are reused; endpoint research references pinned OpenCLI with attribution. One POST only, no positional UI deletion or fallback; a durable per-video attempt record prevents replay across plan IDs. Complete authenticated list reads and unchanged owner/caption are required. Platform errors or unreadable results cannot be reported as deletion success.

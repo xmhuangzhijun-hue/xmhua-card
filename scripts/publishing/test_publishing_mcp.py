@@ -4,11 +4,20 @@ import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
+from types import SimpleNamespace
 
 from publishing_mcp import Publisher
 
 
 class MCPPublishingTests(unittest.TestCase):
+    def test_cli_check_required_is_actionable_and_drops_untrusted_output(self):
+        result = SimpleNamespace(returncode=2, stdout=json.dumps({"error": "ACCOUNT_CHECK_REQUIRED", "platform": "tencent", "secret": "hidden"}))
+        with patch("publishing_mcp.subprocess.run", return_value=result):
+            reply = self.publisher.command("publish")
+        self.assertEqual(reply["state"], "needs_check")
+        self.assertEqual(reply["platform"], "tencent")
+        self.assertNotIn("hidden", json.dumps(reply))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

@@ -49,3 +49,9 @@ Deletion runs locally on demand using the existing upstream `.venv` and saved se
 `deleted` requires a successful platform response and an authenticated, complete-list readback with the same account. `unknown`/`needs_attention` means inspect, not retry. A later `observation.state=absent` alone does not claim this tool caused removal. The adapter rejects malformed responses, incomplete pagination, rounded numeric IDs and changed target metadata. It uses the browser-authenticated API documented in [OpenCLI's implementation](https://github.com/jackwener/opencli/blob/24136945847afbfad266c6c46a8cd335377f9112/clis/douyin/delete.js); platform endpoint changes can still require maintenance.
 
 Validation: real account/list reads and standard MCP tool discovery passed, plus isolated deletion/authorization/no-replay tests. No actual platform deletion request was sent to validate this feature; live destructive acceptance remains unverified until the user authorizes a specific work.
+
+## Channels failures and saved-session freshness
+
+Channels cached success must be less than five minutes old; other platforms retain the existing one-day check window. A later failed task invalidates earlier success. This freshness window is a local safeguard, not a platform cookie lifetime. `needs_check` means check the saved session first, not automatic re-login. `ACCOUNT_CHECK_REQUIRED` stops before this attempt uploads its asset or queues publication.
+
+After reloading the MCP connection, `publisher_jobs` includes available private diagnostic phase/code/time fields for new Channels publish attempts. Phases distinguish session check, editor opening, file upload, form fill, upload wait and submission; they do not prove public visibility. Historical attempts without diagnostics stay unknown. The worker loads the wrapper in its next child; no worker restart is needed. Never re-upload an uncertain historical video until content/drafts have been read on the platform.

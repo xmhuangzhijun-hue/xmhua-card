@@ -1,0 +1,16 @@
+{
+  "original_input": "视频号发布返回上传未确认完成",
+  "observable_failure": "保存会话跳回登录页，历史检查仍显示ready，失败细节被丢弃",
+  "expected_outcome": "明确提示需要检查会话，保存脱敏阶段；恢复登录后只读核对内容；不重复提交不确定发布",
+  "required_path": [
+    "MCP",
+    "local adapter",
+    "saved session",
+    "platform receipt"
+  ],
+  "forbidden_side_effects": [
+    "duplicate publication",
+    "secret disclosure",
+    "cloud resource changes"
+  ]
+}
