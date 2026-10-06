@@ -42,9 +42,9 @@ async function loadNote(slug: string) {
 export async function generateMetadata({ params }: NotePageProps): Promise<Metadata> {
   try {
     const loaded = await loadNote((await params).slug);
-    if (!loaded) return { title: "笔记未找到 | 黄智军" };
+    if (!loaded) return { title: "笔记未找到 | 夏末" };
     return {
-      title: `${loaded.article.title} | 黄智军`,
+      title: `${loaded.article.title} | 夏末`,
       description: stripInlineMarkdown(loaded.article.excerpt),
       alternates: { canonical: absoluteUrl(`/notes/${loaded.article.slug}`) },
       authors: [{ name: loaded.content.site.brandName, url: absoluteUrl("/about") }],
@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: NotePageProps): Promise<Metad
       },
     };
   } catch (error) {
-    if (error instanceof ContentUnavailableError) return { title: "笔记 | 黄智军" };
+    if (error instanceof ContentUnavailableError) return { title: "笔记 | 夏末" };
     throw error;
   }
 }

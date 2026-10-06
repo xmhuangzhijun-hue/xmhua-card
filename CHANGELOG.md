@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 未发布
 
+### 变更
+
+- 对外展示名统一为夏末；同步页面标题、后台入口与 XM 标识，保留现有网址和账号标识。
+
 ### 新增
 
 - React Bits 动效（待验收、未上线）：Waves 流动波纹、GradientText 渐变文字、StarBorder 游走光边；修正笔记导航搜索按钮宽度与间距。
