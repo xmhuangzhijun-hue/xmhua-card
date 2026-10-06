@@ -1,5 +1,11 @@
 # Development log
 
+## 2026-10-06 — Local publishing MCP for Codex
+
+The owner requested a direct MCP connection for publishing. Added six tools using the already-available official Python MCP SDK, wrapping the existing API client and CLI instead of replacing platform adapters. Preview stores a private plan and file digest without network access; publication requires authorization of that exact plan and reuses the existing locked, non-replaying journal. Status distinguishes old successful checks from invalid/missing sessions. Credentials and QR challenges are excluded from tool responses.
+
+Six facade tests plus the existing two CLI and two QR tests passed. A real stdio MCP client discovered six tools, verified the default publication gate, and read live account status using the registered Codex configuration. Codex lists the server as enabled. Natural host use still requires loading the new connection; no actual social publication was performed. No dependency installation, cloud release, browser-worker restart or ongoing-login interruption occurred. See reports/2026-10-06-publishing-mcp.md, including the configuration comparison limitation and removal path.
+
 ## 2026-10-02 — Restore local execution under the existing server budget
 
 The owner chose local video execution to preserve resources for existing cloud services and avoid additional server cost. Registered a fresh local worker without reactivating revoked credentials, reused the original private platform sessions, restored the existing guarded Windows launcher and login-startup entry, then revoked the cloud worker and disabled all three cloud publisher/desktop units. No website release or database migration was needed: the existing UI selects the only active worker and the API now returns no cloud worker.
