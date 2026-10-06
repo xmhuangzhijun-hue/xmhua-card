@@ -39,8 +39,8 @@ async function loadPage(slug: string) {
 
 export async function generateMetadata({ params }: StandalonePageProps): Promise<Metadata> {
   const page = await loadPage((await params).slug);
-  if (!page) return { title: "页面未找到 | 黄智军" };
-  return pageMetadata(`${page.title} | 黄智军`, page.description, `/${page.slug}`);
+  if (!page) return { title: "页面未找到 | 夏末" };
+  return pageMetadata(`${page.title} | 夏末`, page.description, `/${page.slug}`);
 }
 
 export default async function StandalonePage({ params }: StandalonePageProps) {

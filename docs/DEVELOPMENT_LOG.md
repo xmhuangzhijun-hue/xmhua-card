@@ -507,3 +507,8 @@ Resolved the two baseline lint blockers: reading progress no longer stores an un
 With user approval, upgraded Next.js and eslint-config-next from 16.3.0 to 16.3.5 and refreshed compatible transitive patches with npm audit fix (no force). Installation used an isolated directory; the shared checkout dependencies were preserved. Both frontend and API audits report zero vulnerabilities; API lockfile remained unchanged. Lint, both typechecks, security regressions and GitHub snapshot/storage regressions passed. Production build, browser acceptance and required GitHub checks are tracked in reports/2026-09-12-security-release.md before deployment.
 
 The first upgraded CI run (34689842204) passed both dependency audits and all regressions, then revealed malformed pre-existing Waves CSS (`var()` without a custom-property name) under Turbopack. Restored `--x` / `--y` with fallbacks to match the component's existing mouse-coordinate updates. The previous local webpack build did not catch the parse error; subsequent validation uses the default CI bundler.
+
+
+## 2026-10-06 — Public display name
+
+The owner selected 夏末 as the public display name. Update hardcoded route metadata, admin/login branding and the fallback XM mark. Public CMS settings and the about page are managed separately through the existing API. URLs, account identifiers and content are unchanged. Source changes await required review and deployment; no claim of full site release. Validation is recorded in reports/2026-10-06-xiamo-brand.md.

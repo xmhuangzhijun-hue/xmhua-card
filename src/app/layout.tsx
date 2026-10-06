@@ -12,7 +12,7 @@ import "./constellation.css";
 import "./github-status.css";
 
 export const metadata: Metadata = {
-  title: { default: "黄智军", template: "%s" },
+  title: { default: "夏末", template: "%s" },
   description: "AI 产品、Agent、数据工具与长期构建记录。",
 };
 
