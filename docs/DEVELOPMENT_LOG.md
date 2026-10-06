@@ -1,5 +1,11 @@
 # Development log
 
+## 2026-10-06 — Douyin deletion tools for local MCP
+
+The owner requested deletion and selected Douyin first. Added owned-video listing, an exact-ID/account-bound deletion preview, approved deletion, and local receipt inspection. The existing private session and installed Patchright runtime are reused; endpoint research references pinned OpenCLI with attribution. One POST only, no positional UI deletion or fallback; a durable per-video attempt record prevents replay across plan IDs. Complete authenticated list reads and unchanged owner/caption are required. Platform errors or unreadable results cannot be reported as deletion success.
+
+Twenty-four tests passed including the original publication/QR tests. Real MCP discovery returns ten tools; unapproved deletion is refused, and live read-only account/list reads succeed. During investigation a local confirmation popover was opened with all subsequent browser network blocked; no confirmation was clicked and no deletion POST sent. A later list changed from one work to empty, cause unconfirmed, and was not attributed to this feature. Actual destructive acceptance is explicitly unverified. No cloud code, services, credentials, dependency installation or Codex config changes. See reports/2026-10-06-douyin-delete-mcp.md.
+
 ## 2026-10-06 — Local publishing MCP for Codex
 
 The owner requested a direct MCP connection for publishing. Added six tools using the already-available official Python MCP SDK, wrapping the existing API client and CLI instead of replacing platform adapters. Preview stores a private plan and file digest without network access; publication requires authorization of that exact plan and reuses the existing locked, non-replaying journal. Status distinguishes old successful checks from invalid/missing sessions. Credentials and QR challenges are excluded from tool responses.

@@ -15,6 +15,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
 from codex_publish import Client, PLATFORMS, request_lock, validate_plan
+from deletion_manager import Deletions
 
 
 def digest_file(path):
@@ -28,6 +29,7 @@ class Publisher:
         self.config = json.loads(self.config_file.read_text(encoding="utf-8-sig"))
         self.username, self.secret_file = username, str(Path(secret_file).resolve())
         self.plans = Path(self.config["privateDir"]) / "mcp-plans"
+        self.deletions = Deletions(self.config_file, self.config)
 
     @contextmanager
     def client(self):
@@ -137,6 +139,8 @@ def create_server(publisher):
         "Operate the owner's local video publisher. First use publisher_status; needs_check means refresh the saved session, not log in again. "
         "Prepare the user's specific video/text/platforms before publishing. Call publisher_publish only when the user has authorized that exact content and destinations. "
         "Reuse planId on interruption; inspect jobs, never blind retry with a new plan. Never solve security challenges or expose cookies. submitted is not verified public visibility."
+        " Deletion currently supports Douyin only: list owned videos, prepare one exact videoId, then delete only with specific user authorization. "
+        "Deletion is permanent. Do not infer deletion consent from adding/testing this capability. Read publisher_delete_status on uncertain outcomes; never repeat the write."
     ))
     read = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=True)
     write = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=True)
@@ -181,6 +185,26 @@ def create_server(publisher):
     def publisher_jobs(request_id: str = "") -> dict:
         """Read up to 30 recent task receipts, optionally filtered by plan/request UUID. Read-only; submitted still needs platform verification."""
         return safe(publisher.jobs, request_id)
+
+    @server.tool(annotations=read)
+    def publisher_list_videos(platform: Literal["douyin"] = "douyin") -> dict:
+        """Read owned Douyin works using the existing saved login. Returns exact string IDs, captions and account. No deletion; other platforms are not supported yet."""
+        return safe(publisher.deletions.videos, platform)
+
+    @server.tool(annotations=write)
+    def publisher_prepare_delete(video_id: str, platform: Literal["douyin"] = "douyin") -> dict:
+        """Read and save a 15-minute preview for one exact owned video ID. No deletion. Show account, caption and ID to resolve the user's intended target; never select by list position."""
+        return safe(publisher.deletions.prepare, platform, video_id)
+
+    @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=True))
+    def publisher_delete_video(plan_id: str, approved: bool = False) -> dict:
+        """Permanently delete the exact previewed Douyin video, only under specific user authorization. Default refuses. Revalidates owner/content, allows one attempt per video, and never retries unknown outcomes. Does not delete local files or other platforms."""
+        return safe(publisher.deletions.execute, plan_id, approved)
+
+    @server.tool(annotations=read)
+    def publisher_delete_status(plan_id: str, refresh: bool = False) -> dict:
+        """Read the durable deletion receipt. refresh=true also reads the current platform state without submitting deletion. Absent alone does not prove this tool deleted the work. Cloud publisher_jobs does not contain local deletions."""
+        return safe(publisher.deletions.status, plan_id, refresh)
 
     return server
 

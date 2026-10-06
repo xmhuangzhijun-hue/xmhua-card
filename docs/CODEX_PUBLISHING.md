@@ -29,7 +29,23 @@ Register it with `codex mcp add blog_publisher -- /absolute/path/to/python -B /a
 | `publisher_prepare_video` | Validate the explicit local MP4 and content, save a private immutable preview plan with a file hash; no upload. |
 | `publisher_publish` | With user-authorized `approved=true`, upload and submit the prepared plan. Retain its plan ID for uncertain outcomes. |
 | `publisher_jobs` | Read recent task receipts or filter by plan/request ID. |
+| `publisher_list_videos` | Read the authenticated owner's Douyin works and exact string IDs. |
+| `publisher_prepare_delete` | Read one exact Douyin ID and save an account-bound, 15-minute deletion preview. No deletion. |
+| `publisher_delete_video` | With specific user authorization (`approved=true`), recheck the target and attempt one permanent removal. |
+| `publisher_delete_status` | Read a local deletion receipt; `refresh=true` also checks current platform state without another write. |
 
 The host agent interprets the user's intent and authorization. The tool's boolean approval parameter is a guard against accidental default execution, not independent proof of human consent. The user can authorize concrete content and destinations in the original instruction; do not ask them to repeat that authorization. A new preview ID is not permission to retry an uncertain upload. The tool never reports platform moderation or public visibility as proven merely because an uploader exited successfully.
 
 Suggested prompt: “Use blog_publisher to prepare this MP4 for Xiaohongshu and Bilibili with the following title and description. I own the publication rights. Show me the preview.” After concrete publication authorization, the agent can submit that exact plan and read its receipts. Account verification and CAPTCHA remain user actions when platforms require them.
+
+## Douyin deletion
+
+Only Douyin is supported for deletion. Ask the agent to list your works, identify the exact caption/account/video ID, and prepare a deletion preview. Deletion authorization must refer to that concrete work; adding or testing this feature is not authorization to remove content. Local source files, blog entries and copies on other platforms remain untouched.
+
+Deletion runs locally on demand using the existing upstream `.venv` and saved session. No cloud job type, server deployment, extension, installation, service or configuration change is needed. Restart the MCP connection to discover the four new tools. The browser is temporary and does not overwrite saved cookies.
+
+`mcp-deletions` under the registered private directory holds plans and receipts. The receipt is durably recorded before the child starts, keyed by platform/video ID, so even a new plan cannot automatically replay a timeout or interrupted deletion. Preflight errors also stop for inspection. Do not remove the receipt to retry without diagnosing the original attempt. `publisher_jobs` covers cloud publication/login jobs; use `publisher_delete_status` for these local deletions.
+
+`deleted` requires a successful platform response and an authenticated, complete-list readback with the same account. `unknown`/`needs_attention` means inspect, not retry. A later `observation.state=absent` alone does not claim this tool caused removal. The adapter rejects malformed responses, incomplete pagination, rounded numeric IDs and changed target metadata. It uses the browser-authenticated API documented in [OpenCLI's implementation](https://github.com/jackwener/opencli/blob/24136945847afbfad266c6c46a8cd335377f9112/clis/douyin/delete.js); platform endpoint changes can still require maintenance.
+
+Validation: real account/list reads and standard MCP tool discovery passed, plus isolated deletion/authorization/no-replay tests. No actual platform deletion request was sent to validate this feature; live destructive acceptance remains unverified until the user authorizes a specific work.
