@@ -1,5 +1,11 @@
 # Development log
 
+## 2026-10-07 — Positive Channels authentication and saved-state refresh
+
+The owner reported an authenticated assistant window while later MCP checks failed. The previous check treated absence of a login redirect within eight seconds as success and never saved refreshed browser state; a later successful login receipt still left the old file untouched. Added a narrow local adapter requiring authenticated homepage/editor controls, rejecting blank shells and login pages, and atomically preserving refreshed cookies/storage including IndexedDB. Pinned upstream is unchanged.
+
+40 regression tests pass. The old saved state failed the stricter real check. After the owner's new scan, login completed and two separate worker checks successfully reopened and refreshed the saved session without another scan, including a check over seven minutes after the preceding save. Overnight/reboot persistence and actual publication are unverified; see reports/2026-10-07-channels-refresh.md. No upload, publication, dependency installation, worker restart or cloud resource change.
+
 ## 2026-10-07 — Restore publishing backend after disk exhaustion
 
 Owner reported HTTP 500 before publishing. Reproduced admin login 500 while homepage/health were 200; database connection refused and root disk full. With explicit approval, removed three verified old temporary backup files and started PostgreSQL. Actual MCP status/jobs recovered, worker online; historical jobs preserved. No public upload or cloud resource increase. Added safe status/operation-aware backend errors and failed-login session cleanup; 35 tests pass. Disk still has limited headroom and retention is not fixed. A second actual-host failure left spawned command Python idle until 420 seconds. Replaced the command subprocess with the same CLI core using explicit argv/output; fresh stdio MCP queued real account checks in 4.65 seconds, ten tools retained. Desktop connection reload is required. See reports/2026-10-07-backend-500.md for live queue acceptance and limits.

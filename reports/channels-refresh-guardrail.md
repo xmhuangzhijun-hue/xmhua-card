@@ -1,0 +1,2 @@
+# Guardrails
+Regression tests in scripts/publishing/test_channels_session.py reject blank shells and QR/login pages; require positive same-origin page evidence; verify atomic refreshed state and preservation on storage failure. Existing no-repeat publication tests remain. Real checks must succeed in separate worker child processes without re-scanning before session reuse is claimed. Old submit-stage unknown outcomes are retained; no automatic re-upload.
