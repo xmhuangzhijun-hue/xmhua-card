@@ -7,11 +7,30 @@ import unittest
 from unittest.mock import patch
 import uuid
 from datetime import datetime, timezone, timedelta
+from types import SimpleNamespace
 
 import codex_publish as cli
 
 
 class PublishEntryTests(unittest.TestCase):
+    def test_failed_admin_login_stops_before_any_upload_and_closes_connection(self):
+        with tempfile.TemporaryDirectory() as d:
+            secret = Path(d) / 'secret.txt'
+            secret.write_text('fictional-test-password')
+            response = SimpleNamespace(ok=False, is_redirect=False, status_code=500, text='private database details')
+            with patch.object(cli.requests, 'Session') as factory:
+                session = factory.return_value
+                session.post.return_value = response
+                with self.assertRaises(cli.BackendHTTPError) as failure:
+                    cli.Client({'site': 'https://example.invalid'}, 'test', secret)
+                self.assertEqual(session.post.call_count, 1)
+                session.request.assert_not_called()
+                session.close.assert_called_once()
+                receipt = failure.exception.receipt()
+                self.assertEqual(receipt['httpStatus'], 500)
+                self.assertEqual(receipt['operation'], 'admin_login')
+                self.assertNotIn('private database', json.dumps(receipt))
+
     def test_stale_channels_check_stops_before_asset_upload_and_job_write(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)

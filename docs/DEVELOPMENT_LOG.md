@@ -1,5 +1,9 @@
 # Development log
 
+## 2026-10-07 — Restore publishing backend after disk exhaustion
+
+Owner reported HTTP 500 before publishing. Reproduced admin login 500 while homepage/health were 200; database connection refused and root disk full. With explicit approval, removed three verified old temporary backup files and started PostgreSQL. Actual MCP status/jobs recovered, worker online; historical jobs preserved. No public upload or cloud resource increase. Added safe status/operation-aware backend errors and failed-login session cleanup; 35 tests pass. Disk still has limited headroom and retention is not fixed. A second actual-host failure left spawned command Python idle until 420 seconds. Replaced the command subprocess with the same CLI core using explicit argv/output; fresh stdio MCP queued real account checks in 4.65 seconds, ten tools retained. Desktop connection reload is required. See reports/2026-10-07-backend-500.md for live queue acceptance and limits.
+
 ## 2026-10-07 — Channels session freshness and failure diagnostics
 
 Read-only saved-session navigation redirected to login despite a cached successful check. Original publication failure phase is unknown: upstream output was discarded. Added fresh-check gating before asset upload, failure-aware cached status, actionable MCP errors and private allowlisted phase receipts. 32 regression tests pass; actual upstream wrapper installation verified. Existing uncertain requests retained without replay. Login recovery ended with a negative account check; owner authentication and platform draft/content readback remain pending. No cloud resource changes. See reports/2026-10-07-channels-session.md, including the audit-gate sequencing defect.

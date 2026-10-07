@@ -4,17 +4,14 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 import hashlib
 import json
-import os
 from pathlib import Path
-import subprocess
-import sys
 from typing import Literal
 import uuid
 
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
-from codex_publish import Client, PLATFORMS, request_lock, validate_plan, account_state
+from codex_publish import Client, PLATFORMS, request_lock, validate_plan, account_state, BackendHTTPError, AccountCheckRequired, main as cli_main
 from deletion_manager import Deletions
 
 
@@ -78,30 +75,28 @@ class Publisher:
         return {"jobs": result, "guidance": "submitted is not proof of public visibility. Missing or uncertain receipts must be inspected, never blindly resubmitted."}
 
     def command(self, command, *extra):
-        args = [sys.executable, str(Path(__file__).with_name("codex_publish.py")),
-                "--config", str(self.config_file), "--username", self.username,
+        # Reuse the CLI core in this process. On the actual Windows MCP host,
+        # spawned Python stayed idle before networking until the 420-second timeout.
+        # Explicit argv/output avoid global sys.argv or stdout mutation across tools.
+        args = ["--config", str(self.config_file), "--username", self.username,
                 "--admin-secret-file", self.secret_file, command, "--wait", "0", *extra]
-        # No shell, no cookie values, and no CLI output can contaminate MCP stdout.
-        try:
-            result = subprocess.run(args, capture_output=True, encoding="utf-8", errors="replace",
-                                    timeout=420, env=dict(os.environ, PYTHONIOENCODING="utf-8"),
-                                    **({"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}))
-        except subprocess.TimeoutExpired:
-            return {"state": "unknown", "guidance": "Inspect publisher_jobs before any retry. A timeout does not mean the request failed."}
         receipts = []
-        problem = {}
-        for line in result.stdout.splitlines():
+        def collect(line, **kwargs):
+            nonlocal receipts
             try:
                 item = json.loads(line)
                 if isinstance(item, list):
                     receipts = item
-                elif isinstance(item, dict) and item.get("error") == "ACCOUNT_CHECK_REQUIRED" and item.get("platform") in PLATFORMS:
-                    problem = {"error": "ACCOUNT_CHECK_REQUIRED", "platform": item["platform"]}
             except ValueError:
                 pass
-        if problem:
-            return {"state": "needs_check", **problem, "guidance": "先调用 publisher_check_accounts 检查该平台；检查失败再登录。本次未上传或排队发布视频。"}
-        return {"state": "completed" if result.returncode == 0 else "pending" if result.returncode == 3 else "needs_attention",
+        try:
+            code = cli_main(args, emit=collect)
+        except AccountCheckRequired as error:
+            return {"state": "needs_check", "error": "ACCOUNT_CHECK_REQUIRED", "platform": error.platform,
+                    "guidance": "先调用 publisher_check_accounts 检查该平台；检查失败再登录。本次未上传或排队发布视频。"}
+        except BackendHTTPError as error:
+            return {"state": "needs_attention", **error.receipt()}
+        return {"state": "completed" if code == 0 else "pending" if code == 3 else "needs_attention",
                 "jobs": receipts, "guidance": "Use publisher_jobs for final receipts. Do not create a new plan to retry an uncertain publication."}
 
     def account(self, kind, platforms):
@@ -163,6 +158,8 @@ def create_server(publisher):
             return fn(*args)
         except ValueError:
             return {"error": "VALIDATION_FAILED", "guidance": "Check input, exact-plan authorization, file changes and pending jobs before retrying."}
+        except BackendHTTPError as exc:
+            return exc.receipt()
         except Exception as exc:
             return {"error": type(exc).__name__, "guidance": "Inspect publisher_status and publisher_jobs; do not replay an uncertain write."}
 

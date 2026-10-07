@@ -55,3 +55,9 @@ Validation: real account/list reads and standard MCP tool discovery passed, plus
 Channels cached success must be less than five minutes old; other platforms retain the existing one-day check window. A later failed task invalidates earlier success. This freshness window is a local safeguard, not a platform cookie lifetime. `needs_check` means check the saved session first, not automatic re-login. `ACCOUNT_CHECK_REQUIRED` stops before this attempt uploads its asset or queues publication.
 
 After reloading the MCP connection, `publisher_jobs` includes available private diagnostic phase/code/time fields for new Channels publish attempts. Phases distinguish session check, editor opening, file upload, form fill, upload wait and submission; they do not prove public visibility. Historical attempts without diagnostics stay unknown. The worker loads the wrapper in its next child; no worker restart is needed. Never re-upload an uncertain historical video until content/drafts have been read on the platform.
+
+## Backend HTTP failures
+
+`BACKEND_HTTP_ERROR` reports an HTTP status and safe operation name. An `admin_login` failure is upstream of asset upload or queue creation; inspect the shared blog backend and database before changing social account sessions. For `asset_upload` or `job_submit`, read the original plan/receipts before retrying: an error response does not prove no side effect. The public homepage or shallow health endpoint alone does not prove the database is available. No raw server error body is exposed.
+
+MCP command tools invoke the same CLI core in-process with explicit argument/output injection; they do not spawn a second Python. Reload the MCP connection after this change. The public worker remains separate and performs browser actions as before; no queue or publication journal semantics changed.

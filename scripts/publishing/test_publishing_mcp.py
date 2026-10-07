@@ -1,18 +1,47 @@
 import json
+import contextlib
+import io
+import sys
 from pathlib import Path
 import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
-from types import SimpleNamespace
+from codex_publish import BackendHTTPError, AccountCheckRequired
 
 from publishing_mcp import Publisher
 
 
 class MCPPublishingTests(unittest.TestCase):
+    def test_account_queue_uses_cli_core_without_child_or_stdout_mutation(self):
+        self.publisher.config_file.write_text(json.dumps({'privateDir':str(self.root),'id':'worker-test'}))
+        argv = list(sys.argv)
+        with patch('codex_publish.Client') as factory, patch('subprocess.Popen', side_effect=AssertionError('no child permitted')), contextlib.redirect_stdout(io.StringIO()) as output:
+            client = factory.return_value
+            client.status.return_value = ({'accounts':{}}, [])
+            client.wait_online.return_value = client.status.return_value
+            def wait(request_id, seconds):
+                client.emit(json.dumps([{'id':'test-job','state':'queued'}]), flush=True)
+                return 3
+            client.wait.side_effect = wait
+            result = self.publisher.account('check', ['bilibili'])
+        self.assertEqual(result['state'], 'pending')
+        self.assertEqual(result['jobs'][0]['id'], 'test-job')
+        self.assertEqual(output.getvalue(), '')
+        self.assertEqual(sys.argv, argv)
+        self.assertEqual(client.api.call_args.args[1]['kind'], 'check')
+        self.assertEqual(client.api.call_count, 1)
+
+    def test_backend_failure_keeps_stage_and_status_without_private_body(self):
+        with patch('publishing_mcp.cli_main', side_effect=BackendHTTPError(500, 'admin_login')):
+            reply = self.publisher.command('publish')
+        self.assertEqual(reply['state'], 'needs_attention')
+        self.assertEqual(reply['httpStatus'], 500)
+        self.assertEqual(reply['operation'], 'admin_login')
+        self.assertNotIn('hidden', json.dumps(reply))
+
     def test_cli_check_required_is_actionable_and_drops_untrusted_output(self):
-        result = SimpleNamespace(returncode=2, stdout=json.dumps({"error": "ACCOUNT_CHECK_REQUIRED", "platform": "tencent", "secret": "hidden"}))
-        with patch("publishing_mcp.subprocess.run", return_value=result):
+        with patch("publishing_mcp.cli_main", side_effect=AccountCheckRequired("tencent")):
             reply = self.publisher.command("publish")
         self.assertEqual(reply["state"], "needs_check")
         self.assertEqual(reply["platform"], "tencent")

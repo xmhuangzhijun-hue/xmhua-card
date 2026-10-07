@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "incident_id": "INC-20261007-034",
+  "project": "XMHUA 对外名片",
+  "summary": "数据库恢复与新MCP链路通过，当前桌面旧连接待重载",
+  "status": "e2e_pending",
+  "risk_level": "high",
+  "actors": {
+    "diagnoser": "codex",
+    "executor": "codex",
+    "resolver": "codex",
+    "verifier": "codex"
+  },
+  "phase_separation": {
+    "diagnosis_ref": "reports/2026-10-07-backend-500.md#diagnosis-before-change",
+    "execution_ref": "reports/2026-10-07-backend-500.md#approved-recovery",
+    "verification_ref": "reports/2026-10-07-backend-500.md#live-queue-verification",
+    "verifier_read_only": true
+  },
+  "recurrence": {
+    "state": "not_seen",
+    "count": 0,
+    "user_report_after_resolution": false
+  },
+  "acceptance_contract": {
+    "original_input": "发布MCP后台返回HTTP500，所有平台尚未提交",
+    "observable_failure": "admin_login HTTP500; saved MCP status RuntimeError; root filesystem 100 percent; PostgreSQL failed and API database connection refused",
+    "expected_outcome": "approved temporary-file cleanup and database recovery, then actual MCP status/jobs and no-op preview verified; preserve unknown publications",
+    "required_path": [
+      "MCP",
+      "admin login",
+      "PostgreSQL",
+      "publisher overview",
+      "local worker"
+    ],
+    "forbidden_side_effects": [
+      "duplicate publication",
+      "delete live databases",
+      "paid resource increase",
+      "secret disclosure"
+    ]
+  },
+  "attempts": [],
+  "rejected_hypotheses": [],
+  "evidence": [
+    "admin_login=500",
+    "disk_available=0",
+    "postgresql_failed=ECONNREFUSED",
+    "three-temporary-snapshots-have-no-open-process",
+    "owner-approved-cleanup-and-database-start",
+    "request-1f299040-three-completed-valid-accounts"
+  ],
+  "trust_profile": {
+    "symptom_resolution": "high",
+    "root_cause": "high",
+    "contract_coverage": "medium",
+    "non_recurrence": "low"
+  },
+  "stop_loss": {
+    "failed_attempts": 0,
+    "threshold": 3,
+    "user_visible_recurrence": false,
+    "triggered": false
+  }
+}

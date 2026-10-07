@@ -19,6 +19,18 @@ import requests
 PLATFORMS = {"xiaohongshu", "tencent", "douyin", "bilibili", "youtube"}
 
 
+class BackendHTTPError(RuntimeError):
+    """Safe transport evidence; never include response text, cookies or URLs."""
+    def __init__(self, status, operation):
+        self.status = int(status)
+        self.operation = operation
+        super().__init__(f"Publishing backend HTTP {self.status} during {operation}")
+
+    def receipt(self):
+        return {"error": "BACKEND_HTTP_ERROR", "httpStatus": self.status, "operation": self.operation,
+                "guidance": "统一发布后台请求失败。先恢复后台并检查原计划/任务回执；不要重复发布，也不要因此重新登录各个平台。"}
+
+
 class AccountCheckRequired(ValueError):
     def __init__(self, platform):
         super().__init__("Account check required")
@@ -87,24 +99,29 @@ def validate_plan(plan):
 
 class Client:
     def __init__(self, config, username, password_file):
+        self.emit = print
         self.config = config
         self.site = config["site"].rstrip("/")
         if urlparse(self.site).scheme != "https":
             raise ValueError("HTTPS required")
         self.session = requests.Session()
         response = self.session.post(self.site + "/api/auth/login", json={"username": username, "password": Path(password_file).read_text(encoding="utf-8").strip()}, timeout=30, allow_redirects=False)
-        self.unpack(response)
+        try:
+            self.unpack(response, "admin_login")
+        except Exception:
+            self.session.close()
+            raise
 
     @staticmethod
-    def unpack(response):
+    def unpack(response, operation="publishing_read"):
         if not response.ok or response.is_redirect:
             # Do not print request/response bodies; they can contain account details.
-            raise RuntimeError(f"Blog API returned HTTP {response.status_code}")
+            raise BackendHTTPError(response.status_code, operation)
         return response.json().get("data")
 
     def api(self, suffix="", body=None):
         url = self.site + "/api/admin/publishing" + suffix
-        return self.unpack(self.session.request("GET" if body is None else "POST", url, json=body, timeout=40, allow_redirects=False))
+        return self.unpack(self.session.request("GET" if body is None else "POST", url, json=body, timeout=40, allow_redirects=False), "job_submit" if body is not None else "publishing_read")
 
     def close(self):
         try:
@@ -135,7 +152,7 @@ class Client:
             matching = [j for j in jobs if j["requestId"] == request_id]
             result = [{k: j[k] for k in ("id", "platform", "kind", "state", "message")} for j in matching]
             if result != previous:
-                print(json.dumps(result, ensure_ascii=False), flush=True)
+                self.emit(json.dumps(result, ensure_ascii=False), flush=True)
                 previous = result
             if matching and all(j["state"] not in ("queued", "running") for j in matching):
                 ok = all(j["state"] in ("completed", "submitted") for j in matching)
@@ -146,7 +163,7 @@ class Client:
             time.sleep(5)
 
 
-def main():
+def main(argv=None, emit=print):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, help="Registered private worker config")
     parser.add_argument("--admin-secret-file", required=True, help="Registered admin password file")
@@ -156,14 +173,14 @@ def main():
     parser.add_argument("--plan", help="JSON publication plan with stable requestId")
     parser.add_argument("--confirm-publish", action="store_true")
     parser.add_argument("--wait", type=int, default=600)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     plan = None
     if args.command == "publish":
         if not args.plan:
             parser.error("publish requires --plan")
         plan = validate_plan(json.loads(Path(args.plan).read_text(encoding="utf-8-sig")))
         if not args.confirm_publish:
-            print(json.dumps({"previewOnly": True, "requestId": plan["requestId"], "file": Path(plan["file"]).name, "title": plan["title"], "platforms": plan["platforms"]}, ensure_ascii=False))
+            emit(json.dumps({"previewOnly": True, "requestId": plan["requestId"], "file": Path(plan["file"]).name, "title": plan["title"], "platforms": plan["platforms"]}, ensure_ascii=False))
             return 0
     if args.command in ("check", "login") and not args.platforms:
         parser.error("choose platforms explicitly")
@@ -175,9 +192,10 @@ def main():
     client = None
     try:
         client = Client(config, args.username, args.admin_secret_file)
+        client.emit = emit
         worker, jobs = client.status()
         if args.command == "status":
-            print(json.dumps({"active": worker["active"], "lastSeen": worker["lastSeen"], "accounts": worker["accounts"], "pending": [{k: j[k] for k in ("id", "platform", "kind", "state")} for j in jobs if j["state"] in ("queued", "running")]}, ensure_ascii=False))
+            emit(json.dumps({"active": worker["active"], "lastSeen": worker["lastSeen"], "accounts": worker["accounts"], "pending": [{k: j[k] for k in ("id", "platform", "kind", "state")} for j in jobs if j["state"] in ("queued", "running")]}, ensure_ascii=False))
             return 0
         worker, jobs = client.wait_online()
         if plan:
@@ -202,7 +220,7 @@ def main():
             if "assetId" not in record:
                 with Path(plan["file"]).open("rb") as stream:
                     response = client.session.post(client.site + "/api/admin/publishing/assets", data=stream, headers={"Content-Type": "video/mp4", "X-File-Name": quote(Path(plan["file"]).name)}, timeout=300, allow_redirects=False)
-                record["assetId"] = client.unpack(response)["id"]
+                record["assetId"] = client.unpack(response, "asset_upload")["id"]
             def save_record():
                 temp = record_path.with_suffix(".tmp")
                 temp.write_text(json.dumps(record), encoding="utf-8")
@@ -232,6 +250,9 @@ if __name__ == "__main__":
     except AccountCheckRequired as error:
         print(json.dumps({"error": "ACCOUNT_CHECK_REQUIRED", "platform": error.platform,
                           "guidance": "Run publisher_check_accounts for this platform. Log in only if the check fails; no video was uploaded by this attempt."}))
+        raise SystemExit(2)
+    except BackendHTTPError as error:
+        print(json.dumps(error.receipt(), ensure_ascii=False))
         raise SystemExit(2)
     except Exception as error:
         print(f"Publisher stopped ({type(error).__name__}). Inspect status before retrying; no automatic publication replay.", file=sys.stderr)
