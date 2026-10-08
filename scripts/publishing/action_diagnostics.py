@@ -4,9 +4,12 @@ import json
 from pathlib import Path
 import time
 import uuid
+from channels_submission import ChannelsSubmissionError
 
-PHASES = {"starting", "session_check", "open_editor", "upload_file", "fill_form", "wait_upload", "submit", "finished"}
-CODES = {"running", "completed", "session_check_failed", "upstream_failed"}
+PHASES = {"starting", "session_check", "open_editor", "upload_file", "fill_form", "wait_upload", "submit", "finished",
+          "verification", "fill_title", "fill_description", "short_title"}
+CODES = {"running", "completed", "session_check_failed", "upstream_failed", "verification_timeout",
+         "submit_not_ready", "submit_unconfirmed"}
 
 
 def read_diagnostic(private, job_id):
@@ -51,11 +54,26 @@ class Diagnostics:
             return result
         cli.tencent_setup = setup
         from uploader.tencent_uploader.main import TencentBaseUploader, TencentVideo
+        verification = TencentBaseUploader.wait_for_realtime_verification
+        async def verify(*args, **kwargs):
+            previous_phase = self.phase
+            self.record(phase="verification")
+            try:
+                result = await verification(*args, **kwargs)
+            except TimeoutError:
+                self.record("verification_timeout")
+                raise
+            self.record(phase=previous_phase)
+            return result
+        TencentBaseUploader.wait_for_realtime_verification = verify
         for cls, name, phase in [
             (TencentBaseUploader, "validate_base_args", "session_check"),
             (TencentBaseUploader, "open_upload_page", "open_editor"),
             (TencentBaseUploader, "upload_video_file", "upload_file"),
             (TencentVideo, "prepare_video_for_publish", "fill_form"),
+            (TencentBaseUploader, "fill_title_and_tags", "fill_title"),
+            (TencentBaseUploader, "fill_description", "fill_description"),
+            (TencentBaseUploader, "set_short_title", "short_title"),
             (TencentBaseUploader, "wait_for_upload_complete", "wait_upload"),
             (TencentBaseUploader, "submit_publish", "submit"),
         ]:
@@ -73,11 +91,14 @@ class Diagnostics:
                 self.record("completed", "finished")
             else:
                 previous = read_diagnostic(self.private, self.job_id)
-                if not previous or previous["code"] != "session_check_failed":
+                if not previous or previous["code"] in {"running", "completed"}:
                     self.record("upstream_failed")
             return result
+        except ChannelsSubmissionError as exc:
+            self.record(exc.code if exc.code in CODES else "upstream_failed")
+            return 1
         except Exception:
             previous = read_diagnostic(self.private, self.job_id)
-            if not previous or previous["code"] != "session_check_failed":
+            if not previous or previous["code"] in {"running", "completed"}:
                 self.record("upstream_failed")
             return 1

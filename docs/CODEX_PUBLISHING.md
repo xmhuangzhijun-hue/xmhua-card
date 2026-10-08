@@ -58,6 +58,8 @@ After reloading the MCP connection, `publisher_jobs` includes available private 
 
 ## Backend HTTP failures
 
+Channels publication now reports `verification_timeout`, `submit_not_ready` and `submit_unconfirmed`. Publishing identity verification is distinct from login. The local adapter preserves dialogs and clicks once, requiring a matching title in the content list; this is not proof of public approval or a unique platform ID. Reload existing MCP connections for the extended diagnostic allowlist. Worker children load the wrapper without restart. Read existing works/drafts before any new attempt.
+
 `BACKEND_HTTP_ERROR` reports an HTTP status and safe operation name. An `admin_login` failure is upstream of asset upload or queue creation; inspect the shared blog backend and database before changing social account sessions. For `asset_upload` or `job_submit`, read the original plan/receipts before retrying: an error response does not prove no side effect. The public homepage or shallow health endpoint alone does not prove the database is available. No raw server error body is exposed.
 
 MCP command tools invoke the same CLI core in-process with explicit argument/output injection; they do not spawn a second Python. Reload the MCP connection after this change. The public worker remains separate and performs browser actions as before; no queue or publication journal semantics changed.

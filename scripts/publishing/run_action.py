@@ -73,6 +73,8 @@ def main():
         else:
             args += ["--headed"]
     if platform == "tencent" and kind == "publish":
+        from channels_submission import install as install_submission
+        install_submission()
         from action_diagnostics import Diagnostics
         diagnostics = Diagnostics(private)
         diagnostics.install_channels(sau_cli)

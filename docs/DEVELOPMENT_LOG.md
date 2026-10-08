@@ -1,5 +1,9 @@
 # Development log
 
+## 2026-10-08 — Channels publication recurrence and single-submit guard
+
+Later login checks passed while publications failed at form/submit and one was interrupted. Read-only diagnosis found upstream retries/overlay removal; local adapter now preserves dialogs, clicks once and requires matching content-list evidence. Diagnostics separate verification from form fields and retain specific codes. 49 tests and pinned-upstream binding pass. Browser site-safety policy blocked live inspection; no workaround or re-upload. Platform cause and actual recovery remain open. See reports/2026-10-08-channels-publication.md.
+
 ## 2026-10-07 — Positive Channels authentication and saved-state refresh
 
 The owner reported an authenticated assistant window while later MCP checks failed. The previous check treated absence of a login redirect within eight seconds as success and never saved refreshed browser state; a later successful login receipt still left the old file untouched. Added a narrow local adapter requiring authenticated homepage/editor controls, rejecting blank shells and login pages, and atomically preserving refreshed cookies/storage including IndexedDB. Pinned upstream is unchanged.

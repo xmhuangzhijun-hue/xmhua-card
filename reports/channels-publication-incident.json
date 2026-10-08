@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "incident_id": "INC-20261008-011",
+  "status": "diagnosing",
+  "summary": "Publication still fails after login-state repair",
+  "recurrence": {"count": 2, "user_report_after_resolution": true},
+  "diagnosis_ref": "reports/2026-10-08-channels-publication.md",
+  "execution_ref": "scripts/publishing/channels_submission.py",
+  "verification_ref": "scripts/publishing/test_channels_submission.py",
+  "acceptance_contract": {
+    "expected_outcome": "Verified publication with owner verification and no duplicate submission",
+    "current_outcome": "Offline guards verified; live cause and publication unverified",
+    "forbidden_side_effects": ["duplicate publication", "dismiss security verification", "secret disclosure", "cloud expansion"]
+  },
+  "next_evidence": "Owner-visible prompt and existing content/draft receipt",
+  "blocked_observation": "Browser site-safety policy denied editor tab; no workaround attempted"
+}
