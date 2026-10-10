@@ -1,5 +1,35 @@
 # Development log
 
+## 2026-10-08 — Channels publication recurrence and single-submit guard
+
+Later login checks passed while publications failed at form/submit and one was interrupted. Read-only diagnosis found upstream retries/overlay removal; local adapter now preserves dialogs, clicks once and requires matching content-list evidence. Diagnostics separate verification from form fields and retain specific codes. 49 tests and pinned-upstream binding pass. Browser site-safety policy blocked live inspection; no workaround or re-upload. Platform cause and actual recovery remain open. See reports/2026-10-08-channels-publication.md.
+
+## 2026-10-07 — Positive Channels authentication and saved-state refresh
+
+The owner reported an authenticated assistant window while later MCP checks failed. The previous check treated absence of a login redirect within eight seconds as success and never saved refreshed browser state; a later successful login receipt still left the old file untouched. Added a narrow local adapter requiring authenticated homepage/editor controls, rejecting blank shells and login pages, and atomically preserving refreshed cookies/storage including IndexedDB. Pinned upstream is unchanged.
+
+40 regression tests pass. The old saved state failed the stricter real check. After the owner's new scan, login completed and two separate worker checks successfully reopened and refreshed the saved session without another scan, including a check over seven minutes after the preceding save. Overnight/reboot persistence and actual publication are unverified; see reports/2026-10-07-channels-refresh.md. No upload, publication, dependency installation, worker restart or cloud resource change.
+
+## 2026-10-07 — Restore publishing backend after disk exhaustion
+
+Owner reported HTTP 500 before publishing. Reproduced admin login 500 while homepage/health were 200; database connection refused and root disk full. With explicit approval, removed three verified old temporary backup files and started PostgreSQL. Actual MCP status/jobs recovered, worker online; historical jobs preserved. No public upload or cloud resource increase. Added safe status/operation-aware backend errors and failed-login session cleanup; 35 tests pass. Disk still has limited headroom and retention is not fixed. A second actual-host failure left spawned command Python idle until 420 seconds. Replaced the command subprocess with the same CLI core using explicit argv/output; fresh stdio MCP queued real account checks in 4.65 seconds, ten tools retained. Desktop connection reload is required. See reports/2026-10-07-backend-500.md for live queue acceptance and limits.
+
+## 2026-10-07 — Channels session freshness and failure diagnostics
+
+Read-only saved-session navigation redirected to login despite a cached successful check. Original publication failure phase is unknown: upstream output was discarded. Added fresh-check gating before asset upload, failure-aware cached status, actionable MCP errors and private allowlisted phase receipts. 32 regression tests pass; actual upstream wrapper installation verified. Existing uncertain requests retained without replay. Login recovery ended with a negative account check; owner authentication and platform draft/content readback remain pending. No cloud resource changes. See reports/2026-10-07-channels-session.md, including the audit-gate sequencing defect.
+
+## 2026-10-06 — Douyin deletion tools for local MCP
+
+The owner requested deletion and selected Douyin first. Added owned-video listing, an exact-ID/account-bound deletion preview, approved deletion, and local receipt inspection. The existing private session and installed Patchright runtime are reused; endpoint research references pinned OpenCLI with attribution. One POST only, no positional UI deletion or fallback; a durable per-video attempt record prevents replay across plan IDs. Complete authenticated list reads and unchanged owner/caption are required. Platform errors or unreadable results cannot be reported as deletion success.
+
+Twenty-four tests passed including the original publication/QR tests. Real MCP discovery returns ten tools; unapproved deletion is refused, and live read-only account/list reads succeed. During investigation a local confirmation popover was opened with all subsequent browser network blocked; no confirmation was clicked and no deletion POST sent. A later list changed from one work to empty, cause unconfirmed, and was not attributed to this feature. Actual destructive acceptance is explicitly unverified. No cloud code, services, credentials, dependency installation or Codex config changes. See reports/2026-10-06-douyin-delete-mcp.md.
+
+## 2026-10-06 — Local publishing MCP for Codex
+
+The owner requested a direct MCP connection for publishing. Added six tools using the already-available official Python MCP SDK, wrapping the existing API client and CLI instead of replacing platform adapters. Preview stores a private plan and file digest without network access; publication requires authorization of that exact plan and reuses the existing locked, non-replaying journal. Status distinguishes old successful checks from invalid/missing sessions. Credentials and QR challenges are excluded from tool responses.
+
+Six facade tests plus the existing two CLI and two QR tests passed. A real stdio MCP client discovered six tools, verified the default publication gate, and read live account status using the registered Codex configuration. Codex lists the server as enabled. Natural host use still requires loading the new connection; no actual social publication was performed. No dependency installation, cloud release, browser-worker restart or ongoing-login interruption occurred. See reports/2026-10-06-publishing-mcp.md, including the configuration comparison limitation and removal path.
+
 ## 2026-10-02 — Restore local execution under the existing server budget
 
 The owner chose local video execution to preserve resources for existing cloud services and avoid additional server cost. Registered a fresh local worker without reactivating revoked credentials, reused the original private platform sessions, restored the existing guarded Windows launcher and login-startup entry, then revoked the cloud worker and disabled all three cloud publisher/desktop units. No website release or database migration was needed: the existing UI selects the only active worker and the API now returns no cloud worker.
@@ -545,3 +575,27 @@ Resolved the two baseline lint blockers: reading progress no longer stores an un
 With user approval, upgraded Next.js and eslint-config-next from 16.3.0 to 16.3.5 and refreshed compatible transitive patches with npm audit fix (no force). Installation used an isolated directory; the shared checkout dependencies were preserved. Both frontend and API audits report zero vulnerabilities; API lockfile remained unchanged. Lint, both typechecks, security regressions and GitHub snapshot/storage regressions passed. Production build, browser acceptance and required GitHub checks are tracked in reports/2026-09-12-security-release.md before deployment.
 
 The first upgraded CI run (34689842204) passed both dependency audits and all regressions, then revealed malformed pre-existing Waves CSS (`var()` without a custom-property name) under Turbopack. Restored `--x` / `--y` with fallbacks to match the component's existing mouse-coordinate updates. The previous local webpack build did not catch the parse error; subsequent validation uses the default CI bundler.
+
+## 2026-10-03 — Online Gomoku shipped in the portfolio
+
+The owner requested a game that friends could play together online from the portfolio. Released `/play/gomoku` with homepage and `/work` entries, two-player shareable rooms, spectators, server-validated alternating moves and wins, resignation, refresh recovery, and agreed rematches that swap colors. A request identity saved before create/join allows the original room or seat to be recovered after a lost response; unique creator identities and transaction locking protect concurrent retries and moves. The existing standalone API, PostgreSQL, and dependencies are reused. Migration `0009_gomoku_rooms` adds only an independent table, creator-identity uniqueness, and expiry index.
+
+Local API/security/game/publishing checks, frontend lint/typecheck, and the 70-page production build passed. Sixteen key source files matched the final build snapshot byte for byte; independent package checksums matched before deployment. Production release `20261002T1556Z-gomoku` passed public route checks and 41 multiplayer checks using two independent HTTP clients, including win/rematch/color changes, seat recovery, concurrency, and idempotent recovery after a lost response. All fields and relative order of the previous seven products and 56 public notes were preserved; new game card 14 makes eight products. Database backup and migration passed, and both retained old releases passed cold starts after migration to verify rollback compatibility.
+
+CUA and Browser Harness were unavailable, so rendered browser UI, mobile layout, and touch interaction remain unverified. Source CI now includes game and neighboring publishing regressions; this local release evidence does not claim a completed remote CI run or source merge. Exact artifact/source fingerprints and acceptance limits are in reports/2026-10-02-gomoku.md.
+## 2026-10-03 — Expose local account QR handoff in the administrator
+
+The owner could see queued/running login tasks but no scan entry. Added an explicit login panel, transient authenticated QR relay from existing upstream callbacks, expiry/ownership guards, and truthful Bilibili terminal / Google browser instructions. Execution and saved sessions remain local. Progress buttons return to the active panel without creating duplicate jobs. The existing Gomoku release is included. See reports/2026-10-03-publishing-qr.md for verification and remaining user-login acceptance.
+## 2026-10-04 — Supervise the local worker and expose a Codex command entry
+
+The local worker had exited while Windows remained logged in, disabling all account buttons despite retained sessions. Added a managed local host and a Codex CLI for status, session checks, authentication and explicit plan-based publication. Preview has no external action; a private locked journal prevents uncertain submissions from being replayed. A Windows task now owns the local lifecycle, with a periodic recovery trigger because the initial restart-on-failure test did not recover the process. Live session reuse passed for Xiaohongshu; Channels returned a negative check. No public video was posted and cloud deployment was unchanged. See reports/2026-10-04-local-publisher-lifecycle.md.
+
+## 2026-10-10 — Blog-hosted Xiangqi
+
+The user requested a blog entry matching the existing Gomoku and Bubble Arena games. Reused the Xiangqi engine and mobile client; added a PostgreSQL room adapter and server-issued cookie identity. All writes are row-locked with version and replay checks; consent is required for undo/draw/rematch. No dependency or new persistent service. Existing API security and Gomoku regressions plus the new PostgreSQL/HTTP checks passed. Production and phone acceptance are tracked in reports/2026-10-10-xiangqi.md.
+
+
+### Xiangqi production verification — 2026-10-10
+- Published the independent game/API overlay and CMS product 16; preserved nine existing products and other content. Direct public two-player protocol and mobile-size browser round trip passed, including invitation, both sides moving, and resume after reload.
+- The existing frontend release was retained. API rollback cold start and database backup verified. Source review remains separate from deployment; see reports/2026-10-10-xiangqi.md for limits and rollback.
+

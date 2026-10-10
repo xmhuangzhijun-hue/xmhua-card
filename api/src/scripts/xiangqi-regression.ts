@@ -1,0 +1,45 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
+import {randomUUID} from 'node:crypto';
+import {Hono} from 'hono';
+import {migrate} from 'drizzle-orm/pglite/migrator';
+import {eq} from 'drizzle-orm';
+process.env.DATABASE_URL='pglite:memory://';
+process.env.ADMIN_COOKIE_SECURE='false';
+const {connectDatabase,closeDatabase}=await import('../db/client.js');
+const {xiangqiRoutes}=await import('../routes/xiangqi.js');
+const {xiangqiRooms}=await import('../db/xiangqi-schema.js');
+const db=await connectDatabase();
+const app=new Hono();app.route('/api/xiangqi',xiangqiRoutes);
+const origin='http://localhost';
+type Reply={ok:boolean;code?:string;room?:{code:string;you:string;version:number;board:(string|null)[][];history:unknown[];status:string;result:string|null;game:number}};
+async function player(){const r=await app.request(origin+'/api/xiangqi/session');const cookie=r.headers.get('set-cookie')!.split(';')[0]!;assert.match(cookie,/xmhua_xiangqi_player=[a-f0-9]{64}/);assert.match(r.headers.get('set-cookie')!,/HttpOnly/i);return{cookie,call:async(event:unknown,headers:Record<string,string>={})=>{const response=await app.request(origin+'/api/xiangqi/game',{method:'POST',headers:{host:'localhost',origin,'content-type':'application/json',cookie,...headers},body:JSON.stringify(event)});return await response.json() as Reply;}};}
+const id=()=>randomUUID();
+try{
+ await migrate(db as never,{migrationsFolder:resolve(import.meta.dirname,'../../drizzle')});
+ assert.equal(readFileSync(resolve(import.meta.dirname,'../games/xiangqi/engine.cjs'),'utf8'),readFileSync(resolve(import.meta.dirname,'../../../public/play/xiangqi/engine.js'),'utf8'),'client and server rules identical');
+ const A=await player(),B=await player(),C=await player();
+ const create={action:'create',requestId:id()};const first=await A.call(create);assert.ok(first.ok);const code=first.room!.code;
+ assert.equal((await A.call(create)).room!.code,code);
+ const results=await Promise.all([B.call({action:'join',code,requestId:id()}),C.call({action:'join',code,requestId:id()})]);assert.equal(results.filter(r=>r.ok).length,1);const black=results[0]!.ok?B:C,third=results[0]!.ok?C:B;
+ assert.equal((await third.call({action:'get',code})).code,'FORBIDDEN');
+ const move={action:'move',code,version:1,requestId:id(),move:{fr:6,fc:4,tr:5,tc:4}};
+ const raced=await Promise.all([A.call(move),A.call({...move,requestId:id(),move:{fr:6,fc:2,tr:5,tc:2}})]);assert.equal(raced.filter(r=>r.ok).length,1);assert.equal((await A.call(move)).room!.version,2);
+ assert.equal((await black.call({action:'get',code})).room!.board[5]![4],'rP');
+ assert.equal((await A.call({...move,version:2,requestId:id()})).code,'NOT_YOUR_TURN');
+ assert.equal((await black.call({action:'move',code,version:2,requestId:id(),move:{fr:3,fc:4,tr:5,tc:4}})).code,'ILLEGAL_MOVE');
+ assert.ok((await black.call({action:'move',code,version:2,requestId:id(),move:{fr:3,fc:4,tr:4,tc:4}})).ok);
+ assert.ok((await A.call({action:'request',code,version:3,requestId:id(),kind:'undo'})).ok);
+ assert.equal((await A.call({action:'respond',code,version:4,requestId:id(),accept:true})).code,'SELF_ACCEPT');
+ assert.equal((await black.call({action:'respond',code,version:4,requestId:id(),accept:true})).room!.history.length,0);
+ assert.ok((await A.call({action:'resign',code,version:5,requestId:id()})).room!.result?.includes('黑方'));
+ assert.ok((await A.call({action:'request',code,version:6,requestId:id(),kind:'rematch'})).ok);
+ assert.equal((await black.call({action:'respond',code,version:7,requestId:id(),accept:true})).room!.you,'r');
+ assert.equal((await A.call({action:'get',code},{origin:'https://evil.test'})).code,'ORIGIN');
+ assert.equal((await A.call({action:'get',code,red:'forged'})).code,'BAD_REQUEST');
+ assert.equal((await A.call({action:'get',code},{cookie:''})).code,'SESSION');
+ const [stored]=await db.select().from(xiangqiRooms).where(eq(xiangqiRooms.code,code));assert.ok(stored);assert.ok(!JSON.stringify(stored).includes(A.cookie.split('=')[1]!));
+ await db.update(xiangqiRooms).set({state:{...stored.state,expiresAt:Date.now()-1}}).where(eq(xiangqiRooms.code,code));assert.equal((await A.call({action:'get',code})).code,'EXPIRED');
+ console.log('PASS: PostgreSQL migration, anonymous cookies, races, idempotency, moves, consent, rematch, expiry, CSRF, seat isolation and engine parity.');
+}finally{await closeDatabase();}

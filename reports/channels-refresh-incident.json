@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "incident_id": "INC-20261007-052",
+  "project": "XMHUA 对外名片",
+  "summary": "视频号登录检查复发：消极判定与旧会话未刷新",
+  "status": "resolved",
+  "risk_level": "medium",
+  "actors": {
+    "diagnoser": "codex",
+    "executor": "codex",
+    "resolver": "codex",
+    "verifier": "codex"
+  },
+  "phase_separation": {
+    "diagnosis_ref": "reports/2026-10-07-channels-refresh.md",
+    "execution_ref": "scripts/publishing/channels_session.py",
+    "verification_ref": "scripts/publishing/test_channels_session.py",
+    "verifier_read_only": true
+  },
+  "recurrence": {
+    "state": "recurred",
+    "count": 1,
+    "user_report_after_resolution": true
+  },
+  "acceptance_contract": {
+    "original_input": "发布助手弹出的窗口已登录，随后MCP连续检查失败",
+    "observable_failure": "22:45登录成功回执仍对应18:01文件，22:51和22:55检查失败",
+    "expected_outcome": "明确登录证据后保存刷新会话，并由独立进程无扫码复用；不重复提交不确定发布",
+    "required_path": [
+      "MCP",
+      "local adapter",
+      "saved session",
+      "platform receipt"
+    ],
+    "forbidden_side_effects": [
+      "duplicate publication",
+      "secret disclosure",
+      "cloud resource changes"
+    ]
+  },
+  "attempts": [
+    {"job": "d40625a6-7284-4ce6-9aa9-d81ba8c567b7", "result": "old saved session rejected"},
+    {"job": "bf4ca313-7daf-4c86-9a3a-0e595dde4733", "result": "owner scan completed and state refreshed"},
+    {"job": "cd36d83a-2a13-4edd-8d4d-18cb21173581", "result": "independent process reuse valid"},
+    {"job": "3d3aab3d-40f6-4446-af15-1ebb3e7d26c0", "result": "delayed independent reuse valid after seven minutes; no extra scan"}
+  ],
+  "rejected_hypotheses": [],
+  "evidence": [
+    "reports/2026-10-07-channels-refresh.md"
+  ],
+  "trust_profile": {
+    "symptom_resolution": "medium",
+    "root_cause": "medium",
+    "contract_coverage": "medium",
+    "non_recurrence": "low"
+  },
+  "stop_loss": {
+    "failed_attempts": 0,
+    "threshold": 3,
+    "user_visible_recurrence": false,
+    "triggered": false
+  }
+}

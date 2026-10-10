@@ -1,0 +1,2 @@
+# EXP-20261007-052
+A non-login URL or absence of QR for a short timeout is not positive authentication evidence. A successful check should preserve the server-refreshed session rather than repeatedly restoring the same old snapshot. Direct upload navigation is not equivalent to authenticated homepage bootstrap. Distinguish a visible browser window from the persisted state consumed by a new process; current connector failure prevents assuming they are the same. The end-to-end test must reopen saved state in another process.

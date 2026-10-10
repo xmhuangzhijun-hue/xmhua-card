@@ -7,6 +7,7 @@ import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { bodyLimit } from "hono/body-limit";
 import { getDatabase } from "../db/client.js";
 import { publishAssets, publishJobs, publishWorkers } from "../db/schema.js";
 import { env } from "../env.js";
@@ -101,6 +102,7 @@ publishingWorkerRoutes.post("/recover", async c => {
   return c.json({ data: { ok: true } });
 });
 publishingWorkerRoutes.post("/jobs/:id/report", async c => c.json({ data: await publishing.report((await worker(c)).id, uuid.parse(c.req.param("id")), await parseBody(c, publishing.reportInput)) }));
+publishingWorkerRoutes.post("/jobs/:id/login-view", bodyLimit({ maxSize: 360000 }), async c => c.json({ data: await publishing.updateLoginView((await worker(c)).id, uuid.parse(c.req.param("id")), await parseBody(c, publishing.loginViewInput)) }));
 publishingWorkerRoutes.get("/assets/:id", async c => {
   const current = await worker(c);
   const id = uuid.parse(c.req.param("id"));

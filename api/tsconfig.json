@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2023",
+    "allowJs": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": ["ES2023"],
@@ -15,5 +16,5 @@
     "sourceMap": true,
     "declaration": false
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/games/xiangqi/*.cjs"]
 }
