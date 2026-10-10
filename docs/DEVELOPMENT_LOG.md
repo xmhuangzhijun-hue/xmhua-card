@@ -589,3 +589,8 @@ The owner could see queued/running login tasks but no scan entry. Added an expli
 ## 2026-10-04 — Supervise the local worker and expose a Codex command entry
 
 The local worker had exited while Windows remained logged in, disabling all account buttons despite retained sessions. Added a managed local host and a Codex CLI for status, session checks, authentication and explicit plan-based publication. Preview has no external action; a private locked journal prevents uncertain submissions from being replayed. A Windows task now owns the local lifecycle, with a periodic recovery trigger because the initial restart-on-failure test did not recover the process. Live session reuse passed for Xiaohongshu; Channels returned a negative check. No public video was posted and cloud deployment was unchanged. See reports/2026-10-04-local-publisher-lifecycle.md.
+
+## 2026-10-10 — Blog-hosted Xiangqi
+
+The user requested a blog entry matching the existing Gomoku and Bubble Arena games. Reused the Xiangqi engine and mobile client; added a PostgreSQL room adapter and server-issued cookie identity. All writes are row-locked with version and replay checks; consent is required for undo/draw/rematch. No dependency or new persistent service. Existing API security and Gomoku regressions plus the new PostgreSQL/HTTP checks passed. Production and phone acceptance are tracked in reports/2026-10-10-xiangqi.md.
+

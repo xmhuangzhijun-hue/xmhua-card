@@ -71,6 +71,13 @@
       "when": 1790955289612,
       "tag": "0009_gomoku_rooms",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791625060316,
+      "tag": "0010_xiangqi_rooms",
+      "breakpoints": true
     }
   ]
 }
