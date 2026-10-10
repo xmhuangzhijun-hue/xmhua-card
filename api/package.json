@@ -18,7 +18,8 @@
     "admin:create": "tsx src/scripts/create-admin.ts",
     "security:check": "tsx src/scripts/security-regression.ts",
     "gomoku:check": "tsx src/scripts/gomoku-regression.ts",
-    "check": "npm run typecheck && npm run security:check && npm run gomoku:check && npm run build",
+    "xiangqi:check": "tsx src/scripts/xiangqi-regression.ts",
+    "check": "npm run typecheck && npm run security:check && npm run gomoku:check && npm run xiangqi:check && npm run build",
     "dev:db": "tsx src/scripts/dev-database.ts"
   },
   "dependencies": {

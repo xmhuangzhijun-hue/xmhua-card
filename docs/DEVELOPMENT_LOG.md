@@ -594,3 +594,8 @@ The local worker had exited while Windows remained logged in, disabling all acco
 
 The user requested a blog entry matching the existing Gomoku and Bubble Arena games. Reused the Xiangqi engine and mobile client; added a PostgreSQL room adapter and server-issued cookie identity. All writes are row-locked with version and replay checks; consent is required for undo/draw/rematch. No dependency or new persistent service. Existing API security and Gomoku regressions plus the new PostgreSQL/HTTP checks passed. Production and phone acceptance are tracked in reports/2026-10-10-xiangqi.md.
 
+
+### Xiangqi production verification — 2026-10-10
+- Published the independent game/API overlay and CMS product 16; preserved nine existing products and other content. Direct public two-player protocol and mobile-size browser round trip passed, including invitation, both sides moving, and resume after reload.
+- The existing frontend release was retained. API rollback cold start and database backup verified. Source review remains separate from deployment; see reports/2026-10-10-xiangqi.md for limits and rollback.
+
