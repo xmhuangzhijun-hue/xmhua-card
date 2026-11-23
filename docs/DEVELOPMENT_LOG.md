@@ -1,5 +1,11 @@
 # Development log
 
+## 2026-11-23 — Frontend and API dependency security updates
+
+Dependabot alerts and failing PR dependency audits prompted this update. Next.js moves to 16.4.6. The frontend lockfile resolves patched transitive dependencies, with a scoped `minimatch` override for `@ts-morph/common`. The API moves to `@hono/node-server` 2.1.11 and resolves patched Hono and Zod versions. The existing ESLint configuration continues to run its established rules while the Next.js runtime is updated.
+
+Clean installs and npm audits passed for both packages. The audits reported zero vulnerabilities. Frontend lint, both type checks, security regressions, the GitHub snapshot and storage regressions, and both builds passed locally. The frontend build used the CI content API fixture and generated 18 pages. The candidate is ready for CI and review.
+
 ## 2026-09-11 — React Bits production release
 
 User explicitly requested deployment. Released 20260911T1440Z-reactbits after old/new isolated startup probes. The initial candidate did not start: copying the previous Turbopack-traced runtime omitted a webpack app-page runtime file. Production stayed on the prior release throughout diagnosis; rebuilt the package with its own complete standalone node_modules, then candidate/rollback probes passed. Separate probe ports avoid immediate reuse after shutdown. Public verification: all 75 sitemap pages and referenced assets on five routes pass. Browser confirmed initialized Canvas, pause/resume, RAG filter (four cards), and notes search dialog; search trigger measures 106px with no page overflow at 952px viewport. Mobile visual acceptance remains unverified. Receipt: reports/2026-09-11-reactbits-production.json.

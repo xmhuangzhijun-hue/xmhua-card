@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 未发布
 
+### 安全
+
+- 升级 Next.js、Hono、Zod 及相关依赖以修复 npm 审计报告中的安全漏洞。
+
 ### 新增
 
 - React Bits 动效（待验收、未上线）：Waves 流动波纹、GradientText 渐变文字、StarBorder 游走光边；修正笔记导航搜索按钮宽度与间距。
